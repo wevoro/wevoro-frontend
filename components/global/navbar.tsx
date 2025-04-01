@@ -201,7 +201,7 @@ export default function Navbar({
             </div>
           </div>
 
-          {/* {environmentType === "waitlist" ? (
+          {environmentType === "waitlist" ? (
             <div className="hidden md:flex items-center space-x-6">
               <Button
                 onClick={() => scrollToSection("joinwaitlist")}
@@ -250,7 +250,7 @@ export default function Navbar({
                 </div>
               )}
             </>
-          )} */}
+          )}
           {user?.email && (
             <div className="hidden md:flex items-center space-x-6">
               <Link

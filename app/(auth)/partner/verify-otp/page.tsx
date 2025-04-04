@@ -1,11 +1,12 @@
-import { getPartnerLoginData } from '@/app/actions';
-import VerifyOTP from '@/components/global/verify-otp';
+import { getPartnerLoginData } from "@/app/actions";
+import { WaitlistGuard } from "@/components/global/waitlist-guard";
+import VerifyOTP from "@/components/global/verify-otp";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 const PartnerVerifyOTPPage = async () => {
   const loginData = await getPartnerLoginData();
-  return (
-    <VerifyOTP {...loginData} image={'/partner_signin.svg'} source='partner' />
+  return WaitlistGuard(
+    <VerifyOTP {...loginData} image={"/partner_signin.svg"} source="partner" />
   );
 };
 

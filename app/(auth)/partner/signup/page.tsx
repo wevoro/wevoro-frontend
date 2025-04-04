@@ -1,8 +1,9 @@
-import { getPartnerSignupData } from '@/app/actions';
-import PartnerSignup from '@/components/global/partner-signup';
+import { getPartnerSignupData } from "@/app/actions";
+import { WaitlistGuard } from "@/components/global/waitlist-guard";
+import PartnerSignup from "@/components/global/partner-signup";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export default async function PartnerSignupPage() {
   const signupData = await getPartnerSignupData();
-  return <PartnerSignup {...signupData} />;
+  return WaitlistGuard(<PartnerSignup {...signupData} />);
 }

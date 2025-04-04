@@ -6,12 +6,12 @@ interface AuthLayoutProps {
   children: ReactNode;
 }
 
-const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+const AuthLayout = async ({ children }: AuthLayoutProps) => {
   return (
-    <>
+    <div>
       {children}
       <Help />
-    </>
+    </div>
   );
 };
 

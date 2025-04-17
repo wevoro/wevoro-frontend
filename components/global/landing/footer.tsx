@@ -119,27 +119,29 @@ export default function Footer({
             </div>
           </div> */}
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">{downloadAppLabel}</h3>
-            <div className="flex gap-4 justify-center md:justify-start">
-              {appLinks.map((app: any, index: number) => (
-                <Link
-                  key={index}
-                  href={app.href}
-                  target="_blank"
-                  className="hover:opacity-75"
-                >
-                  <Image
-                    src={app.src}
-                    alt={app.alt}
-                    width={120}
-                    height={40}
-                    className="h-10"
-                  />
-                </Link>
-              ))}
+          {environmentType !== "waitlist" && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">{downloadAppLabel}</h3>
+              <div className="flex gap-4 justify-center md:justify-start">
+                {appLinks.map((app: any, index: number) => (
+                  <Link
+                    key={index}
+                    href={app.href}
+                    target="_blank"
+                    className="hover:opacity-75"
+                  >
+                    <Image
+                      src={app.src}
+                      alt={app.alt}
+                      width={120}
+                      height={40}
+                      className="h-10"
+                    />
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="mt-8 pt-8 text-sm text-center md:text-left grid grid-cols-1 md:grid-cols-4">

@@ -32,7 +32,18 @@ export default function Footer({
   copyright: string;
   environmentType: string;
 }) {
+  // if env is waitlist then remove the link which includes /signup and /login
+  const waitlistSection2 = section2?.links?.filter((link: any) =>
+    environmentType === "waitlist"
+      ? !link.link.includes("/signup") && !link.link.includes("/login")
+      : link
+  );
+
+  section2.links = waitlistSection2;
+
   const sections = [section1, section2, section3];
+
+  // console.log({ section2, environmentType });
 
   const socialLinks = [
     {

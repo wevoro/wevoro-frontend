@@ -1,14 +1,15 @@
-import { getPartnerLoginData } from '@/app/actions';
-import ForgotPassword from '@/components/global/forgot-password';
+import { getPartnerLoginData } from "@/app/actions";
+import { WaitlistGuard } from "@/components/global/waitlist-guard";
+import ForgotPassword from "@/components/global/forgot-password";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 const PartnerForgotPasswordPage = async () => {
   const loginData = await getPartnerLoginData();
-  return (
+  return WaitlistGuard(
     <ForgotPassword
       {...loginData}
-      image={'/partner_signin.svg'}
-      source='partner'
+      image={"/partner_signin.svg"}
+      source="partner"
     />
   );
 };

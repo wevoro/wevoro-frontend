@@ -1,9 +1,11 @@
-import { getProLoginData } from '@/app/actions';
-import ProLogin from '@/components/global/pro-login';
+import { getProLoginData } from "@/app/actions";
+import { WaitlistGuard } from "@/components/global/waitlist-guard";
 
-export const dynamic = 'force-dynamic';
+import ProLogin from "@/components/global/pro-login";
+
+export const dynamic = "force-dynamic";
 export default async function ProLoginPage() {
   const loginData = await getProLoginData();
 
-  return <ProLogin {...loginData} />;
+  return WaitlistGuard(<ProLogin {...loginData} />);
 }

@@ -52,7 +52,7 @@ export default function Comparison({
         </div>
         <div className="bg-primary text-white rounded-[32px] px-4 pt-8 pb-12 w-full md:max-w-[262px] max-w-[100px] mx-auto -mt-20">
           <h2 className="text-lg md:text-[28px] text-center font-normal mb-4">
-            Horrizon
+            Hirenza
           </h2>
           <div className="space-y-">
             {Array.from({ length: comparisons?.length }).map((_, index) => (

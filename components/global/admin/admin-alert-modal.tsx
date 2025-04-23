@@ -29,7 +29,7 @@ export default function AdminAlertModal({
   data?: any;
   children?: React.ReactNode;
 }) {
-  const { refetchUsers, sendNotification } = useAppContext();
+  const { refetchUsers, sendNotification, refetchQaUsers } = useAppContext();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -83,6 +83,7 @@ export default function AdminAlertModal({
 
       if (responseData.status === 200) {
         refetchUsers();
+        refetchQaUsers();
         toast({
           variant: "success",
           title: `User ${adminStatusMap[alertType as keyof typeof adminStatusMap]} successfully!`,

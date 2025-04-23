@@ -22,6 +22,18 @@ export async function getUsers() {
     return null;
   }
 }
+export async function getQaUsers() {
+  try {
+    const response = await api.get(
+      `${process.env.NEXT_PUBLIC_QA_API_URL}/user/all`
+    );
+    // console.log('response', response.data);
+    return response.data.data;
+  } catch (error) {
+    // console.error('Error fetching user profile:', error);
+    return null;
+  }
+}
 
 export async function getUserById(id: string) {
   try {

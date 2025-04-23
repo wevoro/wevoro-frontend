@@ -1,34 +1,39 @@
 // @ts-nocheck
-'use client';
+"use client";
 import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
   useState,
-} from 'react';
-import Title from '@/components/global/title';
-import { Input } from '@/components/ui/input';
-import OnboardButton from '@/components/global/onboard-button';
-import { CloudUploadIcon, LinkIcon } from 'lucide-react';
-import AddMore from '@/components/global/professional-info/add-more';
-import Remove from '@/components/global/professional-info/remove';
-import SkillsSelector from '@/components/global/professional-info/skills-selector';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { useAppContext } from '@/lib/context';
-import { toast } from 'sonner';
-import LoadingOverlay from '@/components/global/loading-overlay';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Editor from '../ui/editor';
+} from "react";
+import Title from "@/components/global/title";
+import { Input } from "@/components/ui/input";
+import OnboardButton from "@/components/global/onboard-button";
+import { CloudUploadIcon, LinkIcon } from "lucide-react";
+import AddMore from "@/components/global/professional-info/add-more";
+import Remove from "@/components/global/professional-info/remove";
+import SkillsSelector from "@/components/global/professional-info/skills-selector";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useAppContext } from "@/lib/context";
+import { toast } from "sonner";
+import LoadingOverlay from "@/components/global/loading-overlay";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import Editor from "../ui/editor";
 
 const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { from, userFromAdmin, onClose } = props;
 
   const searchParams = useSearchParams();
-  const isEdit = searchParams.get('edit') === 'true';
+  const isEdit = searchParams.get("edit") === "true";
 
-  const { user, refetchUser, professionalInfoRef, refetchUsers } =
-    useAppContext();
+  const {
+    user,
+    refetchUser,
+    professionalInfoRef,
+    refetchUsers,
+    refetchQaUsers,
+  } = useAppContext();
 
   const userData =
     from && userFromAdmin?.professionalInfo
@@ -43,11 +48,11 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     return {
       ...certification,
       issueDate: certification?.issueDate
-        ? certification?.issueDate?.split('T')[0]
-        : '',
+        ? certification?.issueDate?.split("T")[0]
+        : "",
       expireDate: certification?.expireDate
-        ? certification?.expireDate?.split('T')[0]
-        : '',
+        ? certification?.expireDate?.split("T")[0]
+        : "",
     };
   });
 
@@ -68,30 +73,30 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     defaultValues: {
       education: education || [
         {
-          degree: '',
-          institution: '',
-          yearOfGraduation: '',
-          fieldOfStudy: '',
-          grade: '',
+          degree: "",
+          institution: "",
+          yearOfGraduation: "",
+          fieldOfStudy: "",
+          grade: "",
         },
       ],
       experience: experience || [
         {
-          jobTitle: '',
-          companyName: '',
-          duration: '',
-          responsibilities: '',
+          jobTitle: "",
+          companyName: "",
+          duration: "",
+          responsibilities: "",
         },
       ],
       certifications: processedCertifications || [
         {
           fileId: new Date().getTime(),
-          title: '',
-          institution: '',
-          issueDate: '',
-          expireDate: '',
-          credentialId: '',
-          credentialUrl: '',
+          title: "",
+          institution: "",
+          issueDate: "",
+          expireDate: "",
+          credentialId: "",
+          credentialUrl: "",
           certificateFile: null,
         },
       ],
@@ -105,7 +110,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     remove: removeEducation,
   } = useFieldArray({
     control,
-    name: 'education',
+    name: "education",
   });
   const {
     fields: experienceFields,
@@ -113,7 +118,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     remove: removeExperience,
   } = useFieldArray({
     control,
-    name: 'experience',
+    name: "experience",
   });
   const {
     fields: certificationFields,
@@ -121,14 +126,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     remove: removeCertification,
   } = useFieldArray({
     control,
-    name: 'certifications',
+    name: "certifications",
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
+    if (typeof window !== "undefined" && window.location.hash) {
       const targetElement = document.querySelector(window.location.hash);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth' });
+        targetElement.scrollIntoView({ behavior: "smooth" });
       }
     } else {
       setIsMounted(true);
@@ -138,7 +143,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const onSubmit = async (data: any) => {
     try {
       if (!isDirty && !isEdit && !from) {
-        return router.push('/pro/onboard/document-upload');
+        return router.push("/pro/onboard/document-upload");
       }
 
       setIsLoading(true);
@@ -148,10 +153,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             ...certification,
             issueDate: certification.issueDate
               ? new Date(certification.issueDate).toISOString()
-              : '',
+              : "",
             expireDate: certification.expireDate
               ? new Date(certification.expireDate).toISOString()
-              : '',
+              : "",
           };
         }
       );
@@ -181,50 +186,51 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       const formData = new FormData();
 
       for (const file of certificationFiles) {
-        if (typeof file.certificateFile === 'object' && file.certificateFile) {
+        if (typeof file.certificateFile === "object" && file.certificateFile) {
           formData.append(`${file.fileId}`, file.certificateFile, file.fileId);
         }
       }
 
-      formData.append('data', JSON.stringify(data));
+      formData.append("data", JSON.stringify(data));
 
-      if (from === 'admin') {
-        formData.append('id', userFromAdmin?._id);
+      if (from === "admin") {
+        formData.append("id", userFromAdmin?._id);
       }
 
-      const response = await fetch('/api/user/professional-information', {
-        method: 'POST',
+      const response = await fetch("/api/user/professional-information", {
+        method: "POST",
         body: formData,
       });
 
       const responseData = await response.json();
       if (responseData.status === 200) {
         refetchUser();
-        if (from === 'admin') {
+        if (from === "admin") {
           refetchUsers();
+          refetchQaUsers();
           // onClose && onClose();
         }
         reset();
         if (!from) {
           toast.success(
             isEdit
-              ? 'Professional information updated successfully!'
-              : 'Professional information submitted successfully!'
+              ? "Professional information updated successfully!"
+              : "Professional information submitted successfully!"
           );
           if (isEdit) {
             router.back();
           } else {
-            router.push('/pro/onboard/document-upload');
+            router.push("/pro/onboard/document-upload");
           }
         }
       } else {
-        toast.error(responseData.message || 'Something went wrong!');
+        toast.error(responseData.message || "Something went wrong!");
       }
       setIsLoading(false);
     } catch (error: any) {
       setIsLoading(false);
-      console.log('inside catch', error);
-      toast.error(error.message || 'Something went wrong!');
+      console.log("inside catch", error);
+      toast.error(error.message || "Something went wrong!");
     }
   };
 
@@ -233,45 +239,45 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   }));
 
   const renderError = (message: string) => {
-    return <p className='text-red-500 text-sm'>{message}</p>;
+    return <p className="text-red-500 text-sm">{message}</p>;
   };
 
-  const watchCertificationFileData: any = watch('certifications');
-  const watchSkills: any = watch('skills');
+  const watchCertificationFileData: any = watch("certifications");
+  const watchSkills: any = watch("skills");
 
   const getIssueDate = (index: number) => {
     const watchIssueDate = watchCertificationFileData[index]?.issueDate;
     if (watchIssueDate) {
-      return new Date(watchIssueDate).toISOString().split('T')[0];
+      return new Date(watchIssueDate).toISOString().split("T")[0];
     }
-    return '';
+    return "";
   };
 
   return (
     <form ref={professionalInfoRef} onSubmit={handleSubmit(onSubmit)}>
-      <Title text='Professional Info' />
+      <Title text="Professional Info" />
 
       {isLoading && <LoadingOverlay />}
 
-      <div className='flex flex-col gap-10'>
+      <div className="flex flex-col gap-10">
         {/* Education Section */}
-        <div className='flex flex-col gap-5'>
-          <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
+        <div className="flex flex-col gap-5">
+          <h2 className="text-2xl font-medium leading-[33.6px] text-gray-800">
             Education
           </h2>
           {educationFields?.map((education, index) => (
             <div
               key={index}
-              className='flex flex-col gap-5 border border-[#DFE2E0] rounded-[16px] p-5'
+              className="flex flex-col gap-5 border border-[#DFE2E0] rounded-[16px] p-5"
             >
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Degree
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`education.${index}.degree`, {
                       required:
                         !!watch(`education.${index}.institution`) ||
@@ -286,13 +292,13 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     errors.education[index].degree &&
                     renderError(errors.education[index].degree.message!)}
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Institution
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`education.${index}.institution`, {
                       required:
                         !!watch(`education.${index}.degree`) ||
@@ -308,35 +314,35 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     renderError(errors.education[index].institution.message!)}
                 </div>
               </div>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Year of Graduation
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
-                    type='number'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
+                    type="number"
                     {...register(`education.${index}.yearOfGraduation`)}
                   />
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Field of Study
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`education.${index}.fieldOfStudy`)}
                   />
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Grade
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`education.${index}.grade`)}
                   />
                 </div>
@@ -350,34 +356,34 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           <AddMore
             handleAdd={() =>
               appendEducation({
-                degree: '',
-                institution: '',
-                yearOfGraduation: '',
-                fieldOfStudy: '',
-                grade: '',
+                degree: "",
+                institution: "",
+                yearOfGraduation: "",
+                fieldOfStudy: "",
+                grade: "",
               })
             }
           />
         </div>
 
         {/* Experience Section */}
-        <div className='flex flex-col gap-5'>
-          <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
+        <div className="flex flex-col gap-5">
+          <h2 className="text-2xl font-medium leading-[33.6px] text-gray-800">
             Experience
           </h2>
           {experienceFields.map((experience, index) => (
             <div
               key={index}
-              className='flex flex-col gap-5 border border-[#DFE2E0] rounded-[16px] p-5'
+              className="flex flex-col gap-5 border border-[#DFE2E0] rounded-[16px] p-5"
             >
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Job Title
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`experience.${index}.jobTitle`, {
                       required:
                         !!watch(`experience.${index}.companyName`) ||
@@ -391,32 +397,32 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     errors.experience[index].jobTitle &&
                     renderError(errors.experience[index].jobTitle.message!)}
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Company Name
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`experience.${index}.companyName`)}
                     isError={!!errors.experience?.[index]?.companyName}
                   />
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Duration
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Input Text"
                     {...register(`experience.${index}.duration`)}
                     isError={!!errors.experience?.[index]?.duration}
                   />
                 </div>
               </div>
 
-              <div className='flex flex-col gap-3'>
-                <label className='text-base font-medium text-[#1C1C1C]'>
+              <div className="flex flex-col gap-3">
+                <label className="text-base font-medium text-[#1C1C1C]">
                   Responsibilities
                 </label>
                 <Controller
@@ -426,7 +432,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     <Editor
                       value={field.value}
                       onChange={(content) => field.onChange(content)}
-                      placeholder='Write about your responsibilities...'
+                      placeholder="Write about your responsibilities..."
                     />
                   )}
                 />
@@ -441,38 +447,38 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           <AddMore
             handleAdd={() =>
               appendExperience({
-                jobTitle: '',
-                companyName: '',
-                duration: '',
-                responsibilities: '',
+                jobTitle: "",
+                companyName: "",
+                duration: "",
+                responsibilities: "",
               })
             }
           />
         </div>
 
         {/* Licenses & Certifications Section */}
-        <div className='flex flex-col gap-5'>
-          <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
+        <div className="flex flex-col gap-5">
+          <h2 className="text-2xl font-medium leading-[33.6px] text-gray-800">
             Licenses & Certifications
           </h2>
           {certificationFields.map((certification, index) => (
             <div
               key={index}
-              className='flex flex-col gap-5 border border-[#DFE2E0] rounded-[16px] p-5'
+              className="flex flex-col gap-5 border border-[#DFE2E0] rounded-[16px] p-5"
             >
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
-                    Title{' '}
-                    {from !== 'admin' && (
-                      <span className='text-red-500'>*</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
+                    Title{" "}
+                    {from !== "admin" && (
+                      <span className="text-red-500">*</span>
                     )}
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Ex: Patient Service Fundamentals'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Ex: Patient Service Fundamentals"
                     {...register(`certifications.${index}.title`, {
-                      required: from !== 'admin' && 'Title is required',
+                      required: from !== "admin" && "Title is required",
                     })}
                     isError={!!errors.certifications?.[index]?.title}
                   />
@@ -481,19 +487,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     errors.certifications[index].title &&
                     renderError(errors.certifications[index].title.message!)}
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
-                    Name of Institute{' '}
-                    {from !== 'admin' && (
-                      <span className='text-red-500'>*</span>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
+                    Name of Institute{" "}
+                    {from !== "admin" && (
+                      <span className="text-red-500">*</span>
                     )}
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Ex: Johns Hopkins School of Nursing'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Ex: Johns Hopkins School of Nursing"
                     {...register(`certifications.${index}.institution`, {
                       required:
-                        from !== 'admin' && 'Name of Institute is required',
+                        from !== "admin" && "Name of Institute is required",
                     })}
                     isError={!!errors.certifications?.[index]?.institution}
                   />
@@ -505,23 +511,23 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )}
                 </div>
               </div>
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
-                    Issue Date{' '}
-                    {from !== 'admin' && (
-                      <span className='text-red-500'>*</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
+                    Issue Date{" "}
+                    {from !== "admin" && (
+                      <span className="text-red-500">*</span>
                     )}
                   </label>
                   <Input
-                    type='date'
-                    className='rounded-[12px] h-14 bg-[#f9f9f9] uppercase'
-                    placeholder='DD/MM/YYYY'
+                    type="date"
+                    className="rounded-[12px] h-14 bg-[#f9f9f9] uppercase"
+                    placeholder="DD/MM/YYYY"
                     {...register(`certifications.${index}.issueDate`, {
-                      required: from !== 'admin' && 'Issue Date is required',
+                      required: from !== "admin" && "Issue Date is required",
                     })}
                     isError={!!errors.certifications?.[index]?.issueDate}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date().toISOString().split("T")[0]}
                   />
                   {errors.certifications &&
                     errors.certifications[index] &&
@@ -530,19 +536,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       errors.certifications[index].issueDate.message!
                     )}
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
-                    Expire Date{' '}
-                    {from !== 'admin' && (
-                      <span className='text-red-500'>*</span>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
+                    Expire Date{" "}
+                    {from !== "admin" && (
+                      <span className="text-red-500">*</span>
                     )}
                   </label>
                   <Input
-                    type='date'
-                    className='rounded-[12px] h-14 bg-[#f9f9f9] uppercase'
-                    placeholder='DD/MM/YYYY'
+                    type="date"
+                    className="rounded-[12px] h-14 bg-[#f9f9f9] uppercase"
+                    placeholder="DD/MM/YYYY"
                     {...register(`certifications.${index}.expireDate`, {
-                      required: from !== 'admin' && 'Expire Date is required',
+                      required: from !== "admin" && "Expire Date is required",
                     })}
                     isError={!!errors.certifications?.[index]?.expireDate}
                     min={getIssueDate(index)}
@@ -555,16 +561,16 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )}
                 </div>
               </div>
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
                     Credential URL
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='https://www.credential.com/1234567890'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="https://www.credential.com/1234567890"
                     {...register(`certifications.${index}.credentialUrl`)}
-                    type='url'
+                    type="url"
                   />
                   {/* {errors.certifications &&
                     errors.certifications[index] &&
@@ -573,18 +579,18 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       errors.certifications[index].credentialUrl.message!
                     )} */}
                 </div>
-                <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
-                    Credential ID{' '}
-                    {from !== 'admin' && (
-                      <span className='text-red-500'>*</span>
+                <div className="flex flex-col gap-3">
+                  <label className="text-base font-medium text-[#1C1C1C]">
+                    Credential ID{" "}
+                    {from !== "admin" && (
+                      <span className="text-red-500">*</span>
                     )}
                   </label>
                   <Input
-                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Ex: ABC123'
+                    className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                    placeholder="Ex: ABC123"
                     {...register(`certifications.${index}.credentialId`, {
-                      required: from !== 'admin' && 'Credential ID is required',
+                      required: from !== "admin" && "Credential ID is required",
                     })}
                     isError={!!errors.certifications?.[index]?.credentialId}
                   />
@@ -598,32 +604,32 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               </div>
               <label
                 htmlFor={`licenseFile-${index}`}
-                className='relative cursor-pointer'
+                className="relative cursor-pointer"
               >
-                <div className='flex flex-col items-center justify-center border border-gray-300 rounded-[12px] p-4 bg-white h-22'>
-                  <div className='flex flex-col items-center gap-2.5'>
-                    <CloudUploadIcon className='w-6 h-6' />
-                    <span className='text-sm text-gray-500'>
+                <div className="flex flex-col items-center justify-center border border-gray-300 rounded-[12px] p-4 bg-white h-22">
+                  <div className="flex flex-col items-center gap-2.5">
+                    <CloudUploadIcon className="w-6 h-6" />
+                    <span className="text-sm text-gray-500">
                       Upload physical licenses or certificate
                     </span>
                   </div>
                   <input
-                    type='file'
-                    className='hidden'
+                    type="file"
+                    className="hidden"
                     id={`licenseFile-${index}`}
-                    accept='image/*,application/pdf'
+                    accept="image/*,application/pdf"
                     // {...register(`certifications.${index}.certificateFile`)}
                     {...register(`certifications.${index}.certificateFile`, {
                       validate: {
                         fileSize: (value) => {
                           // Check if a file exists and validate its size
                           const file =
-                            typeof value === 'object' ? value?.[0] : null;
+                            typeof value === "object" ? value?.[0] : null;
                           console.log({ value });
                           return (
                             !file ||
                             file.size <= 1024 * 1024 ||
-                            'File size should be less than 1MB'
+                            "File size should be less than 1MB"
                           );
                         },
                       },
@@ -645,20 +651,20 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   {watchCertificationFileData[index]?.certificateFile &&
                     watchCertificationFileData[index]?.certificateFile?.[0]
                       ?.name && (
-                      <p className='text-base text-black py-2 inline-flex gap-4'>
+                      <p className="text-base text-black py-2 inline-flex gap-4">
                         <span>
-                          Name:{' '}
+                          Name:{" "}
                           {
                             watchCertificationFileData[index]
                               ?.certificateFile?.[0]?.name
                           }
                         </span>
                         <span>
-                          Size:{' '}
+                          Size:{" "}
                           {(
                             watchCertificationFileData[index]
                               ?.certificateFile?.[0]?.size / 1024
-                          ).toFixed(2)}{' '}
+                          ).toFixed(2)}{" "}
                           KB
                         </span>
                       </p>
@@ -668,10 +674,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                 {processedCertifications?.[index]?.certificateFile && (
                   <Link
                     href={processedCertifications?.[index]?.certificateFile}
-                    target='_blank'
-                    className='text-blue-600 underline text-sm flex items-center gap-2 pt-2'
+                    target="_blank"
+                    className="text-blue-600 underline text-sm flex items-center gap-2 pt-2"
                   >
-                    <LinkIcon className='w-4 h-4' />
+                    <LinkIcon className="w-4 h-4" />
                     View current certificate
                   </Link>
                 )}
@@ -685,20 +691,20 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             handleAdd={() =>
               appendCertification({
                 fileId: new Date().getTime(),
-                title: '',
-                institution: '',
-                issueDate: '',
-                expireDate: '',
-                credentialId: '',
-                credentialUrl: '',
+                title: "",
+                institution: "",
+                issueDate: "",
+                expireDate: "",
+                credentialId: "",
+                credentialUrl: "",
                 certificateFile: null,
               })
             }
           />
         </div>
-        <div className='flex flex-col gap-5' id='skills'>
-          <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
-            Skills {from !== 'admin' && <span className='text-red-500'>*</span>}
+        <div className="flex flex-col gap-5" id="skills">
+          <h2 className="text-2xl font-medium leading-[33.6px] text-gray-800">
+            Skills {from !== "admin" && <span className="text-red-500">*</span>}
           </h2>
 
           <SkillsSelector
@@ -707,10 +713,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             watchSkills={watchSkills}
           />
           <input
-            type='hidden'
-            value={watch('skills')}
-            {...register('skills', {
-              required: from !== 'admin' && 'At least one skill is required',
+            type="hidden"
+            value={watch("skills")}
+            {...register("skills", {
+              required: from !== "admin" && "At least one skill is required",
             })}
           />
           {errors.skills &&
@@ -718,17 +724,17 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             renderError(errors.skills.message)}
         </div>
 
-        {from !== 'admin' && (
-          <div className='flex gap-5'>
+        {from !== "admin" && (
+          <div className="flex gap-5">
             <OnboardButton
-              text={isEdit ? 'Cancel' : 'Previous'}
-              className='w-full bg-white text-[#1C1C1C] border border-gray-300 hover:text-white'
+              text={isEdit ? "Cancel" : "Previous"}
+              className="w-full bg-white text-[#1C1C1C] border border-gray-300 hover:text-white"
               onClick={() => router.back()}
             />
             <OnboardButton
-              text={isEdit ? 'Save & Exit' : 'Next'}
-              className='w-full'
-              type='submit'
+              text={isEdit ? "Save & Exit" : "Next"}
+              className="w-full"
+              type="submit"
               disabled={!isDirty && isEdit}
             />
           </div>
@@ -738,5 +744,5 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   );
 });
 
-OnboardProfessionalInfo.displayName = 'OnboardProfessionalInfo';
+OnboardProfessionalInfo.displayName = "OnboardProfessionalInfo";
 export default OnboardProfessionalInfo;

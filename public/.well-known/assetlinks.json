@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.joinhirenza.partner",
+      "sha256_cert_fingerprints": [
+        "D1:69:6B:77:49:10:8C:DC:DB:FB:AC:93:26:B6:6C:51:D5:E4:53:F9:21:45:AF:7E:75:F4:20:FF:E5:56:09:13"
+      ]
+    }
+  }
+]

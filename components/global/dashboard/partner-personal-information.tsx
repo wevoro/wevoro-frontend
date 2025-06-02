@@ -1,12 +1,12 @@
-'use client';
-import React from 'react';
-import Title from '../title';
-import EditBtn from './edit-btn';
-import { cn } from '@/lib/utils';
-import { useAppContext } from '@/lib/context';
-import moment from 'moment';
-import NoData from '../no-data';
-import SectionDescription from '../section-description';
+"use client";
+import React from "react";
+import Title from "../title";
+import EditBtn from "./edit-btn";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/context";
+import moment from "moment";
+import NoData from "../no-data";
+import SectionDescription from "../section-description";
 
 const PartnerPersonalInformation = ({
   from,
@@ -34,79 +34,77 @@ const PartnerPersonalInformation = ({
   return (
     <div
       className={cn(
-        'bg-white md:rounded-[16px]',
-        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+        "bg-white md:rounded-[16px]",
+        from === "admin" ? "p-0" : "px-4 p-6 md:p-8 "
       )}
     >
-      <div className='flex items-center justify-between border-b pb-4 mb-8'>
+      <div className="flex items-center justify-between border-b pb-4 mb-8">
         <Title
-          text='Personal information'
-          className='mb-0 !text-lg md:!text-2xl'
+          text="Personal information"
+          className="mb-0 !text-lg md:!text-2xl"
         />
-        {from !== 'admin' && (
+        {from !== "admin" && (
           <EditBtn href={`/partner/edit/personal-information?edit=true`} />
         )}
       </div>
 
       {!noData ? (
-        <div className='space-y-6'>
-          {bio && (
-            <div className='border-b pb-6 flex flex-col gap-1.5 md:gap-2.5'>
-              <SectionTitle text='Bio' />
-              <SectionDescription text={bio} from={from} />
-            </div>
-          )}
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6'>
-            {firstName ||
-              (lastName && (
-                <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Name' />
-                  <SectionDescription
-                    text={`${firstName} ${lastName}`}
-                    from={from}
-                  />
-                </div>
-              ))}
-            {dateEstablished && (
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='Date of establishment' />
+        <div className="space-y-6">
+          <div className="border-b pb-6 flex flex-col gap-1.5 md:gap-2.5">
+            <SectionTitle text="Bio" />
+            <SectionDescription text={bio || "N/A"} from={from} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
+            {(firstName || lastName) && (
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Name" />
                 <SectionDescription
-                  text={moment(dateEstablished).format('MMMM Do YYYY')}
+                  text={`${firstName} ${lastName}`}
+                  from={from}
+                />
+              </div>
+            )}
+            {dateEstablished && (
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Date of establishment" />
+                <SectionDescription
+                  text={moment(dateEstablished).format("MMMM Do YYYY")}
                   from={from}
                 />
               </div>
             )}
             {companyName && (
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='Company Name' />
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Company Name" />
 
                 <SectionDescription text={companyName} from={from} />
               </div>
             )}
             {industry && (
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='Industry' />
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Industry" />
 
                 <SectionDescription text={industry} from={from} />
               </div>
             )}
           </div>
-          <div className='border-b pb-6 flex flex-col gap-5'>
+          <div className="border-b pb-6 flex flex-col gap-5">
             <SectionTitle
-              text='Contact Details'
-              className='uppercase text-[#9E9E9E]'
+              text="Contact Details"
+              className="uppercase text-[#9E9E9E]"
             />
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {email && (
-                <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Email address' />
+                <div className="flex flex-col gap-1.5 md:gap-2.5">
+                  <SectionTitle text="Email address" />
                   <SectionDescription text={email} from={from} />
                 </div>
               )}
 
               {phone && (
-                <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Phone Number' />
+                <div className="flex flex-col gap-1.5 md:gap-2.5">
+                  <SectionTitle text="Phone Number" />
 
                   <SectionDescription text={phone} from={from} />
                 </div>
@@ -114,28 +112,28 @@ const PartnerPersonalInformation = ({
             </div>
           </div>
 
-          <div className='flex flex-col gap-5'>
-            <SectionTitle text='Address' className='uppercase text-[#9E9E9E]' />
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='Street Address' />
+          <div className="flex flex-col gap-5">
+            <SectionTitle text="Address" className="uppercase text-[#9E9E9E]" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Street Address" />
                 <SectionDescription text={address?.street} from={from} />
               </div>
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='City' />
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="City" />
                 <SectionDescription text={address?.city} from={from} />
               </div>
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='State/Province' />
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="State/Province" />
                 <SectionDescription text={address?.state} from={from} />
               </div>
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='Postal/Zip Code' />
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Postal/Zip Code" />
 
                 <SectionDescription text={address?.zipCode} from={from} />
               </div>
-              <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                <SectionTitle text='Country' />
+              <div className="flex flex-col gap-1.5 md:gap-2.5">
+                <SectionTitle text="Country" />
                 <SectionDescription text={address?.country} from={from} />
               </div>
             </div>
@@ -160,7 +158,7 @@ const SectionTitle = ({
   return (
     <h3
       className={cn(
-        'text-sm md:text-base font-medium text-[#6C6C6C]',
+        "text-sm md:text-base font-medium text-[#6C6C6C]",
         className
       )}
     >

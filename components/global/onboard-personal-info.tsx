@@ -82,6 +82,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
     industry: industry || "",
     bio: bio || "",
     dateEstablished: source === "partner" ? dateEstablished?.split("T")[0] : "",
+    phone: phone || "",
     address: {
       street: address?.street || "",
       city: address?.city || "",
@@ -190,6 +191,25 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       <div className="flex flex-col gap-8">
         <div className="text-center flex flex-col gap-3">
           <Upload register={register} image={image} imageFile={imageFile} />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-medium leading-[25.2px] text-gray-800">
+            About/Bio
+          </h2>
+          <Controller
+            name="bio"
+            control={control}
+            render={({ field }) => (
+              <Editor
+                value={field.value}
+                onChange={(content) =>
+                  setValue("bio", content, { shouldDirty: true })
+                }
+                placeholder="Write about yourself..."
+              />
+            )}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -388,24 +408,6 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
             max={new Date().toISOString().split("T")[0]}
           />
           {errors.phone && renderError(errors.phone.message as string)}
-        </div>
-        <div className="flex flex-col gap-3">
-          <h2 className="text-lg font-medium leading-[25.2px] text-gray-800">
-            About/Bio
-          </h2>
-          <Controller
-            name="bio"
-            control={control}
-            render={({ field }) => (
-              <Editor
-                value={field.value}
-                onChange={(content) =>
-                  setValue("bio", content, { shouldDirty: true })
-                }
-                placeholder="Write about yourself..."
-              />
-            )}
-          />
         </div>
 
         <div className="flex flex-col gap-5">

@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "@/lib/provider";
 import { Toaster } from "sonner";
 import Refresh from "@/components/global/refresh";
+import Head from "next/head";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -31,6 +32,14 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <script
+          id="usercentrics-cmp"
+          src="https://web.cmp.usercentrics.eu/ui/loader.js"
+          data-settings-id="rIJPPR0BivXKei"
+          async
+        ></script>
+      </Head>
       <body className={`${poppins.className}`}>
         <Provider>
           <Refresh />

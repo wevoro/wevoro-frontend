@@ -32,12 +32,23 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Script
+      <head>
+        <Script
+          id={`usercentrics-cmp`}
+          async={true}
+          src={`https://web.cmp.usercentrics.eu/ui/loader.js`}
+          strategy={`beforeInteractive`}
+          data-settings-id={`rIJPPR0BivXKei`}
+          type={`text/javascript`}
+        />
+      </head>
+
+      {/* <Script
         id="usercentrics-cmp"
         src="https://web.cmp.usercentrics.eu/ui/loader.js"
         data-settings-id="rIJPPR0BivXKei"
         async
-      ></Script>
+      ></Script> */}
 
       <body className={`${poppins.className}`}>
         <Provider>

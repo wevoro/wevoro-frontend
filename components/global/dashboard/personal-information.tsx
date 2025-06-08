@@ -100,13 +100,23 @@ const PersonalInformation = ({
               {userData?.email && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="Email address" />
-                  <SectionDescription text={userData?.email} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : userData?.email
+                    }
+                    from={from}
+                  />
                 </div>
               )}
               {phone && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="Phone Number" />
-                  <SectionDescription text={phone || "N/A"} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : phone || "N/A"
+                    }
+                    from={from}
+                  />
                 </div>
               )}
             </div>
@@ -122,31 +132,61 @@ const PersonalInformation = ({
               {address?.street && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="Street Address" />
-                  <SectionDescription text={address?.street} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : address?.street
+                    }
+                    from={from}
+                    className="text-sm md:text-base"
+                  />
                 </div>
               )}
               {address?.city && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="City" />
-                  <SectionDescription text={address?.city} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : address?.city
+                    }
+                    from={from}
+                    className="text-sm md:text-base"
+                  />
                 </div>
               )}
               {address?.state && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="State/Province" />
-                  <SectionDescription text={address?.state} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : address?.state
+                    }
+                    from={from}
+                    className="text-sm md:text-base"
+                  />
                 </div>
               )}
               {address?.zipCode && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="Postal/Zip Code" />
-                  <SectionDescription text={address?.zipCode} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : address?.zipCode
+                    }
+                    from={from}
+                    className="text-sm md:text-base"
+                  />
                 </div>
               )}
               {address?.country && (
                 <div className="flex flex-col gap-1.5 md:gap-2.5">
                   <SectionTitle text="Country" />
-                  <SectionDescription text={address?.country} from={from} />
+                  <SectionDescription
+                    text={
+                      isPublicProPage && !user ? "**********" : address?.country
+                    }
+                    from={from}
+                    className="text-sm md:text-base"
+                  />
                 </div>
               )}
             </div>

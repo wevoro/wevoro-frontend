@@ -50,44 +50,52 @@ const PartnerPersonalInformation = ({
 
       {!noData ? (
         <div className="space-y-6">
+          <div className="border-b pb-6 flex flex-col gap-5">
+            <SectionTitle
+              text="Company Details"
+              className="uppercase text-[#9E9E9E]"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(firstName || lastName) && (
+                <div className="flex flex-col gap-1.5 md:gap-2.5">
+                  <SectionTitle text="Name" />
+                  <SectionDescription
+                    text={`${firstName} ${lastName}`}
+                    from={from}
+                  />
+                </div>
+              )}
+
+              {companyName && (
+                <div className="flex flex-col gap-1.5 md:gap-2.5">
+                  <SectionTitle text="Company Name" />
+
+                  <SectionDescription text={companyName} from={from} />
+                </div>
+              )}
+              {industry && (
+                <div className="flex flex-col gap-1.5 md:gap-2.5">
+                  <SectionTitle text="Industry" />
+
+                  <SectionDescription text={industry} from={from} />
+                </div>
+              )}
+
+              {dateEstablished && (
+                <div className="flex flex-col gap-1.5 md:gap-2.5">
+                  <SectionTitle text="Date Established" />
+                  <SectionDescription
+                    text={moment(dateEstablished).format("MMMM Do YYYY")}
+                    from={from}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="border-b pb-6 flex flex-col gap-1.5 md:gap-2.5">
             <SectionTitle text="Bio" />
             <SectionDescription text={bio || "N/A"} from={from} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
-            {(firstName || lastName) && (
-              <div className="flex flex-col gap-1.5 md:gap-2.5">
-                <SectionTitle text="Name" />
-                <SectionDescription
-                  text={`${firstName} ${lastName}`}
-                  from={from}
-                />
-              </div>
-            )}
-            {dateEstablished && (
-              <div className="flex flex-col gap-1.5 md:gap-2.5">
-                <SectionTitle text="Date of establishment" />
-                <SectionDescription
-                  text={moment(dateEstablished).format("MMMM Do YYYY")}
-                  from={from}
-                />
-              </div>
-            )}
-            {companyName && (
-              <div className="flex flex-col gap-1.5 md:gap-2.5">
-                <SectionTitle text="Company Name" />
-
-                <SectionDescription text={companyName} from={from} />
-              </div>
-            )}
-            {industry && (
-              <div className="flex flex-col gap-1.5 md:gap-2.5">
-                <SectionTitle text="Industry" />
-
-                <SectionDescription text={industry} from={from} />
-              </div>
-            )}
           </div>
           <div className="border-b pb-6 flex flex-col gap-5">
             <SectionTitle

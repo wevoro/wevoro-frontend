@@ -20,6 +20,7 @@ import LoadingOverlay from "@/components/global/loading-overlay";
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useAppContext } from "@/lib/context";
 import Editor from "../ui/editor";
+import { cn } from "@/lib/utils";
 
 const OnboardPersonalInfo = forwardRef((props: any) => {
   const { source, from, userFromAdmin, onClose } = props;
@@ -367,47 +368,53 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </div>
             </>
           )}
-        </div>
 
-        {source === "partner" && (
-          <div className="flex flex-col gap-3">
+          <div
+            className={cn(
+              "flex flex-col gap-3",
+              source === "pro" && "col-span-2"
+            )}
+          >
             <label className="text-base font-medium leading-[22.4px] text-[#1C1C1C]">
-              Date of Establishment{" "}
+              Phone Number{" "}
               {from !== "admin" && <span className="text-red-500">*</span>}
             </label>
             <Input
-              {...register("dateEstablished", {
-                required:
-                  from !== "admin" && "Date of establishment is required",
+              {...register("phone", {
+                required: from !== "admin" && "Phone number is required",
               })}
-              className="rounded-[12px] h-14 bg-[#f9f9f9] uppercase"
-              type="date"
-              placeholder="DD/MM/YYYY"
-              name="dateEstablished"
-              isError={!!errors.dateEstablished}
+              className="rounded-[12px] h-14 bg-[#f9f9f9]"
+              type="number"
+              placeholder="Enter your phone number"
+              name="phone"
+              isError={!!errors.phone}
               max={new Date().toISOString().split("T")[0]}
             />
-            {errors.dateEstablished &&
-              renderError(errors.dateEstablished.message as string)}
+            {errors.phone && renderError(errors.phone.message as string)}
           </div>
-        )}
-        <div className="flex flex-col gap-3">
-          <label className="text-base font-medium leading-[22.4px] text-[#1C1C1C]">
-            Phone Number{" "}
-            {from !== "admin" && <span className="text-red-500">*</span>}
-          </label>
-          <Input
-            {...register("phone", {
-              required: from !== "admin" && "Phone number is required",
-            })}
-            className="rounded-[12px] h-14 bg-[#f9f9f9]"
-            type="number"
-            placeholder="Enter your phone number"
-            name="phone"
-            isError={!!errors.phone}
-            max={new Date().toISOString().split("T")[0]}
-          />
-          {errors.phone && renderError(errors.phone.message as string)}
+
+          {source === "partner" && (
+            <div className="flex flex-col gap-3">
+              <label className="text-base font-medium leading-[22.4px] text-[#1C1C1C]">
+                Date of Establishment{" "}
+                {from !== "admin" && <span className="text-red-500">*</span>}
+              </label>
+              <Input
+                {...register("dateEstablished", {
+                  required:
+                    from !== "admin" && "Date of establishment is required",
+                })}
+                className="rounded-[12px] h-14 bg-[#f9f9f9] uppercase"
+                type="date"
+                placeholder="DD/MM/YYYY"
+                name="dateEstablished"
+                isError={!!errors.dateEstablished}
+                max={new Date().toISOString().split("T")[0]}
+              />
+              {errors.dateEstablished &&
+                renderError(errors.dateEstablished.message as string)}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-5">

@@ -125,3 +125,10 @@ export async function getFooterData() {
   const response = await client.fetch(`*[_type == "footer"][0]`);
   return response;
 }
+
+export async function getCountry() {
+  const response = await fetch("https://api.country.is/");
+  const data = await response.json();
+
+  return data.country;
+}

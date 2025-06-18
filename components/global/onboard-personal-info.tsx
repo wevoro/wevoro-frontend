@@ -21,6 +21,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useAppContext } from "@/lib/context";
 import Editor from "../ui/editor";
 import { cn } from "@/lib/utils";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const OnboardPersonalInfo = forwardRef((props: any) => {
   const { source, from, userFromAdmin, onClose } = props;
@@ -187,7 +188,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} ref={personalInfoRef}>
       {isLoading && <LoadingOverlay />}
-      <Title text="Personal Info" />
+      <Title text="Personal Information" />
 
       <div className="flex flex-col gap-8">
         <div className="text-center flex flex-col gap-3">
@@ -379,16 +380,20 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               Phone Number{" "}
               {from !== "admin" && <span className="text-red-500">*</span>}
             </label>
-            <Input
-              {...register("phone", {
-                required: from !== "admin" && "Phone number is required",
-              })}
-              className="rounded-[12px] h-14 bg-[#f9f9f9]"
-              type="number"
-              placeholder="Enter your phone number"
+            <Controller
               name="phone"
-              isError={!!errors.phone}
-              max={new Date().toISOString().split("T")[0]}
+              control={control}
+              rules={{
+                required: from !== "admin" && "Phone number is required",
+              }}
+              render={({ field }) => (
+                <PhoneInput
+                  {...field}
+                  // className="rounded-[12px] h-14 bg-[#f9f9f9]"
+                  placeholder="Enter your phone number"
+                  isError={!!errors.phone}
+                />
+              )}
             />
             {errors.phone && renderError(errors.phone.message as string)}
           </div>

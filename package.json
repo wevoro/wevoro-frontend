@@ -54,6 +54,7 @@
     "react-dom": "^18",
     "react-draft-wysiwyg": "^1.15.0",
     "react-hook-form": "^7.54.0",
+    "react-phone-number-input": "^3.4.12",
     "react-quill": "^2.0.0",
     "recharts": "^2.15.1",
     "sanity": "^3.66.0",

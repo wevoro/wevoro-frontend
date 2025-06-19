@@ -33,13 +33,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script
+        {/* <Script
           id={`usercentrics-cmp`}
           async={true}
           src={`https://web.cmp.usercentrics.eu/modules/autoblocker.js`}
           strategy={`beforeInteractive`}
           type={`text/javascript`}
-        />
+        /> */}
         <Script
           id={`usercentrics-cmp`}
           async={true}

@@ -38,14 +38,10 @@ export default function Footer({
       ? !link.link.includes("/signup") && !link.link.includes("/login")
       : link
   );
-  console.log("🚀 ~ environmentType:", environmentType);
+
   section2.links = waitlistSection2;
 
   const sections = [section1, section2, section3];
-
-  // in section2 add a link to the privacy settings
-
-  // console.log({ section2, environmentType });
 
   // const socialLinks = [
   //   {

@@ -38,30 +38,32 @@ export default function Footer({
       ? !link.link.includes("/signup") && !link.link.includes("/login")
       : link
   );
-
+  console.log("🚀 ~ environmentType:", environmentType);
   section2.links = waitlistSection2;
 
   const sections = [section1, section2, section3];
 
+  // in section2 add a link to the privacy settings
+
   // console.log({ section2, environmentType });
 
-  const socialLinks = [
-    {
-      icon: <Facebook className="h-6 w-6" />,
-      name: "Facebook",
-      href: facebookLink,
-    },
-    {
-      icon: <Linkedin className="h-6 w-6" />,
-      name: "LinkedIn",
-      href: linkedinLink,
-    },
-    {
-      icon: <Youtube className="h-6 w-6" />,
-      name: "YouTube",
-      href: youtubeLink,
-    },
-  ];
+  // const socialLinks = [
+  //   {
+  //     icon: <Facebook className="h-6 w-6" />,
+  //     name: "Facebook",
+  //     href: facebookLink,
+  //   },
+  //   {
+  //     icon: <Linkedin className="h-6 w-6" />,
+  //     name: "LinkedIn",
+  //     href: linkedinLink,
+  //   },
+  //   {
+  //     icon: <Youtube className="h-6 w-6" />,
+  //     name: "YouTube",
+  //     href: youtubeLink,
+  //   },
+  // ];
 
   const appLinks = [
     {
@@ -75,6 +77,16 @@ export default function Footer({
       href: playStoreLink,
     },
   ];
+  const openPrivacySettings = (e: any) => {
+    e.preventDefault();
+    // @ts-ignore
+    if (window.UC_UI && typeof window.UC_UI.showSecondLayer === "function") {
+      // @ts-ignore
+      window.UC_UI.showSecondLayer();
+    } else {
+      console.warn("Usercentrics not initialized yet.");
+    }
+  };
 
   return (
     <footer className="w-full bg-primary text-white">
@@ -95,6 +107,13 @@ export default function Footer({
                     <Link href={link.link}>{link.label}</Link>
                   </li>
                 ))}
+                {index === 1 && (
+                  <li className="list-none ">
+                    <Link href="#" onClick={openPrivacySettings}>
+                      Privacy Settings
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           ))}

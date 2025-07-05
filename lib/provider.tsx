@@ -1,9 +1,10 @@
-'use client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { Toaster as Toaster2 } from '@/components/ui/toaster';
-import ContextProvider from './context';
-import { useState } from 'react';
+"use client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+import { Toaster as Toaster2 } from "@/components/ui/toaster";
+import ContextProvider from "./context";
+import { useState } from "react";
+import FloatingFeedback from "@/components/global/floating-feedback";
 
 // export const queryClient = new QueryClient();
 export default function Provider({ children }: any) {
@@ -27,6 +28,7 @@ export default function Provider({ children }: any) {
 
         <Toaster />
         <Toaster2 />
+        <FloatingFeedback />
       </ContextProvider>
     </QueryClientProvider>
   );

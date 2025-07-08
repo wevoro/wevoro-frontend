@@ -349,15 +349,15 @@ export default function FloatingFeedback() {
                                 : ''
                             }`}
                           >
-                            <div className='flex items-center gap-6 '>
+                            <div className='flex items-center gap-2.5'>
                               {msg.type === 'user' && (
-                                <span className='text-xs text-[#6C6C6C]'>
+                                <span className='text-xs text-[#6C6C6C] flex-shrink-0'>
                                   {msg.timestamp}
                                 </span>
                               )}
                               <div
                                 className={cn(
-                                  'rounded-[8px] p-3',
+                                  'rounded-[8px] p-3 ',
                                   msg.type === 'user'
                                     ? 'text-white text-sm bg-[#01400F]  break-words whitespace-pre-line'
                                     : 'bg-[#F9F9FA] text-[#1C1C1C] text-sm'

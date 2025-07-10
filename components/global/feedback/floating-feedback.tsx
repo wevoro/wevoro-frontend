@@ -11,6 +11,7 @@ import TypingIndicator from './typing';
 import Header from './header';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAppContext } from '@/lib/context';
 
 interface Message {
   id: string;
@@ -27,9 +28,14 @@ interface ConversationState {
     | 'feature-subtopics'
     | 'bug-subtopics'
     | 'free-text'
+    | 'collect-name'
+    | 'collect-email'
     | 'ended';
   selectedMainOption?: string;
   selectedSubOption?: string;
+  userName?: string;
+  userEmail?: string;
+  feedbackMessage?: string;
 }
 
 export default function FloatingFeedback() {
@@ -42,6 +48,51 @@ export default function FloatingFeedback() {
   );
   const [isBotTyping, setIsBotTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAppContext();
+  const email = user?.email;
+  const phone = user?.personalInfo?.phone;
+  const role = user?.role;
+  const name =
+    user?.personalInfo?.firstName + ' ' + user?.personalInfo?.lastName;
+  const image = user?.personalInfo?.image;
+  const address =
+    user?.personalInfo?.address?.city +
+    ', ' +
+    user?.personalInfo?.address?.country;
+  // console.log('🚀 ~ FloatingFeedback ~ user:', user);
+  // LocalStorage keys
+  const LS_KEY = 'ffc';
+
+  // Save chat state to localStorage
+  const saveChatToLocalStorage = (data: {
+    messages: Message[];
+    conversationState: ConversationState;
+    message: string;
+  }) => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    } catch {}
+  };
+
+  // Restore chat state from localStorage
+  const restoreChatFromLocalStorage = () => {
+    try {
+      const data = localStorage.getItem(LS_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        setMessages(parsed.messages || []);
+        setConversationState(parsed.conversationState || { step: 'initial' });
+        setMessage(parsed.message || '');
+      }
+    } catch {}
+  };
+
+  // Clear chat state from localStorage
+  const clearChatFromLocalStorage = () => {
+    try {
+      localStorage.removeItem(LS_KEY);
+    } catch {}
+  };
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -52,6 +103,11 @@ export default function FloatingFeedback() {
     });
   };
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -60,13 +116,28 @@ export default function FloatingFeedback() {
     scrollToBottom();
   }, [messages, isBotTyping]);
 
+  // Save chat state to localStorage whenever it changes and chat is open (not closed)
+  useEffect(() => {
+    if (isOpen && !isMinimized) {
+      saveChatToLocalStorage({
+        messages,
+        conversationState,
+        message,
+      });
+    }
+  }, [messages, conversationState, message, isOpen, isMinimized]);
+
   const initializeConversation = () => {
+    // Personalize greeting based on user login status
+    const greeting = user?.personalInfo?.firstName
+      ? `Hi ${user?.personalInfo?.firstName}, I'm Navy, your virtual assistant, and I am here to assist you`
+      : "Hi, I'm Navy, your virtual assistant, and I am here to assist you";
+
     const initialMessages: Message[] = [
       {
         id: '1',
         type: 'bot',
-        content:
-          "Hi User name, I'm Navy, your virtual assistant, and I am here to assist you",
+        content: greeting,
         timestamp: getCurrentTime(),
       },
       {
@@ -83,18 +154,25 @@ export default function FloatingFeedback() {
   const handleOpen = () => {
     setIsOpen(true);
     if (messages.length === 0) {
-      initializeConversation();
+      // Try to restore from localStorage first
+      const data = localStorage.getItem(LS_KEY);
+      if (data) {
+        restoreChatFromLocalStorage();
+      } else {
+        initializeConversation();
+      }
     }
-  };
-
-  const handleClose = () => {
-    setIsOpen(false);
-    setIsMinimized(false);
   };
 
   const handleMinimize = () => {
     setIsMinimized(true);
     setIsOpen(false);
+    // Save chat state when minimized
+    saveChatToLocalStorage({
+      messages,
+      conversationState,
+      message,
+    });
   };
 
   const handleReset = () => {
@@ -102,6 +180,7 @@ export default function FloatingFeedback() {
     setConversationState({ step: 'initial' });
     initializeConversation();
     setIsOpen(false);
+    clearChatFromLocalStorage(); // Also clear on reset
   };
 
   const addMessage = (
@@ -117,6 +196,93 @@ export default function FloatingFeedback() {
       isOption,
     };
     setMessages((prev) => [...prev, newMessage]);
+  };
+
+  const sendFeedback = async (
+    feedbackMessage: string,
+    userEmailInput?: string,
+    userNameInput?: string
+  ) => {
+    try {
+      // Prepare selections array based on conversation history
+      const selections = [];
+      if (conversationState.selectedMainOption) {
+        selections.push(conversationState.selectedMainOption);
+      }
+      if (conversationState.selectedSubOption) {
+        selections.push(conversationState.selectedSubOption);
+      }
+
+      // Prepare user data differently for logged in vs non-logged in users
+      let userData;
+
+      if (email && name) {
+        // Logged in user - include all available profile data
+        userData = {
+          image: image || '',
+          role: role || 'User',
+          name: name,
+          email: email,
+          phone: phone || '',
+          address: address || '',
+        };
+      } else {
+        // Non-logged in user - only include required fields with user input
+        userData = {
+          role: 'User',
+          name: userNameInput || '',
+          email: userEmailInput || '',
+        };
+      }
+
+      // Prepare request body according to the specified format
+      const requestBody = {
+        user: userData,
+        message: feedbackMessage,
+        feedbackType: conversationState.selectedMainOption || 'Others',
+        selections: selections,
+      };
+
+      const response = await fetch('/api/user/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (response.ok) {
+        setIsBotTyping(false);
+        addMessage(
+          'Thank you for the feedback! We will have a look on your suggestion. Your time is appreciated.',
+          'bot'
+        );
+
+        setTimeout(() => {
+          setIsBotTyping(true);
+          setTimeout(() => {
+            setIsBotTyping(false);
+            addMessage('Have a good day!', 'bot');
+            setConversationState((prev) => ({ ...prev, step: 'ended' }));
+          }, 1000);
+        }, 1000);
+      } else {
+        setIsBotTyping(false);
+        addMessage(
+          'Sorry, there was an error sending your feedback. Please try again.',
+          'bot'
+        );
+        setConversationState((prev) => ({ ...prev, step: 'free-text' }));
+      }
+    } catch (error) {
+      console.error('Error sending feedback:', error);
+      setIsBotTyping(false);
+      addMessage(
+        'Sorry, there was an error sending your feedback. Please try again.',
+        'bot'
+      );
+      setConversationState((prev) => ({ ...prev, step: 'free-text' }));
+    }
   };
 
   const handleMainOptionSelect = (option: string) => {
@@ -162,35 +328,82 @@ export default function FloatingFeedback() {
     }, 1500);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim()) {
       addMessage(message, 'user');
+      const currentMessage = message;
       setMessage('');
       setIsBotTyping(true);
 
-      // Simulate bot response with closing messages
-      setTimeout(() => {
-        setIsBotTyping(false);
-        addMessage(
-          'Thank you for the feedback! We will have a look on your suggestion. Your time is appreciated.',
-          'bot'
-        );
-
-        setTimeout(() => {
-          setIsBotTyping(true);
+      if (conversationState.step === 'free-text') {
+        // Check if user is registered or not
+        if (!email || !name) {
+          // User is not registered, collect name first
           setTimeout(() => {
             setIsBotTyping(false);
-            addMessage('Have a good day!', 'bot');
-            // Disable text input after conversation ends
-            setConversationState((prev) => ({ ...prev, step: 'ended' }));
-          }, 1000);
-        }, 1000);
-      }, 2000);
+            addMessage(
+              'To better assist you, could you please provide your name?',
+              'bot'
+            );
+            setConversationState((prev) => ({
+              ...prev,
+              step: 'collect-name',
+              // Store the feedback message temporarily
+              feedbackMessage: currentMessage,
+            }));
+          }, 1500);
+        } else {
+          // User is registered, send feedback directly
+          await sendFeedback(currentMessage);
+        }
+      } else if (conversationState.step === 'collect-name') {
+        setTimeout(() => {
+          setIsBotTyping(false);
+          addMessage(
+            'Thank you! Now, could you please provide your email address?',
+            'bot'
+          );
+          setConversationState((prev) => ({
+            ...prev,
+            step: 'collect-email',
+            userName: currentMessage,
+          }));
+        }, 1500);
+      } else if (conversationState.step === 'collect-email') {
+        // Validate email format
+        if (!validateEmail(currentMessage)) {
+          setTimeout(() => {
+            setIsBotTyping(false);
+            addMessage(
+              'Please enter a valid email address (e.g., example@domain.com)',
+              'bot'
+            );
+            // Stay in collect-email step
+          }, 1500);
+        } else {
+          setTimeout(() => {
+            setIsBotTyping(false);
+            setConversationState((prev) => ({
+              ...prev,
+              userEmail: currentMessage,
+            }));
+            // Now send the feedback with collected user info
+            sendFeedback(
+              conversationState.feedbackMessage || '',
+              currentMessage,
+              conversationState.userName
+            );
+          }, 1500);
+        }
+      }
     }
   };
 
   const canUseTextInput =
-    conversationState.step === 'free-text' && !isBotTyping;
+    (conversationState.step === 'free-text' ||
+      conversationState.step === 'collect-name' ||
+      conversationState.step === 'collect-email') &&
+    !isBotTyping;
 
   const mainOptions = ['Feature request', 'Report a bug to fix', 'Others'];
 
@@ -244,6 +457,10 @@ export default function FloatingFeedback() {
       ))}
     </div>
   );
+
+  if (user?.role === 'admin') {
+    return null;
+  }
 
   return (
     <>

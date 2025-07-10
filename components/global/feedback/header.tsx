@@ -2,6 +2,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Minus, X } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/tooltip';
 
 const Header = ({
   handleMinimize,
@@ -21,22 +27,36 @@ const Header = ({
         </Avatar>
       </div>
       <div className='flex items-center gap-5'>
-        <Button
-          variant='special'
-          size='icon'
-          className='h-6 w-6 text-[#6C6C6C]'
-          onClick={handleMinimize}
-        >
-          <Minus className='h-6 w-6' />
-        </Button>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='h-6 w-6 text-[#6C6C6C]'
-          onClick={handleReset}
-        >
-          <X className='h-6 w-6' />
-        </Button>
+        <TooltipProvider>
+          <Tooltip pos>
+            <TooltipTrigger asChild>
+              <Button
+                variant='special'
+                size='icon'
+                className='h-6 w-6 text-[#6C6C6C]'
+                onClick={handleMinimize}
+              >
+                <Minus className='h-6 w-6' />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side='top'>Minimize</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-6 w-6 text-[#6C6C6C]'
+                onClick={handleReset}
+              >
+                <X className='h-6 w-6' />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side='top'>End chat</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </CardHeader>
   );

@@ -28,7 +28,7 @@ const Header = ({
       </div>
       <div className='flex items-center gap-5'>
         <TooltipProvider>
-          <Tooltip pos>
+          <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant='special'

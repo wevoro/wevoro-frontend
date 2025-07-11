@@ -70,6 +70,24 @@ export async function getNotifications() {
     return null;
   }
 }
+export async function getFeedbacks() {
+  try {
+    const response = await api.get(`/feedback`);
+    return response.data.data;
+  } catch (error) {
+    // console.error('Error fetching notifications:', error);
+    return null;
+  }
+}
+export async function getFeedbackById(id: string) {
+  try {
+    const response = await api.get(`/feedback/${id}`);
+    return response.data.data;
+  } catch (error) {
+    // console.error('Error fetching notifications:', error);
+    return null;
+  }
+}
 
 export async function getTokens() {
   const accessToken = cookies().get("accessToken")?.value;

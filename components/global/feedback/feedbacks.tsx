@@ -90,7 +90,9 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
           <h2 className='text-sm'>Filter by:</h2>
           <Select
             value={userTypeFilter}
-            onValueChange={(value) => handleChangeFilter('userType', value)}
+            onValueChange={(value: string) =>
+              handleChangeFilter('userType', value)
+            }
           >
             <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
               <SelectValue placeholder='User Type' />
@@ -104,7 +106,9 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
           </Select>
           <Select
             value={feedbackTypeFilter}
-            onValueChange={(value) => handleChangeFilter('feedbackType', value)}
+            onValueChange={(value: string) =>
+              handleChangeFilter('feedbackType', value)
+            }
           >
             <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
               <SelectValue placeholder='Feedback type' />
@@ -118,7 +122,9 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
           </Select>
           <Select
             value={statusFilter}
-            onValueChange={(value) => handleChangeFilter('status', value)}
+            onValueChange={(value: string) =>
+              handleChangeFilter('status', value)
+            }
           >
             <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
               <SelectValue placeholder='Status' />
@@ -132,7 +138,7 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
           </Select>
           <Select
             value={sortFilter}
-            onValueChange={(value) => handleChangeFilter('sort', value)}
+            onValueChange={(value: string) => handleChangeFilter('sort', value)}
           >
             <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
               <SelectValue placeholder='Sort by' />

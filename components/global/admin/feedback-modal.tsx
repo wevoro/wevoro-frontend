@@ -133,8 +133,10 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
               variant='outline'
               onClick={handleMarkAsSolved}
               className='text-primary border-primary'
+              disabled={data?.status === 'Solved'}
             >
-              <Check className='size-5 mr-2' /> Mark as Solved
+              <Check className='size-5 mr-2' />{' '}
+              {data?.status === 'Solved' ? 'Solved' : 'Mark as Solved'}
             </Button>
           </div>
         </DialogHeader>

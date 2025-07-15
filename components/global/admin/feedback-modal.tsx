@@ -25,7 +25,7 @@ interface FeedbackModalProps {
 }
 
 export function FeedbackModal({ data, children }: FeedbackModalProps) {
-  const { refetchFeedbacks } = useAppContext();
+  const { refetchFeedbacks, refetchQaFeedbacks } = useAppContext();
 
   const [open, setOpen] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');
@@ -59,6 +59,7 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
 
       if (response.ok) {
         refetchFeedbacks();
+        refetchQaFeedbacks();
       }
     } catch (error) {
       console.error('Error updating feedback status:', error);

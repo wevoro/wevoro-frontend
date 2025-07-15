@@ -4,6 +4,7 @@ import {
   getFeedbacks,
   getNotifications,
   getOffers,
+  getQaFeedbacks,
   getQaUsers,
   getTokens,
   getUser,
@@ -148,6 +149,22 @@ const ContextProvider = ({ children }: any) => {
   } = useQuery({
     queryKey: ['feedbacks'],
     queryFn: async () => await getFeedbacks(),
+  });
+
+  const {
+    data: qaFeedbacks,
+    isLoading: isQaFeedbacksLoading,
+    isError: isQaFeedbacksError,
+    refetch: refetchQaFeedbacks,
+  } = useQuery({
+    queryKey: ['qaFeedbacks', env],
+    queryFn: async () => {
+      if (env === 'qa') {
+        return await getQaFeedbacks();
+      } else {
+        return [];
+      }
+    },
   });
 
   const pendingOffers = offers?.filter(
@@ -533,6 +550,10 @@ const ContextProvider = ({ children }: any) => {
         isFeedbacksLoading,
         isFeedbacksError,
         refetchFeedbacks,
+        qaFeedbacks,
+        isQaFeedbacksLoading,
+        isQaFeedbacksError,
+        refetchQaFeedbacks,
       }}
     >
       {children}

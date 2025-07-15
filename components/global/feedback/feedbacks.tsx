@@ -14,7 +14,13 @@ import { feedbackColumns } from '@/components/global/admin/columns';
 import Title from '@/components/global/title';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
+export default function Feedbacks({
+  feedbacks,
+  qaFeedbacks,
+}: {
+  feedbacks: any[];
+  qaFeedbacks: any[];
+}) {
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -22,7 +28,7 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
   const feedbackType = searchParams.get('feedbackType');
   const status = searchParams.get('status');
   const sort = searchParams.get('sort');
-
+  const env = searchParams.get('env');
   const [globalFilter, setGlobalFilter] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState(userType || 'all');
   const [feedbackTypeFilter, setFeedbackTypeFilter] = useState(
@@ -30,21 +36,23 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
   );
   const [statusFilter, setStatusFilter] = useState(status || 'all');
   const [sortFilter, setSortFilter] = useState(sort || 'newest');
-
+  const [envFilter, setEnvFilter] = useState(env || 'prod');
   const handleChangeFilter = (key: string, value: string) => {
     if (key === 'userType') setUserTypeFilter(value);
     if (key === 'feedbackType') setFeedbackTypeFilter(value);
     if (key === 'status') setStatusFilter(value);
     if (key === 'sort') setSortFilter(value);
-
+    if (key === 'env') setEnvFilter(value);
     const queryParams = new URLSearchParams(window.location.search);
     queryParams.set(key, value);
 
     router.push(`/admin/feedbacks?${queryParams.toString()}`);
   };
 
+  const activeFeedbacks = envFilter === 'qa' ? qaFeedbacks : feedbacks;
+
   const filteredFeedbacks =
-    feedbacks?.filter(
+    activeFeedbacks?.filter(
       (feedback: any) =>
         (userTypeFilter === 'all' ||
           feedback.user?.role?.toLowerCase() ===
@@ -146,6 +154,19 @@ export default function Feedbacks({ feedbacks }: { feedbacks: any[] }) {
             <SelectContent>
               <SelectItem value='newest'>New to old</SelectItem>
               <SelectItem value='oldest'>Old to new</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={envFilter}
+            onValueChange={(value) => handleChangeFilter('env', value)}
+          >
+            <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
+              <SelectValue placeholder='Env' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='prod'>Prod</SelectItem>
+              <SelectItem value='qa'>QA</SelectItem>
             </SelectContent>
           </Select>
         </div>

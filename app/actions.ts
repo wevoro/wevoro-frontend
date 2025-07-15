@@ -35,6 +35,7 @@ export async function getQaUsers() {
   }
 }
 
+
 export async function getUserById(id: string) {
   try {
     const response = await api.get(`/user/profile/${id}`);
@@ -79,6 +80,21 @@ export async function getFeedbacks() {
     return null;
   }
 }
+
+export async function getQaFeedbacks() {
+  try {
+    const response = await api.get(
+      `${process.env.NEXT_PUBLIC_QA_API_URL}/feedback`
+    );
+    // console.log('response', response.data);
+    return response.data.data;
+  } catch (error) {
+    // console.error('Error fetching user profile:', error);
+    return null;
+  }
+}
+
+
 export async function getFeedbackById(id: string) {
   try {
     const response = await api.get(`/feedback/${id}`);

@@ -1,5 +1,5 @@
 import api from "@/lib/axiosInterceptor";
-import { revalidatePath } from "next/cache";
+
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -25,8 +25,6 @@ export async function PATCH(
     const response = await api.patch(apiUrl, data);
 
     if (response.status === 200) {
-      revalidatePath('/admin/feedbacks')
-
       const res = NextResponse.json({
         status: 200,
         message: "Feedback updated successfully!",

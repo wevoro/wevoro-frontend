@@ -19,10 +19,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAppContext } from '@/lib/context';
 
 const FeedbackDropdown = ({ data }: { data: any }) => {
-  const router = useRouter();
+  const { refetchFeedbacks, refetchQaFeedbacks } = useAppContext();
+
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -34,7 +35,8 @@ const FeedbackDropdown = ({ data }: { data: any }) => {
       });
 
       if (response.ok) {
-        router.refresh();
+        refetchFeedbacks();
+        refetchQaFeedbacks();
       } else {
         console.error('Failed to delete feedback');
       }

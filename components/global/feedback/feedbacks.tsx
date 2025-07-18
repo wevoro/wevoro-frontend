@@ -29,6 +29,8 @@ export default function Feedbacks({
   const status = searchParams.get('status');
   const sort = searchParams.get('sort');
   const env = searchParams.get('env');
+  const page = searchParams.get('page');
+  const pageSize = searchParams.get('pageSize');
   const [globalFilter, setGlobalFilter] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState(userType || 'all');
   const [feedbackTypeFilter, setFeedbackTypeFilter] = useState(
@@ -45,6 +47,14 @@ export default function Feedbacks({
     if (key === 'env') setEnvFilter(value);
     const queryParams = new URLSearchParams(window.location.search);
     queryParams.set(key, value);
+
+    router.push(`/admin/feedbacks?${queryParams.toString()}`);
+  };
+
+  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
+    const queryParams = new URLSearchParams(window.location.search);
+    queryParams.set('page', (pageIndex + 1).toString());
+    queryParams.set('pageSize', pageSize.toString());
 
     router.push(`/admin/feedbacks?${queryParams.toString()}`);
   };
@@ -176,6 +186,9 @@ export default function Feedbacks({
         columns={feedbackColumns}
         data={sortedFeedbacks}
         hideHeader={true}
+        pageIndex={page ? parseInt(page) - 1 : 0}
+        pageSize={pageSize ? parseInt(pageSize) : 6}
+        onPaginationChange={handlePaginationChange}
       />
     </div>
   );

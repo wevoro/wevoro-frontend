@@ -43,7 +43,7 @@ const ContextProvider = ({ children }: any) => {
     data: null,
     source: null,
   });
-
+  const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
   // refs
   const personalInfoRef = useRef<HTMLFormElement>(null);
   const professionalInfoRef = useRef<HTMLFormElement>(null);
@@ -554,6 +554,8 @@ const ContextProvider = ({ children }: any) => {
         isQaFeedbacksLoading,
         isQaFeedbacksError,
         refetchQaFeedbacks,
+        openFeedbackModal,
+        setOpenFeedbackModal,
       }}
     >
       {children}

@@ -29,12 +29,18 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   hideHeader?: boolean;
+  pageIndex?: number;
+  pageSize?: number;
+  onPaginationChange?: (pageIndex: number, pageSize: number) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   hideHeader = false,
+  pageIndex = 0,
+  pageSize = 6,
+  onPaginationChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -60,13 +66,25 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
-    },
-    initialState: {
       pagination: {
-        pageIndex: 0,
-        pageSize: 6,
+        pageIndex,
+        pageSize,
       },
     },
+    onPaginationChange: onPaginationChange
+      ? (updaterOrValue) => {
+          if (typeof updaterOrValue === 'function') {
+            const newPagination = updaterOrValue({ pageIndex, pageSize });
+            onPaginationChange(newPagination.pageIndex, newPagination.pageSize);
+          } else {
+            onPaginationChange(
+              updaterOrValue.pageIndex,
+              updaterOrValue.pageSize
+            );
+          }
+        }
+      : undefined,
+    manualPagination: !!onPaginationChange,
   });
 
   return (

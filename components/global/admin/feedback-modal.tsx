@@ -11,10 +11,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { X, Paperclip, Check, User, PhoneCall } from 'lucide-react';
+import { Check, User, PhoneCall } from 'lucide-react';
 import moment from 'moment';
-import { useRouter } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 import { useAppContext } from '@/lib/context';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';

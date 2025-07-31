@@ -1,39 +1,41 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { DataTable } from "@/components/global/admin/data-table";
-import { proColumns } from "@/components/global/admin/columns";
-import Title from "@/components/global/title";
-import { useAppContext } from "@/lib/context";
-import { useRouter, useSearchParams } from "next/navigation";
+} from '@/components/ui/select';
+import { DataTable } from '@/components/global/admin/data-table';
+import { proColumns } from '@/components/global/admin/columns';
+import Title from '@/components/global/title';
+import { useAppContext } from '@/lib/context';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function ProsPage() {
   const { pros, qaPros } = useAppContext();
 
   const searchParams = useSearchParams();
-  const status = searchParams.get("status");
-  const env = searchParams.get("env");
-  const sort = searchParams.get("sort");
+  const status = searchParams.get('status');
+  const env = searchParams.get('env');
+  const sort = searchParams.get('sort');
+  const page = searchParams.get('page');
+  const pageSize = searchParams.get('pageSize');
   const router = useRouter();
 
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState(status || "all");
-  const [sortFilter, setSortFilter] = useState(sort || "newest");
-  const [envFilter, setEnvFilter] = useState(env || "prod");
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(status || 'all');
+  const [sortFilter, setSortFilter] = useState(sort || 'newest');
+  const [envFilter, setEnvFilter] = useState(env || 'prod');
 
   const handleChangeFilter = (key: string, value: string) => {
     // console.log({ key, value });
-    if (key === "env") setEnvFilter(value);
-    if (key === "status") setStatusFilter(value);
-    if (key === "sort") setSortFilter(value);
+    if (key === 'env') setEnvFilter(value);
+    if (key === 'status') setStatusFilter(value);
+    if (key === 'sort') setSortFilter(value);
 
     const queryParams = new URLSearchParams(window.location.search);
     queryParams.set(key, value);
@@ -41,12 +43,20 @@ export default function ProsPage() {
     router.push(`/admin/pros?${queryParams.toString()}`);
   };
 
-  const activePros = envFilter === "qa" ? qaPros : pros;
+  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
+    const queryParams = new URLSearchParams(window.location.search);
+    queryParams.set('page', (pageIndex + 1).toString());
+    queryParams.set('pageSize', pageSize.toString());
+
+    router.push(`/admin/pros?${queryParams.toString()}`);
+  };
+
+  const activePros = envFilter === 'qa' ? qaPros : pros;
 
   const filteredPros = activePros.filter(
     (pro: any) =>
-      (statusFilter === "all" || pro.status === statusFilter) &&
-      (globalFilter === "" ||
+      (statusFilter === 'all' || pro.status === statusFilter) &&
+      (globalFilter === '' ||
         (pro?.personalInfo?.firstName
           ? pro?.personalInfo?.firstName
               .toLowerCase()
@@ -61,7 +71,7 @@ export default function ProsPage() {
   );
 
   const sortedPros =
-    sortFilter === "newest" ? filteredPros.reverse() : filteredPros;
+    sortFilter === 'newest' ? filteredPros.reverse() : filteredPros;
 
   // const handleStatusFilter = (value: string) => {
   //   setStatusFilter(value);
@@ -70,61 +80,68 @@ export default function ProsPage() {
   // };
 
   return (
-    <div className="space-y-6">
-      <Title className="mb-4 sm:mb-6" text="Pro's" />
+    <div className='space-y-6'>
+      <Title className='mb-4 sm:mb-6' text="Pro's" />
 
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className='flex flex-col sm:flex-row gap-4'>
         <Input
-          placeholder="Search username..."
-          className="w-full sm:max-w-[300px] rounded-[12px] h-12 sm:h-14"
+          placeholder='Search username...'
+          className='w-full sm:max-w-[300px] rounded-[12px] h-12 sm:h-14'
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
-        <div className="flex gap-4">
+        <div className='flex gap-4'>
           <Select
             value={statusFilter}
-            onValueChange={(value) => handleChangeFilter("status", value)}
+            onValueChange={(value) => handleChangeFilter('status', value)}
           >
-            <SelectTrigger className="w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
+              <SelectValue placeholder='Status' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="blocked">Blocked</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value='all'>All</SelectItem>
+              <SelectItem value='approved'>Approved</SelectItem>
+              <SelectItem value='pending'>Pending</SelectItem>
+              <SelectItem value='blocked'>Blocked</SelectItem>
+              <SelectItem value='rejected'>Rejected</SelectItem>
             </SelectContent>
           </Select>
           <Select
             value={sortFilter}
-            onValueChange={(value) => handleChangeFilter("sort", value)}
+            onValueChange={(value) => handleChangeFilter('sort', value)}
           >
-            <SelectTrigger className="w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14">
-              <SelectValue placeholder="Sort by" />
+            <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
+              <SelectValue placeholder='Sort by' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="oldest">Oldest</SelectItem>
+              <SelectItem value='newest'>Newest</SelectItem>
+              <SelectItem value='oldest'>Oldest</SelectItem>
             </SelectContent>
           </Select>
 
           <Select
             value={envFilter}
-            onValueChange={(value) => handleChangeFilter("env", value)}
+            onValueChange={(value) => handleChangeFilter('env', value)}
           >
-            <SelectTrigger className="w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14">
-              <SelectValue placeholder="Env" />
+            <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
+              <SelectValue placeholder='Env' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="prod">Prod</SelectItem>
-              <SelectItem value="qa">QA</SelectItem>
+              <SelectItem value='prod'>Prod</SelectItem>
+              <SelectItem value='qa'>QA</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <DataTable columns={proColumns} data={sortedPros} />
+      <DataTable
+        columns={proColumns}
+        data={sortedPros}
+        hideHeader={true}
+        pageIndex={page ? parseInt(page) - 1 : 0}
+        pageSize={pageSize ? parseInt(pageSize) : 6}
+        onPaginationChange={handlePaginationChange}
+      />
     </div>
   );
 }

@@ -165,7 +165,7 @@ export const proType = defineType({
         }),
         defineField({
           name: "horizzonFeatures",
-          title: "Hirenza Features",
+          title: "Wevoro Features",
           type: "array",
           of: [
             {

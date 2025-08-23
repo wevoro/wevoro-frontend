@@ -171,7 +171,7 @@ export const partnerType = defineType({
         }),
         defineField({
           name: "horizzonFeatures",
-          title: "Hirenza Features",
+          title: "Wevoro Features",
           type: "array",
           of: [
             {

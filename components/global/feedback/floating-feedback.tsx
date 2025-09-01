@@ -468,17 +468,18 @@ export default function FloatingFeedback() {
       <div className='fixed bottom-6 right-6 z-50'>
         <Button
           onClick={handleOpen}
-          className='h-[62px] w-[62px] rounded-full transition-all duration-200 inline-flex items-center justify-center bg-[#33B55B]'
+          className='h-[62px] w-[62px] rounded-full transition-all duration-200 inline-flex items-center justify-center bg-white'
           style={{
             boxShadow: '0px 8px 8px 0px rgba(0, 0, 0, 0.1)',
           }}
         >
           <Image
-            src='/Tj.svg'
-            alt='TJ'
-            width={22}
-            height={32}
-            className='text-white'
+            src='/wevoro.png'
+            alt='wevoro'
+            // width={22}
+            // height={32}
+            fill
+            className='w-full h-full object-contain'
           />
         </Button>
       </div>
@@ -509,14 +510,14 @@ export default function FloatingFeedback() {
                 <div className='max-h-[434px] overflow-y-auto'>
                   {messages.length > 0 && (
                     <div className='flex flex-col items-center text-center pt-10 gap-4'>
-                      <Avatar className='size-20 inline-flex items-center justify-center bg-[#01400F]'>
+                      <Avatar className='size-20 inline-flex items-center justify-center bg-white'>
                         <AvatarImage
-                          src='/Tj.svg'
-                          alt='TJ'
-                          className='size-10'
+                          src='/wevoro.png'
+                          alt='wevoro'
+                          className='size-full object-contain'
                         />
                         <AvatarFallback className='text-white text-sm font-bold'>
-                          TJ
+                          wevoro
                         </AvatarFallback>
                       </Avatar>
 
@@ -542,19 +543,19 @@ export default function FloatingFeedback() {
                           {msg.type === 'bot' && (
                             <Avatar
                               className={cn(
-                                'size-10 inline-flex items-center justify-center bg-[#33B55B] ',
+                                'size-10 inline-flex items-center justify-center bg-white ',
                                 idx !== messages.length - 1 &&
                                   !isLastBotInGroup &&
                                   'invisible'
                               )}
                             >
                               <AvatarImage
-                                src='/Tj.svg'
-                                alt='TJ'
-                                className='size-6'
+                                src='/wevoro.png'
+                                alt='wevoro'
+                                className='size-full object-contain'
                               />
                               <AvatarFallback className='text-white text-sm font-bold'>
-                                TJ
+                                wevoro
                               </AvatarFallback>
                             </Avatar>
                           )}
@@ -576,8 +577,12 @@ export default function FloatingFeedback() {
                                 className={cn(
                                   'rounded-[8px] p-3 ',
                                   msg.type === 'user'
-                                    ? 'text-white text-sm bg-[#01400F]  break-words whitespace-pre-line'
-                                    : 'bg-[#F9F9FA] text-[#1C1C1C] text-sm'
+                                    ? 'text-white text-sm bg-[#01400F]  '
+                                    : 'bg-[#F9F9FA] text-[#1C1C1C] text-sm',
+                                  msg.type === 'user' &&
+                                    !msg.content.includes(' ') &&
+                                    msg.content.length > 30 &&
+                                    'max-w-[50%] break-words whitespace-pre-line ml-auto'
                                 )}
                               >
                                 {msg.content}

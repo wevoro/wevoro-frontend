@@ -20,9 +20,13 @@ const Header = ({
     <CardHeader className='flex flex-row items-center justify-between px-6 py-3.5 bg-[#F9F9FA]'>
       <div className='flex items-center gap-3'>
         <Avatar className='size-10 inline-flex items-center justify-center bg-[#33B55B]'>
-          <AvatarImage src='/Tj.svg' alt='TJ' className='size-6' />
+          <AvatarImage
+            src='/wevoro.png'
+            alt='wevoro'
+            className='size-full object-contain'
+          />
           <AvatarFallback className='text-white text-sm font-bold'>
-            TJ
+            W
           </AvatarFallback>
         </Avatar>
       </div>

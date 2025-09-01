@@ -24,7 +24,7 @@ export const environmentType = defineType({
         list: [
           { title: 'Production', value: 'production' },
           { title: 'Development', value: 'development' },
-          { title: 'Waitlist', value: 'waitlist' },
+          { title: 'Production Waitlist', value: 'waitlist' },
         ],
         layout: 'radio',
       },

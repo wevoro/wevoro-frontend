@@ -5,7 +5,7 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.joinhirenza.partner",
+      "package_name": "com.wevoro.partner",
       "sha256_cert_fingerprints": [
         "D1:69:6B:77:49:10:8C:DC:DB:FB:AC:93:26:B6:6C:51:D5:E4:53:F9:21:45:AF:7E:75:F4:20:FF:E5:56:09:13",
         "50:15:90:6E:44:CE:6F:2C:EF:2E:23:D0:D0:8C:15:EE:DB:04:D2:21:09:1F:CD:7E:38:F3:62:E7:F2:77:1D:E6"

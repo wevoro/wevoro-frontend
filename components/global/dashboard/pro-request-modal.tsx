@@ -37,8 +37,8 @@ export function ProRequestModal({
   const [open, setOpen] = useState(false);
 
   const handleFileChange = (id: number, file: any) => {
-    if (file.size > 1024 * 1024) {
-      return toast.error('File size should not exceed 1MB', {
+    if (file.size > 3 * 1024 * 1024) {
+      return toast.error('File size should not exceed 3MB', {
         position: 'top-center',
       });
     }
@@ -157,7 +157,7 @@ export function ProRequestModal({
                       </Link>
                     ) : (
                       <span className='text-[10px] text-[#6C6C6C]'>
-                        image or pdf formats, up to 1MB.
+                        image or pdf formats, up to 3MB.
                       </span>
                     )}
                   </div>

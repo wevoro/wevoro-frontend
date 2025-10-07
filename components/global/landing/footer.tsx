@@ -1,9 +1,9 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { Facebook, Linkedin, Youtube } from "lucide-react";
-import Container from "../container";
-import Logo from "../logo";
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Facebook, Linkedin, Youtube } from 'lucide-react';
+import Container from '../container';
+import Logo from '../logo';
 
 export default function Footer({
   facebookLink,
@@ -34,8 +34,8 @@ export default function Footer({
 }) {
   // if env is waitlist then remove the link which includes /signup and /login
   const waitlistSection2 = section2?.links?.filter((link: any) =>
-    environmentType === "waitlist"
-      ? !link.link.includes("/signup") && !link.link.includes("/login")
+    environmentType === 'waitlist'
+      ? !link.link.includes('/signup') && !link.link.includes('/login')
       : link
   );
 
@@ -63,49 +63,49 @@ export default function Footer({
 
   const appLinks = [
     {
-      src: "/appstore-outlined.svg",
-      alt: "Download on the App Store",
+      src: '/appstore-outlined.svg',
+      alt: 'Download on the App Store',
       href: appStoreLink,
     },
     {
-      src: "/playstore-outlined.svg",
-      alt: "Get it on Google Play",
+      src: '/playstore-outlined.svg',
+      alt: 'Get it on Google Play',
       href: playStoreLink,
     },
   ];
   const openPrivacySettings = (e: any) => {
     e.preventDefault();
     // @ts-ignore
-    if (window.UC_UI && typeof window.UC_UI.showSecondLayer === "function") {
+    if (window.UC_UI && typeof window.UC_UI.showSecondLayer === 'function') {
       // @ts-ignore
       window.UC_UI.showSecondLayer();
     } else {
-      console.warn("Usercentrics not initialized yet.");
+      console.warn('Usercentrics not initialized yet.');
     }
   };
 
   return (
-    <footer className="w-full bg-primary text-white">
-      <Container className="py-16 md:py-24">
-        <div className="grid grid-cols-1 gap-12 text-center md:text-left md:grid-cols-4">
+    <footer className='w-full bg-primary text-white'>
+      <Container className='py-16 md:py-24'>
+        <div className='grid grid-cols-1 gap-12 text-center md:text-left md:grid-cols-4'>
           <div>
-            <Logo className="text-white" />
+            <Logo className='text-white' />
           </div>
 
           {sections?.map((section: any, index: number) => (
-            <div key={index} className="space-y-8">
-              <h3 className="text-lg md:text-xl font-semibold">
+            <div key={index} className='space-y-8'>
+              <h3 className='text-lg md:text-xl font-semibold'>
                 {section.title}
               </h3>
-              <ul className="list-none space-y-4 font-medium text-sm md:text-base pl-0">
+              <ul className='list-none space-y-4 font-medium text-sm md:text-base pl-0'>
                 {section?.links?.map((link: any, linkIndex: number) => (
-                  <li key={linkIndex} className="list-none ">
+                  <li key={linkIndex} className='list-none '>
                     <Link href={link.link}>{link.label}</Link>
                   </li>
                 ))}
                 {index === 1 && (
-                  <li className="list-none ">
-                    <Link href="#" onClick={openPrivacySettings}>
+                  <li className='list-none '>
+                    <Link href='#' onClick={openPrivacySettings}>
                       Privacy Settings
                     </Link>
                   </li>
@@ -115,7 +115,7 @@ export default function Footer({
           ))}
         </div>
 
-        <div className="mt-12 grid gap-8 text-center md:text-left md:grid-cols-4">
+        <div className='mt-12 grid gap-8 text-center md:text-left md:grid-cols-4'>
           <div></div>
           {/* <div className='space-y-4'>
             <h3 className='text-lg font-semibold'>{socialLabel}</h3>
@@ -134,7 +134,7 @@ export default function Footer({
             </div>
           </div> */}
 
-          {environmentType !== "waitlist" && (
+          {/* {environmentType !== "waitlist" && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">{downloadAppLabel}</h3>
               <div className="flex gap-4 justify-center md:justify-start">
@@ -156,10 +156,10 @@ export default function Footer({
                 ))}
               </div>
             </div>
-          )}
+          )} */}
         </div>
 
-        <div className="mt-8 pt-8 text-sm text-center md:text-left grid grid-cols-1 md:grid-cols-4">
+        <div className='mt-8 pt-8 text-sm text-center md:text-left grid grid-cols-1 md:grid-cols-4'>
           <div></div>
           <p>{copyright}</p>
         </div>

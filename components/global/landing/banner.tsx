@@ -47,7 +47,7 @@ const Banner = ({
               </Button>
             )}
           </div>
-          {environmentType !== 'waitlist' && (
+          {/* {environmentType !== 'waitlist' && (
             <div className='mt-4'>
               <p className='text-[#6C6C6C] md:text-base text-sm'>
                 Download Now
@@ -69,7 +69,7 @@ const Banner = ({
                 </a>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </Container>
     </div>

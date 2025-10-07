@@ -40,7 +40,7 @@ const PartnerBanner = ({ environmentType }: { environmentType: string }) => {
             />
           </div>
 
-          <div className='-mt-12 max-w-[471px] mx-auto'>
+          {/* <div className='-mt-12 max-w-[471px] mx-auto'>
             <p className='text-[#6C6C6C] md:text-base text-sm'>Download Now</p>
             <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>
               <img
@@ -54,7 +54,7 @@ const PartnerBanner = ({ environmentType }: { environmentType: string }) => {
                 className='w-[174px] h-[72px] md:w-full md:h-full'
               />
             </div>
-          </div>
+          </div> */}
         </div>
       </Container>
     </div>

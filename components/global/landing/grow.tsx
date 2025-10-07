@@ -58,7 +58,7 @@ const Grow = ({
               {buttonText}
             </Button>
           )}
-          {environmentType !== 'waitlist' && (
+          {/* {environmentType !== 'waitlist' && (
             <div>
               <p className='text-[#FAFAFA] text-base'>Download Now</p>
               <div className='flex md:space-x-6 pt-2 md:flex-row flex-col items-center'>
@@ -78,7 +78,7 @@ const Grow = ({
                 </a>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </Container>
     </div>

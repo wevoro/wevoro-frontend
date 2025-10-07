@@ -41,7 +41,7 @@ const ProBanner = ({
             />
           </div>
 
-          {environmentType !== 'waitlist' && (
+          {/* {environmentType !== 'waitlist' && (
             <div className='-mt-12 max-w-[471px] mx-auto'>
               <p className='text-[#6C6C6C] md:text-base text-sm'>
                 Download Now
@@ -59,7 +59,7 @@ const ProBanner = ({
                 />
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </Container>
     </div>

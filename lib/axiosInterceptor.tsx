@@ -2,7 +2,6 @@ import axios, { AxiosRequestConfig, AxiosError, AxiosInstance } from 'axios';
 
 const isServer = typeof window === 'undefined';
 
-// Create an Axios instance with default configuration
 const api: AxiosInstance = axios.create({
   baseURL:
     process.env.NODE_ENV === 'development'

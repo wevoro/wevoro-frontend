@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const { data, id, ...certificationFiles } = entries;
     
     const filesArray: any = Object.values(certificationFiles);
-    console.log('🚀 ~ POST ~ filesArray:', filesArray)
+    // console.log('🚀 ~ POST ~ filesArray:', filesArray)
 
     const formData = new FormData();
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const queryId = id ? `?id=${id}` : "";
 
-    console.log("🚀 ~ POST ~ queryId data:", data, queryId);
+    // console.log("🚀 ~ POST ~ queryId data:", data, queryId);
 
     const apiUrl =
       env === "qa"
@@ -38,10 +38,10 @@ export async function POST(req: Request) {
     const response = await api.patch(apiUrl, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log(
-      "🚀 ~ POST ~ response professional-information:",
-      response.data
-    );
+    // console.log(
+    //   "🚀 ~ POST ~ response professional-information:",
+    //   response.data
+    // );
 
     if (response.status === 200) {
       const res = NextResponse.json({

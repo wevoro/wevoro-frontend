@@ -55,6 +55,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         : '',
     };
   });
+  console.log('🚀 ~ processedCertifications:', processedCertifications);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -178,11 +179,11 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         (certification: any) => {
           return {
             ...certification,
-            certificateFile: '',
+            // ...(certification.certificateFile ? { certificateFile: '' } : {}),
           };
         }
       );
-      console.log({ certificationFiles, newCertificationData });
+      // console.log({ certificationFiles, newCertificationData });
 
       const formData = new FormData();
       if (newCertificationData?.length > 0) {
@@ -195,7 +196,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         }
       }
 
-      console.log({ data });
+      // console.log({ data });
 
       formData.append('data', JSON.stringify(data));
 
@@ -209,7 +210,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       });
 
       const responseData = await response.json();
-      console.log('🚀 ~ onSubmit ~ responseData:', responseData);
+      // console.log('🚀 ~ onSubmit ~ responseData:', responseData);
       if (responseData.status === 200) {
         refetchUser();
         if (from === 'admin') {
@@ -632,7 +633,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                           // Check if a file exists and validate its size
                           const file =
                             typeof value === 'object' ? value?.[0] : null;
-                          console.log({ value });
+                          // console.log({ value });
                           return (
                             !file ||
                             file.size <= 3 * 1024 * 1024 ||

@@ -14,8 +14,9 @@ export async function POST(req: Request) {
     const entries = Object.fromEntries(bodyData.entries());
 
     const { data, id, ...certificationFiles } = entries;
-
+    
     const filesArray: any = Object.values(certificationFiles);
+    console.log('🚀 ~ POST ~ filesArray:', filesArray)
 
     const formData = new FormData();
 
@@ -46,11 +47,12 @@ export async function POST(req: Request) {
       const res = NextResponse.json({
         status: 200,
         message: "Personal information updated successfully",
+        data: response.data,
       });
       return res;
     }
   } catch (error: any) {
-    console.error("Personal information update failed:", error.response);
+    console.error("Professional information update failed:", error.response.data);
     return NextResponse.json({
       status: 500,
       message: error.response.data.message,

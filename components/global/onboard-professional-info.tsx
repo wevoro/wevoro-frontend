@@ -141,6 +141,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   }, [isMounted]);
 
   const onSubmit = async (data: any) => {
+    console.log('🚀 ~ onSubmit ~ data:', data);
     try {
       if (!isDirty && !isEdit && !from) {
         return router.push('/pro/onboard/document-upload');
@@ -160,14 +161,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           };
         }
       );
+      console.log('🚀 ~ onSubmit ~ certificationData:', certificationData);
 
       data.certifications = certificationData;
 
       const certificationFiles = data.certifications.map(
         (certification: any) => {
           return {
-            certificateFile: certification.certificateFile?.[0],
-            fileId: certification.fileId,
+            certificateFile: certification.certificateFile?.[0] || '',
+            fileId: certification.fileId || new Date().getTime().toString(),
           };
         }
       );
@@ -176,20 +178,24 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         (certification: any) => {
           return {
             ...certification,
-            // certificateFile: null,
+            certificateFile: '',
           };
         }
       );
-
-      data.certifications = newCertificationData;
+      console.log({ certificationFiles, newCertificationData });
 
       const formData = new FormData();
+      if (newCertificationData?.length > 0) {
+        data.certifications = newCertificationData;
+      }
 
       for (const file of certificationFiles) {
         if (typeof file.certificateFile === 'object' && file.certificateFile) {
           formData.append(`${file.fileId}`, file.certificateFile, file.fileId);
         }
       }
+
+      console.log({ data });
 
       formData.append('data', JSON.stringify(data));
 
@@ -203,6 +209,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       });
 
       const responseData = await response.json();
+      console.log('🚀 ~ onSubmit ~ responseData:', responseData);
       if (responseData.status === 200) {
         refetchUser();
         if (from === 'admin') {

@@ -80,7 +80,7 @@ const Chart = ({ pros, partners }: any) => {
     setChartData(dataByMonth);
   };
 
-  console.log({ chartData });
+  // console.log({ chartData });
 
   return (
     <Card className='shadow-none border-none rounded-[16px]'>
@@ -143,7 +143,7 @@ const Chart = ({ pros, partners }: any) => {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12 }}
-                ticks={[0, 50, 100, 150, 200, 250, 300]}
+                ticks={[0, 10, 20, 30, 40, 50]}
               />
               <Tooltip />
               <Legend />

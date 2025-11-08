@@ -129,7 +129,7 @@
 }
 
 .pro-banner-bg {
-  background-image: url("/pro-bg-new.svg");
+  background-image: url('/pro-bg-new.svg');
   background-repeat: no-repeat;
   background-size: 100% 850px;
   background-position: 100% 5rem;
@@ -148,7 +148,7 @@
   }
 }
 .partner-banner-bg {
-  background-image: url("/partner-bg.svg");
+  background-image: url('/partner-bg.svg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: 80% -10rem;
@@ -166,7 +166,7 @@
     background-position: center -20rem;
   }
   @media (max-width: 1100px) {
-    background-image: url("/partner-bg-mobile.svg");
+    background-image: url('/partner-bg-mobile.svg');
     background-size: contain;
     background-position: center -20rem;
   }

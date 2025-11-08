@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Container from '../container';
 import { Button } from '@/components/ui/button';
 import { MoveUpRight } from 'lucide-react';
@@ -18,10 +19,18 @@ const Banner = ({
   return (
     <div
       className={cn(
-        'bg-[url("/banner-bg.png")] bg-cover bg-left md:bg-center bg-no-repeat h-full w-full py-32',
+        'relative h-full w-full py-32',
         environmentType === 'waitlist' && 'py-40'
       )}
     >
+      <Image
+        src='https://res.cloudinary.com/dordkfpi1/image/upload/v1762602879/vuwkkjgjww1nsuzct62m.svg'
+        alt='Banner background'
+        fill
+        className='object-cover object-left md:object-center -z-10'
+        priority
+        quality={100}
+      />
       <Container>
         <div className='max-w-md flex flex-col gap-9 text-center md:text-left mx-auto md:mx-0'>
           <h1 className='md:text-[50px] text-[31px] font-light text-green-900 md:leading-[55px] leading-[34.1px]'>

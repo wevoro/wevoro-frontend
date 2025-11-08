@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Container from '../container';
 import { Button } from '@/components/ui/button';
 import { scrollToSection } from '@/lib/utils';
@@ -22,19 +23,25 @@ const Grow = ({
   buttonText: string;
   environmentType: string;
 }) => {
-  const bg =
+  const bgImage =
     source === 'partner'
-      ? 'bg-[url("/grow-partner.svg")]'
+      ? 'https://res.cloudinary.com/dordkfpi1/image/upload/v1762620586/mbicu1vgmn5fp22ipjdx.jpg'
       : source === 'pro'
-        ? 'bg-[url("/grow-pro.svg")]'
-        : 'bg-[url("/grow.svg")]';
+        ? 'https://res.cloudinary.com/dordkfpi1/image/upload/v1762620588/pmumlbooyjhzv5ler1hu.png'
+        : 'https://res.cloudinary.com/dordkfpi1/image/upload/v1762620587/rzdpdorgiagg4l7kk10w.png';
 
   const buttonHref = source === 'partner' ? '/partner/signup' : '/pro/signup';
 
   return (
-    <div
-      className={`${bg} bg-cover bg-center bg-no-repeat h-full w-full py-32`}
-    >
+    <div className='relative h-full w-full py-32'>
+      <Image
+        src={bgImage}
+        alt='Grow background'
+        fill
+        className='object-cover object-center -z-10'
+        priority
+        quality={100}
+      />
       <Container>
         <div className='max-w-xl flex flex-col gap-9 text-center md:text-left mx-auto md:mx-0'>
           <div>

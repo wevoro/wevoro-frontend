@@ -24,7 +24,7 @@ const Banner = ({
       )}
     >
       <Image
-        src='https://res.cloudinary.com/dordkfpi1/image/upload/v1762602879/vuwkkjgjww1nsuzct62m.svg'
+        src='https://res.cloudinary.com/dordkfpi1/image/upload/v1762798755/u5nh2kbdaijp7w1fsaid.png'
         alt='Banner background'
         fill
         className='object-cover object-left md:object-center -z-10'

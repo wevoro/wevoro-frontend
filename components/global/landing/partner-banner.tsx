@@ -32,7 +32,7 @@ const PartnerBanner = ({ environmentType }: { environmentType: string }) => {
 
           <div className='max-w-[982px] mx-auto w-full'>
             <Image
-              src='https://res.cloudinary.com/dordkfpi1/image/upload/v1762799244/nbipkyu9w5untteuc6ut.png'
+              src='/partner-laptop.webp'
               alt='App Store'
               width={982}
               height={663}

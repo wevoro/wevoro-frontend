@@ -30,7 +30,7 @@ const ExpandJob = ({
             </p>
           </div>
           <Image
-            src='/expand.svg'
+            src='/expand.webp'
             alt=''
             width={643}
             height={515}

@@ -39,11 +39,11 @@ export default async function PartnerLandingPage() {
     });
 
   const images = {
-    null: '/get-started-partner.svg',
-    0: '/registration.svg',
-    1: '/review-cna.svg',
-    2: '/send-offer.svg',
-    3: '/hire-cna.svg',
+    null: '/get-started-partner.webp',
+    0: '/registration.webp',
+    1: '/review-cna.webp',
+    2: '/send-offer.webp',
+    3: '/hire-cna.webp',
   };
   const stepsBgColor = {
     null: 'bg-[#6ADD8D]',

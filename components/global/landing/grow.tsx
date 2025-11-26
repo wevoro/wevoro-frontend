@@ -25,10 +25,10 @@ const Grow = ({
 }) => {
   const bgImage =
     source === 'partner'
-      ? 'https://res.cloudinary.com/dordkfpi1/image/upload/v1762620586/mbicu1vgmn5fp22ipjdx.jpg'
+      ? '/partner-grow.webp'
       : source === 'pro'
-        ? 'https://res.cloudinary.com/dordkfpi1/image/upload/v1762620588/pmumlbooyjhzv5ler1hu.png'
-        : 'https://res.cloudinary.com/dordkfpi1/image/upload/v1762620587/rzdpdorgiagg4l7kk10w.png';
+        ? '/pro-grow.webp'
+        : '/home-grow.webp';
 
   const buttonHref = source === 'partner' ? '/partner/signup' : '/pro/signup';
 

@@ -42,8 +42,8 @@ const Testimonial = ({
           <Image
             src={
               source === 'partner'
-                ? '/partner-testimonial-phone.svg'
-                : '/testimonial-phone.svg'
+                ? '/partner-testimonial-phone.webp'
+                : '/testimonial-phone.webp'
             }
             alt='testimonial phone'
             width={300}

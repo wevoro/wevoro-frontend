@@ -48,7 +48,7 @@ export default function GetStarted({
               width={660}
               height={500}
               className={cn(
-                'relative z-20 w-full transition-all duration-300 max-h-[582px]',
+                'relative z-20 w-full transition-all duration-300 max-h-[620px]',
                 activeStep !== null && 'max-w-[300px] mx-auto'
               )}
               priority

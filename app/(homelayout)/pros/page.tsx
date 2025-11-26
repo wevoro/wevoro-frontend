@@ -41,11 +41,11 @@ export default async function ProLandingPage() {
     });
 
   const images = {
-    null: '/get-started-pro.svg',
-    0: '/professional.svg',
-    1: '/document-info.svg',
-    2: '/profile.svg',
-    3: '/jobs.svg',
+    null: '/get-started-pro.webp',
+    0: '/professional.webp',
+    1: '/document-info.webp',
+    2: '/profile.webp',
+    3: '/jobs.webp',
   };
 
   const stepsBgColor = {

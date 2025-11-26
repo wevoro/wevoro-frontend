@@ -33,7 +33,7 @@ const ProBanner = ({
 
           <div className='max-w-[982px] mx-auto w-full'>
             <Image
-              src='https://res.cloudinary.com/dordkfpi1/image/upload/v1762799351/iyprmer783qxodsd35kj.png'
+              src='/pro-laptop.webp'
               alt='App Store'
               width={982}
               height={663}

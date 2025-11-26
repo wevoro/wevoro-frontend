@@ -24,7 +24,7 @@ const Banner = ({
       )}
     >
       <Image
-        src='https://res.cloudinary.com/dordkfpi1/image/upload/v1762798755/u5nh2kbdaijp7w1fsaid.png'
+        src='/banner.webp'
         alt='Banner background'
         fill
         className='object-cover object-left md:object-center -z-10'

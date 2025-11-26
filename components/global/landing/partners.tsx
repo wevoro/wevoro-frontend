@@ -34,7 +34,7 @@ const Partners = ({
           />
         </div>
         <Image
-          src='/partners.svg'
+          src='/partners.webp'
           alt=''
           width={643}
           height={515}

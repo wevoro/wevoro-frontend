@@ -40,11 +40,11 @@ export default async function Home() {
     });
 
   const images = {
-    null: '/doctor.svg',
-    0: '/professional.svg',
-    1: '/document-info.svg',
-    2: '/profile.svg',
-    3: '/jobs.svg',
+    null: '/doctor.webp',
+    0: '/professional.webp',
+    1: '/document-info.webp',
+    2: '/profile.webp',
+    3: '/jobs.webp',
   };
 
   const stepsBgColor = {

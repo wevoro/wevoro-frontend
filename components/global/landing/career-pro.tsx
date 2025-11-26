@@ -29,7 +29,7 @@ const CareerPro = ({
             </p>
           </div>
           <Image
-            src='/career-pro.svg'
+            src='/career-pro.webp'
             alt=''
             width={643}
             height={515}

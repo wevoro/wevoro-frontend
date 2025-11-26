@@ -14,7 +14,7 @@ const Career = ({
 }: any) => {
   return (
     <Container className='py-20 flex gap-12 lg:flex-row flex-col-reverse items-center'>
-      <Image src='/career.svg' alt='' width={643} height={515} />
+      <Image src='/career.webp' alt='' width={643} height={515} />
 
       <div className='flex flex-col md:gap-10 gap-6'>
         <div className='flex flex-col gap-2 justify-center items-center md:items-start'>

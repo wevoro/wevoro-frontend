@@ -14,11 +14,12 @@ import {
 } from '@/components/ui/sheet';
 import Logo from '../logo';
 import { useParams, usePathname } from 'next/navigation';
-import { useAppContext } from '@/lib/context';
+import { useNotificationsContext, useUserContext } from '@/lib/contexts';
 
 export default function DashboardNav() {
   const { id } = useParams();
-  const { user, isUndreadNotification } = useAppContext();
+  const { user } = useUserContext();
+  const { isUnreadNotification } = useNotificationsContext();
   const [isOpen, setIsOpen] = React.useState(false);
   const path = user?.role === 'pro' ? '/pro' : '/partner';
   const pathName = usePathname();
@@ -31,7 +32,7 @@ export default function DashboardNav() {
       icon: (
         <div className='relative'>
           <Bell className='h-5 w-5 md:h-4 md:w-4 lg:h-6 lg:w-6' />
-          {isUndreadNotification?.length > 0 && (
+          {isUnreadNotification?.length > 0 && (
             <div className='absolute top-0 right-0 w-2 h-2 bg-[#33B55B] rounded-full'></div>
           )}
         </div>

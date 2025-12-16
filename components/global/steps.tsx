@@ -1,5 +1,6 @@
 'use client';
-import { useAppContext } from '@/lib/context';
+
+import { useUserContext } from '@/lib/contexts';
 import { cn } from '@/lib/utils';
 import { IdCard, User, FileText, Check } from 'lucide-react';
 import moment from 'moment';
@@ -14,14 +15,21 @@ const Steps = ({
   isEdit?: boolean;
 }) => {
   const pathname = usePathname();
+  // const {
+  //   // user,
+  //   isPersonalInfoCompleted,
+  //   isProfessionalInfoCompleted,
+  //   isDocumentUploadCompleted,
+  // } = useUserContext();
+
   const {
     user,
     isPersonalInfoCompleted,
     isProfessionalInfoCompleted,
     isDocumentUploadCompleted,
-  } = useAppContext();
+  } = useUserContext();
 
-  console.log({ user });
+  // console.log({ user });
 
   const isEditPersonalInfo = pathname.includes('edit/personal-information');
   const isEditProfessionalInfo = pathname.includes(

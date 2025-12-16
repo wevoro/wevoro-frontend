@@ -1,16 +1,24 @@
 'use client';
 
-import { useAppContext } from '@/lib/context';
-import { redirect, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useUserContext } from '@/lib/contexts';
 
 export default function ProLayout({ children }: { children: React.ReactNode }) {
   const { id } = useParams();
-  const { user } = useAppContext();
+  const { user } = useUserContext();
+  const router = useRouter();
 
-  console.log('id', id);
+  // if (user && user?.role !== 'pro' && !id) {
+  //   return router.push('/');
+  // }
 
-  if (user && user?.role !== 'pro' && !id) {
-    return redirect('/');
-  }
+  useEffect(() => {
+    if (user && user?.role !== 'pro' && !id) {
+      return router.push('/');
+    }
+  }, [user]);
+
   return <div>{children}</div>;
 }

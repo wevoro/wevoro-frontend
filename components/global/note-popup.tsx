@@ -10,10 +10,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useAppContext } from '@/lib/context';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import {
+  useNotificationsContext,
+  useOffersContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 interface Note {
   role: 'partner' | 'pro';
@@ -32,14 +37,17 @@ const NotesPopup = ({
   proId: string;
   partnerId: string;
 }) => {
-  const { user, refetchOffers, sendNotification } = useAppContext();
+  const { refetchOffers } = useOffersContext();
+  const { sendNotification } = useNotificationsContext();
+  const { user } = useUserContext();
+  // const { user, refetchOffers, sendNotification } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
   console.log({ id });
 
   const [newNote, setNewNote] = useState({
-    role: user.role,
+    role: user?.role,
     note: '',
   });
 
@@ -56,10 +64,10 @@ const NotesPopup = ({
         message: '',
         user: '',
       };
-      setNewNote({ role: user.role, note: '' });
+      setNewNote({ role: user?.role, note: '' });
       toast.success('Note sent successfully!');
       setOpen(false);
-      if (user.role === 'partner') {
+      if (user?.role === 'partner') {
         notificationPayload.message = `<p><span style="font-weight: 600; color: #008000;">${user?.personalInfo?.companyName}</span> has added a note to your offer.</p>`;
         notificationPayload.user = proId;
       } else {
@@ -96,20 +104,20 @@ const NotesPopup = ({
                 key={note._id}
                 className={cn(
                   'w-full p-4 border border-input rounded-lg text-sm bg-[#F9F9FA]',
-                  note.role === user.role ? 'bg-[#fffbfb]' : 'bg-accent'
+                  note.role === user?.role ? 'bg-[#fffbfb]' : 'bg-accent'
                 )}
               >
                 <p
                   className={
-                    note.role === user.role ? 'text-right' : 'text-left'
+                    note.role === user?.role ? 'text-right' : 'text-left'
                   }
                 >
                   {note.note}
                 </p>
                 <p
-                  className={`text-xs mt-1 text-gray-500 ${note.role === user.role ? 'text-right' : 'text-left'} uppercase text-gray-500`}
+                  className={`text-xs mt-1 text-gray-500 ${note.role === user?.role ? 'text-right' : 'text-left'} uppercase text-gray-500`}
                 >
-                  {note.role === user.role ? 'You' : note.role}
+                  {note.role === user?.role ? 'You' : note.role}
                 </p>
               </div>
             ))}

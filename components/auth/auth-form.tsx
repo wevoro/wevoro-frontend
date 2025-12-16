@@ -13,23 +13,16 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePathname, useRouter } from 'next/navigation';
-// import { useAppContext } from '@/lib/context';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
 import GoogleLogin from './google-login';
-import { countries } from '@/lib/countries';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+
 import { cn } from '@/lib/utils';
-import { useAppContext } from '@/lib/context';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/input-otp';
+import { useAuthContext } from '@/lib/contexts';
 
 export default function AuthForm({
   inputFields,
@@ -38,7 +31,7 @@ export default function AuthForm({
   type,
   source,
 }: any) {
-  const { isLoading, setIsLoading, isOtpResend } = useAppContext();
+  const { isLoading, setIsLoading, isOtpResend } = useAuthContext();
   const location = usePathname();
   const locationSource = location.split('/')[1];
 

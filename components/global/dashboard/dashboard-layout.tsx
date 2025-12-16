@@ -11,15 +11,18 @@ import { PartnerRequestModal } from './partner-request-modal';
 import { useAppContext } from '@/lib/context';
 import { useQuery } from '@tanstack/react-query';
 import { getUserById } from '@/app/actions';
+import { useUIContext, useUserContext } from '@/lib/contexts';
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { openPartner, user } = useAppContext();
+  const { user } = useUserContext();
+  const { openPartner } = useUIContext();
   const pathname = usePathname();
   const { id } = useParams();
+
   const searchParams = useSearchParams();
   const shouldStorePro = searchParams.get('s') === 'true';
   const effectRan = useRef(false);
@@ -67,7 +70,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { data: userById, isLoading } = useQuery({
     queryKey: [`userById`, id],
     queryFn: async () => await getUserById(id as string),
+    enabled: !!id,
   });
+
   return (
     <div
       className={cn(
@@ -104,6 +109,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         isPublicProPage={isPublicProPage}
         userById={userById}
         isLoading={isLoading}
+        id={id as string}
       />
       {!isProProfileFromPartner && !isPublicProPage && <Tabs />}
       <div>{children}</div>

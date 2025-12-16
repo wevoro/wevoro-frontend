@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowUp } from 'lucide-react';
@@ -11,7 +11,7 @@ import TypingIndicator from './typing';
 import Header from './header';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useAppContext } from '@/lib/context';
+import { useUserContext } from '@/lib/contexts';
 
 interface Message {
   id: string;
@@ -48,7 +48,7 @@ export default function FloatingFeedback() {
   );
   const [isBotTyping, setIsBotTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user } = useAppContext();
+  const { user } = useUserContext();
   const email = user?.email;
   const phone = user?.personalInfo?.phone;
   const role = user?.role;

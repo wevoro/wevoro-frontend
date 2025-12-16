@@ -15,6 +15,7 @@ import {
 import moment from 'moment';
 import NoData from '../no-data';
 import SectionDescription from '../section-description';
+import { useUserContext } from '@/lib/contexts';
 
 export default function ProfessionalInformation({
   proUser,
@@ -23,7 +24,7 @@ export default function ProfessionalInformation({
   proUser?: any;
   from?: string;
 }) {
-  const { user } = useAppContext();
+  const { user } = useUserContext();
   const userData = proUser ? proUser : user;
   const education = userData?.professionalInfo?.education;
   const experience = userData?.professionalInfo?.experience;

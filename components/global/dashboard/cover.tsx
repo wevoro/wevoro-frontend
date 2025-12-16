@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppContext } from '@/lib/context';
+import { useUserContext } from '@/lib/contexts';
 
 const Cover = ({
   isProProfileFromPartner,
@@ -15,7 +16,7 @@ const Cover = ({
   isPartnerFromPro: boolean;
   userCoverImage: string;
 }) => {
-  const { refetchUser } = useAppContext();
+  const { refetchUser } = useUserContext();
   const [coverImage, setCoverImage] = useState(userCoverImage || '/cover.png');
 
   useEffect(() => {

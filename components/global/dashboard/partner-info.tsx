@@ -12,7 +12,10 @@ const PartnerInfo = ({
 }) => {
   const personalInfo = user?.personalInfo;
 
-  const name = `${personalInfo?.firstName} ${personalInfo?.lastName}`;
+  const name =
+    personalInfo?.firstName && personalInfo?.lastName
+      ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
+      : 'N/A';
   const companyName = personalInfo?.companyName;
   return (
     <div className='flex flex-col gap-2 sm:gap-3 w-full'>

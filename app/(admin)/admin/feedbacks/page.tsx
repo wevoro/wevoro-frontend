@@ -1,7 +1,7 @@
 'use client';
 
 import Feedbacks from '@/components/global/feedback/feedbacks';
-import { useAppContext } from '@/lib/context';
+import { useAdminContext } from '@/lib/contexts';
 
 const FeedbacksPage = () => {
   const {
@@ -9,9 +9,9 @@ const FeedbacksPage = () => {
     isFeedbacksLoading,
     isFeedbacksError,
     qaFeedbacks,
-    isQaFeedbacksLoading,
     isQaFeedbacksError,
-  } = useAppContext();
+    isQaFeedbacksLoading,
+  } = useAdminContext();
 
   if (isFeedbacksLoading || isQaFeedbacksLoading) {
     return <div>Loading feedbacks...</div>;

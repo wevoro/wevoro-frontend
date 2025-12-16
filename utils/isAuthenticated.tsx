@@ -1,7 +1,9 @@
 import * as jose from 'jose';
 
+// CRITICAL: JWT_SECRET must NOT be prefixed with NEXT_PUBLIC_
+// to prevent exposure in browser bundle
 const jwtConfig = {
-  secret: new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET),
+  secret: new TextEncoder().encode(process.env.JWT_SECRET),
 };
 
 export const isAuthenticated = async (token: string) => {

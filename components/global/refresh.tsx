@@ -1,47 +1,107 @@
 'use client';
-import { useAppContext } from '@/lib/context';
-import { useEffect, useState } from 'react';
+
+import { useAuthStatusContext } from '@/lib/contexts';
+import { useEffect, useRef, useCallback } from 'react';
+
+const REFRESH_BUFFER_MS = 1 * 30 * 1000; // Refresh 1 minute before expiry
 
 const RefreshToken = () => {
-  const { cookies, isRefreshed, setIsRefreshed } = useAppContext();
-  // const { accessToken, refreshToken, tokenRefreshIn } = cookies;
-  const accessToken = cookies?.accessToken;
-  const refreshToken = cookies?.refreshToken;
-  const tokenRefreshIn = cookies?.tokenRefreshIn;
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAuthenticated, expiresAt, setIsRefreshed } = useAuthStatusContext();
+  const isRefreshingRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debug log on every render
+  console.log(
+    '[RefreshToken] Render - isAuthenticated:',
+    isAuthenticated,
+    'expiresAt:',
+    expiresAt
+  );
+
+  const refreshTokens = useCallback(async () => {
+    if (isRefreshingRef.current) return;
+
+    isRefreshingRef.current = true;
+    console.log('[RefreshToken] Refreshing tokens...');
+
+    try {
+      const response = await fetch('/api/auth/refresh-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200) {
+        console.log('[RefreshToken] Tokens refreshed successfully');
+        setIsRefreshed(true);
+      } else {
+        console.error('[RefreshToken] Token refresh failed:', data.message);
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('[RefreshToken] Error refreshing token:', error);
+      window.location.href = '/';
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  }, [setIsRefreshed]);
 
   useEffect(() => {
-    if (!accessToken) return;
+    console.log(
+      '[RefreshToken] useEffect triggered - isAuthenticated:',
+      isAuthenticated,
+      'expiresAt:',
+      expiresAt
+    );
 
-    const checkTokenExpiration = async () => {
-      const currentTime = new Date();
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
-      if (currentTime >= new Date(tokenRefreshIn!) && !isSubmitting) {
-        console.log('Refreshing tokens');
-        clearInterval(intervalId);
-        setIsSubmitting(true);
+    // Don't set up refresh if not authenticated or no expiry info
+    if (!isAuthenticated || !expiresAt) {
+      console.log(
+        '[RefreshToken] Skipping - not authenticated or no expiresAt'
+      );
+      return;
+    }
 
-        try {
-          await fetch('/api/auth/refresh-token', {
-            method: 'POST',
-            body: JSON.stringify({
-              refreshToken,
-              reloadUrl: window.location.href,
-            }),
-          });
-          console.log('Success refreshing tokens...');
-          setIsRefreshed(true);
-        } catch (error) {
-          console.error('Error refreshing token:', error);
-        } finally {
-          setIsSubmitting(false);
-        }
+    const now = Date.now();
+    const timeUntilExpiry = expiresAt - now;
+    const timeUntilRefresh = timeUntilExpiry - REFRESH_BUFFER_MS;
+
+    console.log(
+      '[RefreshToken] Time until expiry:',
+      Math.round(timeUntilExpiry / 1000),
+      'seconds'
+    );
+    console.log(
+      '[RefreshToken] Time until refresh:',
+      Math.round(timeUntilRefresh / 1000),
+      'seconds'
+    );
+
+    if (timeUntilRefresh <= 0) {
+      console.log(
+        '[RefreshToken] Token expired or expiring soon, refreshing immediately'
+      );
+      refreshTokens();
+    } else {
+      console.log(
+        `[RefreshToken] Refresh scheduled in ${Math.round(timeUntilRefresh / 1000)} seconds`
+      );
+      timeoutRef.current = setTimeout(refreshTokens, timeUntilRefresh);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
-
-    const intervalId = setInterval(checkTokenExpiration, 1000);
-    return () => clearInterval(intervalId);
-  }, [accessToken, isSubmitting, tokenRefreshIn, refreshToken]);
+  }, [isAuthenticated, expiresAt, refreshTokens]);
 
   return null;
 };

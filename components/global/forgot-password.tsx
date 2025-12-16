@@ -4,7 +4,8 @@ import * as z from 'zod';
 
 import Auth from '@/components/auth/auth';
 import AuthForm from '@/components/auth/auth-form';
-import { useAppContext } from '@/lib/context';
+
+import { useAuthContext } from '@/lib/contexts';
 
 const loginFields = [
   {
@@ -28,7 +29,7 @@ export default function ForgotPassword({
   source,
   image,
 }: any) {
-  const { handleForgotPassword } = useAppContext();
+  const { handleForgotPassword } = useAuthContext();
 
   return (
     <Auth

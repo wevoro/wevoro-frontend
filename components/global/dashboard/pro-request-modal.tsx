@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useAppContext } from '@/lib/context';
+import { useNotificationsContext, useUserContext } from '@/lib/contexts';
 import { cn } from '@/lib/utils';
 import { Check, CloudUpload, FileClock, Link2 } from 'lucide-react';
 import moment from 'moment';
@@ -26,7 +27,8 @@ export function ProRequestModal({
   offer: any;
   refetchOffers: any;
 }) {
-  const { user, sendNotification } = useAppContext();
+  const { user } = useUserContext();
+  const { sendNotification } = useNotificationsContext();
   const image = offer?.partner?.personalInfo?.image;
   const companyName = offer?.partner?.personalInfo?.companyName;
   const companyIndustry = offer?.partner?.personalInfo?.industry;

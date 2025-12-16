@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import React from 'react';
 import EditBtn from './edit-btn';
 import Title from '../title';
-import { useAppContext } from '@/lib/context';
 import NoData from '../no-data';
+import { useUserContext } from '@/lib/contexts';
 
 const Skills: React.FC<{ proUser?: any }> = ({ proUser }) => {
-  const { user } = useAppContext();
+  const { user } = useUserContext();
 
   const userData = proUser ? proUser : user;
   const skills = userData?.professionalInfo?.skills;

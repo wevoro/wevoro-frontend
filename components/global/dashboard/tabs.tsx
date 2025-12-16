@@ -2,11 +2,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAppContext } from '@/lib/context';
+import { useOffersContext, useUserContext } from '@/lib/contexts';
 
 const Tabs: React.FC = () => {
   const pathname = usePathname();
-  const { user, offers, pendingOffers, jobOffers } = useAppContext();
+  const { user } = useUserContext();
+  const { offers, pendingOffers, jobOffers } = useOffersContext();
 
   const tabItemsPro = [
     { label: 'Profile', href: '/pro/profile' },

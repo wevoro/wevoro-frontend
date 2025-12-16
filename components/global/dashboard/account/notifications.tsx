@@ -1,6 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { useAppContext } from '@/lib/context';
+import { useNotificationsContext } from '@/lib/contexts';
 import { X } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -11,13 +12,13 @@ const Notifications = () => {
     notifications,
     refetchNotifications,
     isNotificationsLoading,
-    isUndreadNotification,
-  } = useAppContext();
+    isUnreadNotification,
+  } = useNotificationsContext();
 
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isUndreadNotification?.length > 0) {
+    if (isUnreadNotification?.length > 0) {
       const markAllAsRead = async () => {
         await fetch(`/api/user/notification/mark-as-read`, {
           method: 'PATCH',
@@ -27,7 +28,7 @@ const Notifications = () => {
 
       markAllAsRead();
     }
-  }, [isUndreadNotification]);
+  }, [isUnreadNotification]);
 
   const handleRemove = async (id: string) => {
     setIsLoading(true);

@@ -1,49 +1,16 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Building2, FileBadge, ChevronRight, Clock } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
+
 import Title from '../title';
-import { useAppContext } from '@/lib/context';
 import Link from 'next/link';
-import { useState } from 'react';
 import moment from 'moment';
-import { useEffect } from 'react';
 import Chart from './chart';
-const chartData = [
-  { month: 'Jan', PRO: 150, PARTNER: 220 },
-  { month: 'Feb', PRO: 140, PARTNER: 190 },
-  { month: 'Mar', PRO: 90, PARTNER: 195 },
-  { month: 'Apr', PRO: 120, PARTNER: 180 },
-  { month: 'May', PRO: 150, PARTNER: 160 },
-  { month: 'Jun', PRO: 180, PARTNER: 235 },
-  { month: 'Jul', PRO: 190, PARTNER: 225 },
-  { month: 'Aug', PRO: 200, PARTNER: 235 },
-  { month: 'Sep', PRO: 180, PARTNER: 235 },
-  { month: 'Oct', PRO: 160, PARTNER: 235 },
-  { month: 'Nov', PRO: 150, PARTNER: null },
-  { month: 'Dec', PRO: 140, PARTNER: null },
-];
+import { useAdminContext } from '@/lib/contexts';
 
 export default function OverviewPage() {
-  const { pros, partners } = useAppContext();
+  const { pros, partners } = useAdminContext();
 
   const currentMonth = moment().format('YYYY-MM');
   const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');

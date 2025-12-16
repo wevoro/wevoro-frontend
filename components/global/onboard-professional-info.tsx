@@ -14,12 +14,17 @@ import AddMore from '@/components/global/professional-info/add-more';
 import Remove from '@/components/global/professional-info/remove';
 import SkillsSelector from '@/components/global/professional-info/skills-selector';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { useAppContext } from '@/lib/context';
+
 import { toast } from 'sonner';
 import LoadingOverlay from '@/components/global/loading-overlay';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Editor from '../ui/editor';
+import {
+  useAdminContext,
+  useOnboardContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { from, userFromAdmin, onClose } = props;
@@ -27,22 +32,26 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const searchParams = useSearchParams();
   const isEdit = searchParams.get('edit') === 'true';
 
-  const {
-    user,
-    refetchUser,
-    professionalInfoRef,
-    refetchUsers,
-    refetchQaUsers,
-  } = useAppContext();
+  const { professionalInfoRef, extractedData } = useOnboardContext();
+  const { user, refetchUser } = useUserContext();
+  const { refetchUsers, refetchQaUsers } = useAdminContext();
+  const extractedProfessionalInfo = extractedData?.professionalInformation;
 
-  const userData =
-    from && userFromAdmin?.professionalInfo
+  const userData = extractedProfessionalInfo
+    ? extractedProfessionalInfo
+    : from && userFromAdmin?.professionalInfo
       ? userFromAdmin?.professionalInfo
       : !from && user?.professionalInfo
         ? user?.professionalInfo
         : {};
 
   const { education, experience, certifications, skills } = userData;
+
+  useEffect(() => {
+    if (extractedProfessionalInfo) {
+      reset(extractedProfessionalInfo);
+    }
+  }, [extractedProfessionalInfo]);
 
   const processedCertifications = certifications?.map((certification: any) => {
     return {
@@ -55,7 +64,6 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         : '',
     };
   });
-  console.log('🚀 ~ processedCertifications:', processedCertifications);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);

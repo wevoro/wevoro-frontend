@@ -11,11 +11,16 @@ import OnboardButton from '@/components/global/onboard-button';
 import { Check, CloudUpload, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Loading from '@/components/global/loading';
-import { useAppContext } from '@/lib/context';
+
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoadingOverlay from '@/components/global/loading-overlay';
+import {
+  useAdminContext,
+  useOnboardContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 interface FileState {
   certificate: File | null;
@@ -35,8 +40,11 @@ const OnboardDocumentUpload = forwardRef((props: any) => {
   const searchParams = useSearchParams();
   const isEdit = searchParams.get('edit') === 'true';
 
-  const { user, refetchUser, documentUploadRef, refetchUsers, refetchQaUsers } =
-    useAppContext();
+  const { documentUploadRef } = useOnboardContext();
+  const { user, refetchUser } = useUserContext();
+  const { refetchUsers, refetchQaUsers } = useAdminContext();
+  // const { user, refetchUser, documentUploadRef, refetchUsers, refetchQaUsers } =
+  //   useAppContext();
   const router = useRouter();
 
   const userDocuments =
@@ -174,7 +182,7 @@ const OnboardDocumentUpload = forwardRef((props: any) => {
     }
   };
 
-  useImperativeHandle(documentUploadRef, () => ({
+  useImperativeHandle(documentUploadRef, (): any => ({
     submitForm: () => handleSubmit(null as any),
   }));
 

@@ -7,6 +7,7 @@ import ProInfo from './pro-info';
 import PartnerInfo from './partner-info';
 
 import ProfileSkeleton from './profile-skeleton';
+import { useUserContext } from '@/lib/contexts';
 
 const ProfileInfo = ({
   isProProfileFromPartner,
@@ -14,16 +15,21 @@ const ProfileInfo = ({
   isPublicProPage,
   isLoading,
   isPartnerFromPro,
+  id,
 }: {
   isProProfileFromPartner: boolean;
   userById: any;
   isPublicProPage: boolean;
   isLoading: boolean;
   isPartnerFromPro: boolean;
+  id: string;
 }) => {
-  const { user } = useAppContext();
+  const { user, isUserLoading } = useUserContext();
 
-  if (isLoading) {
+  if (isLoading && id) {
+    return <ProfileSkeleton />;
+  }
+  if (isUserLoading) {
     return <ProfileSkeleton />;
   }
 
@@ -43,7 +49,7 @@ const ProfileInfo = ({
       : user;
 
   return (
-    <div className=''>
+    <div>
       <Cover
         isProProfileFromPartner={isProProfileFromPartner}
         isPublicProPage={isPublicProPage}

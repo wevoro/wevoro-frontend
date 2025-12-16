@@ -6,6 +6,7 @@ import { MoreHorizontal } from 'lucide-react';
 import { useAppContext } from '@/lib/context';
 import NoData from '../no-data';
 import { cn } from '@/lib/utils';
+import { useUserContext } from '@/lib/contexts';
 
 const isImageFile = (file: string) => {
   const extension = file?.split('.').pop()?.toLowerCase() || '';
@@ -34,7 +35,7 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
   proUser,
   from,
 }) => {
-  const { user } = useAppContext();
+  const { user } = useUserContext();
   const userData = proUser ? proUser : user;
   const documents = userData?.documents;
 

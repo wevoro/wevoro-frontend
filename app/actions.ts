@@ -2,6 +2,8 @@
 import api from "@/lib/axiosInterceptor";
 import { client } from "@/sanity/lib/client";
 import { cookies } from "next/headers";
+import * as jose from 'jose';
+
 export async function getUser() {
   try {
     const response = await api.get(`/user/profile`);
@@ -105,17 +107,32 @@ export async function getFeedbackById(id: string) {
   }
 }
 
-export async function getTokens() {
+export async function getAuthStatus() {
+
   const accessToken = cookies().get("accessToken")?.value;
-  const refreshToken = cookies().get("refreshToken")?.value;
-  const tokenRefreshIn = cookies().get("tokenRefreshIn")?.value;
-  return { accessToken, refreshToken, tokenRefreshIn };
+  
+  if (!accessToken) {
+    return { isAuthenticated: false, expiresAt: null };
+  }
+  
+  try {
+    // Use jose to decode JWT (no verification, just reading claims)
+    const decoded = jose.decodeJwt(accessToken);
+    const expiresAt = decoded.exp ? decoded.exp * 1000 : null; // Convert seconds to ms
+    
+    return { 
+      isAuthenticated: true, 
+      expiresAt
+    };
+  } catch (err) {
+    console.error("[getAuthStatus] Error decoding JWT:", err);
+    return { isAuthenticated: false, expiresAt: null };
+  }
 }
 
 export async function logout() {
   cookies().delete("accessToken");
   cookies().delete("refreshToken");
-  cookies().delete("tokenRefreshIn");
 }
 
 export async function getEnvironment() {

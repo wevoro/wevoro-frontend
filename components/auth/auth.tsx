@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { Averia_Serif_Libre } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { useAppContext } from '@/lib/context';
+
+import { useAuthContext } from '@/lib/contexts';
 
 const averia = Averia_Serif_Libre({
   subsets: ['latin'],
@@ -23,7 +24,7 @@ export default function Auth({
   resendOTP,
   isResendOTPLoading,
 }: any) {
-  const { querySuffix } = useAppContext();
+  const { querySuffix } = useAuthContext();
 
   return (
     <div className='relative min-h-screen flex flex-col lg:flex-row'>

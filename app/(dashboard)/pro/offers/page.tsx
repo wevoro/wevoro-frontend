@@ -1,9 +1,10 @@
 'use client';
 import OfferLists from '@/components/global/dashboard/offer-lists';
-import { useAppContext } from '@/lib/context';
+
+import { useOffersContext } from '@/lib/contexts';
 
 export default function Offers() {
-  const { pendingOffers } = useAppContext();
+  const { pendingOffers } = useOffersContext();
   return (
     <div>
       <OfferLists offers={pendingOffers} source='offers' />

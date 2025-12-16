@@ -18,7 +18,7 @@ const ProfileName = ({
 }) => {
   return (
     <h1 className='text-xl sm:text-2xl font-semibold flex items-center gap-2'>
-      {name}
+      {name || 'N/A'}
       {(status === 'pending' || status === 'rejected') && (
         <span className='flex items-center gap-1'>
           <BadgeCheck className='w-7 h-7 fill-[#e0e2e1] text-white' />

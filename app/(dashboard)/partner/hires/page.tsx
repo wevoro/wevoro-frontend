@@ -18,7 +18,6 @@ import React, { useState } from 'react';
 import { saveAs } from 'file-saver';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAppContext } from '@/lib/context';
 import { OfferDropdown } from '@/components/global/dashboard/offer-dropdown';
 import OffersSkeleton from '@/components/global/dashboard/offers-skeleton';
 import moment from 'moment';
@@ -27,16 +26,27 @@ import { toast } from 'sonner';
 import NotesPopup from '@/components/global/note-popup';
 import Link from 'next/link';
 import { statusColors, statusIcons, statusTexts } from '@/utils/status';
+import {
+  useNotificationsContext,
+  useOffersContext,
+  useUIContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 const PartnerOffers = () => {
-  const {
-    openPartner,
-    offers,
-    isOffersLoading,
-    refetchOffers,
-    sendNotification,
-    user,
-  } = useAppContext();
+  // const {
+  //   openPartner,
+  //   offers,
+  //   isOffersLoading,
+  //   refetchOffers,
+  //   sendNotification,
+  //   // user,
+  // } = useAppContext();
+
+  const { offers, isOffersLoading, refetchOffers } = useOffersContext();
+  const { sendNotification } = useNotificationsContext();
+  const { user } = useUserContext();
+  const { openPartner } = useUIContext();
 
   const [isLoading, setIsLoading] = useState(false);
 

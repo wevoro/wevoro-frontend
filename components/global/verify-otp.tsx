@@ -4,9 +4,9 @@ import * as z from 'zod';
 
 import Auth from '@/components/auth/auth';
 import AuthForm from '@/components/auth/auth-form';
-import { useAppContext } from '@/lib/context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useAuthContext } from '@/lib/contexts';
 
 const loginFields = [
   {
@@ -28,7 +28,7 @@ export default function VerifyOTP({
   image,
 }: any) {
   const { handleVerifyOTP, handleResendOTP, isResendOTPLoading } =
-    useAppContext();
+    useAuthContext();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const router = useRouter();
@@ -40,11 +40,11 @@ export default function VerifyOTP({
   }, [email, router]);
 
   const verifyOtp = async (data: any) => {
-    await handleVerifyOTP(data.otp, email, source);
+    await handleVerifyOTP(data.otp, email!, source);
   };
 
   const resendOTP = async () => {
-    await handleResendOTP(email);
+    await handleResendOTP(email!);
   };
 
   return (

@@ -1,9 +1,9 @@
 'use client';
 import OfferLists from '@/components/global/dashboard/offer-lists';
-import { useAppContext } from '@/lib/context';
+import { useOffersContext } from '@/lib/contexts';
 
 const Jobs = () => {
-  const { offers, jobOffers } = useAppContext();
+  const { jobOffers } = useOffersContext();
 
   return (
     <div>

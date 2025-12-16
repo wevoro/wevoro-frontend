@@ -14,17 +14,18 @@ export async function POST(req: Request) {
     const entries = Object.fromEntries(bodyData.entries());
 
     const { data, id, ...certificationFiles } = entries;
-    
-    const filesArray: any = Object.values(certificationFiles);
-    // console.log('🚀 ~ POST ~ filesArray:', filesArray)
 
     const formData = new FormData();
 
-    for (const file of filesArray) {
-      formData.append(`certifications`, file as File, file.name);
+    // Forward certificate files with their original names (certification_0, certification_1, etc.)
+    // This allows the backend to match files to certifications by index
+    for (const [key, file] of Object.entries(certificationFiles)) {
+      if (file instanceof File) {
+        formData.append("certifications", file, key);
+      }
     }
 
-    formData.append("data", data);
+    formData.append("data", data as string);
 
     const queryId = id ? `?id=${id}` : "";
 

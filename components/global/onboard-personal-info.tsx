@@ -30,6 +30,7 @@ import {
 } from '@/lib/contexts';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
+import { AutoFillAlert } from './dashboard/autofill-alert';
 
 const OnboardPersonalInfo = forwardRef((props: any) => {
   const { source, from, userFromAdmin, onClose } = props;
@@ -205,16 +206,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
       <div className='flex items-center justify-between mb-8'>
         <Title text='Personal Information' className='mb-0' />
-        <Button
-          type='button'
-          variant={'special'}
-          className='inline-flex items-center gap-2 font-medium text-[#008000]'
-          onClick={() => setOpenAutoFillModal(true)}
-        >
-          Fill Automatically{' '}
-          <span className='italic font-normal'>(AI-Auto Filling)</span>{' '}
-          <Sparkles className='h-4 w-4' />
-        </Button>
+        <AutoFillAlert />
       </div>
 
       <div className='flex flex-col gap-8'>

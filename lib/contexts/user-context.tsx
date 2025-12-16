@@ -5,6 +5,7 @@ import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Loading from '@/app/loading';
 
 interface User {
   _id: string;
@@ -118,6 +119,9 @@ export function UserProvider({ children }: UserProviderProps) {
       isDocumentUploadCompleted,
     ]
   );
+  if (isUserLoading) {
+    return <Loading />;
+  }
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

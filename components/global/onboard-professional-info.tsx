@@ -9,7 +9,7 @@ import React, {
 import Title from '@/components/global/title';
 import { Input } from '@/components/ui/input';
 import OnboardButton from '@/components/global/onboard-button';
-import { CloudUploadIcon, LinkIcon } from 'lucide-react';
+import { CloudUploadIcon, LinkIcon, Sparkles } from 'lucide-react';
 import AddMore from '@/components/global/professional-info/add-more';
 import Remove from '@/components/global/professional-info/remove';
 import SkillsSelector from '@/components/global/professional-info/skills-selector';
@@ -23,8 +23,11 @@ import Editor from '../ui/editor';
 import {
   useAdminContext,
   useOnboardContext,
+  useUIContext,
   useUserContext,
 } from '@/lib/contexts';
+import { Button } from '../ui/button';
+import { AutoFillAlert } from './dashboard/autofill-alert';
 
 const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { from, userFromAdmin, onClose } = props;
@@ -32,10 +35,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const searchParams = useSearchParams();
   const isEdit = searchParams.get('edit') === 'true';
 
-  const { professionalInfoRef, extractedData } = useOnboardContext();
-  const { user, refetchUser } = useUserContext();
+  const { professionalInfoRef, extractedData, setExtractedData } =
+    useOnboardContext();
+  const { user, refetchUser, isUserLoading } = useUserContext();
+  console.log('🚀 ~ user:', user);
   const { refetchUsers, refetchQaUsers } = useAdminContext();
+  const { setOpenAutoFillModal } = useUIContext();
   const extractedProfessionalInfo = extractedData?.professionalInformation;
+  console.log('🚀 ~ extractedProfessionalInfo:', extractedProfessionalInfo);
 
   const userData = extractedProfessionalInfo
     ? extractedProfessionalInfo
@@ -99,7 +106,6 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       ],
       certifications: processedCertifications || [
         {
-          fileId: new Date().getTime(),
           title: '',
           institution: '',
           issueDate: '',
@@ -150,63 +156,56 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   }, [isMounted]);
 
   const onSubmit = async (data: any) => {
-    console.log('🚀 ~ onSubmit ~ data:', data);
     try {
+      // Skip submission if form is not dirty and not in edit mode
       if (!isDirty && !isEdit && !from) {
         return router.push('/pro/onboard/document-upload');
       }
 
+      setExtractedData(null);
+
       setIsLoading(true);
-      const certificationData = data.certifications.map(
-        (certification: any) => {
-          return {
-            ...certification,
-            issueDate: certification.issueDate
-              ? new Date(certification.issueDate).toISOString()
-              : '',
-            expireDate: certification.expireDate
-              ? new Date(certification.expireDate).toISOString()
-              : '',
-          };
-        }
-      );
-      console.log('🚀 ~ onSubmit ~ certificationData:', certificationData);
-
-      data.certifications = certificationData;
-
-      const certificationFiles = data.certifications.map(
-        (certification: any) => {
-          return {
-            certificateFile: certification.certificateFile?.[0] || '',
-            fileId: certification.fileId || new Date().getTime().toString(),
-          };
-        }
-      );
-
-      const newCertificationData = data.certifications.map(
-        (certification: any) => {
-          return {
-            ...certification,
-            // ...(certification.certificateFile ? { certificateFile: '' } : {}),
-          };
-        }
-      );
-      // console.log({ certificationFiles, newCertificationData });
-
       const formData = new FormData();
-      if (newCertificationData?.length > 0) {
-        data.certifications = newCertificationData;
-      }
 
-      for (const file of certificationFiles) {
-        if (typeof file.certificateFile === 'object' && file.certificateFile) {
-          formData.append(`${file.fileId}`, file.certificateFile, file.fileId);
+      // Process certifications: format dates and clean up data
+      const processedCertifications = data.certifications.map(
+        (cert: any, index: number) => {
+          // Get the actual file if it exists (from file input)
+          const uploadedFile = cert.certificateFile?.[0];
+          const hasNewFile = uploadedFile instanceof File;
+
+          // If there's a new file to upload, append it with index as key
+          if (hasNewFile) {
+            formData.append(`certification_${index}`, uploadedFile);
+          }
+
+          // Build clean certification object
+          const { certificateFile, fileId, ...cleanCert } = cert;
+
+          return {
+            ...cleanCert,
+            // Format dates to ISO strings
+            issueDate: cert.issueDate
+              ? new Date(cert.issueDate).toISOString()
+              : '',
+            expireDate: cert.expireDate
+              ? new Date(cert.expireDate).toISOString()
+              : '',
+            // Preserve existing certificateFile URL if it's a string (already uploaded)
+            ...(typeof certificateFile === 'string' && certificateFile
+              ? { certificateFile }
+              : {}),
+          };
         }
-      }
+      );
 
-      // console.log({ data });
+      // Prepare final data payload
+      const payload = {
+        ...data,
+        certifications: processedCertifications,
+      };
 
-      formData.append('data', JSON.stringify(data));
+      formData.append('data', JSON.stringify(payload));
 
       if (from === 'admin') {
         formData.append('id', userFromAdmin?._id);
@@ -218,13 +217,12 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       });
 
       const responseData = await response.json();
-      // console.log('🚀 ~ onSubmit ~ responseData:', responseData);
+
       if (responseData.status === 200) {
         refetchUser();
         if (from === 'admin') {
           refetchUsers();
           refetchQaUsers();
-          // onClose && onClose();
         }
         reset();
         if (!from) {
@@ -242,11 +240,11 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       } else {
         toast.error(responseData.message || 'Something went wrong!');
       }
-      setIsLoading(false);
     } catch (error: any) {
-      setIsLoading(false);
-      console.log('inside catch', error);
+      console.error('Professional info submission error:', error);
       toast.error(error.message || 'Something went wrong!');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -271,7 +269,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
 
   return (
     <form ref={professionalInfoRef} onSubmit={handleSubmit(onSubmit)}>
-      <Title text='Professional Info' />
+      <div className='flex items-center justify-between mb-8'>
+        <Title text='Professional Info' className='mb-0' />
+        <AutoFillAlert />
+      </div>
 
       {isLoading && <LoadingOverlay />}
 

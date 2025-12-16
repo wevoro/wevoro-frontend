@@ -42,7 +42,7 @@ const PartnerBanner = ({
             />
           </div>
 
-          <div className='-mt-12 max-w-[471px] mx-auto'>
+          {/* <div className='-mt-12 max-w-[471px] mx-auto'>
             <p className='text-[#6C6C6C] md:text-base text-sm'>Download Now</p>
             <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>
               <a href={appStoreLink} target='_blank' rel='noopener noreferrer'>
@@ -64,7 +64,7 @@ const PartnerBanner = ({
                 />
               </a>
             </div>
-          </div>
+          </div> */}
         </div>
       </Container>
     </div>

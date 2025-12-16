@@ -2,6 +2,8 @@
 import api from "@/lib/axiosInterceptor";
 import { client } from "@/sanity/lib/client";
 import { cookies } from "next/headers";
+import { unstable_noStore as noStore } from "next/cache";
+
 export async function getUser() {
   try {
     const response = await api.get(`/user/profile`);
@@ -118,44 +120,63 @@ export async function logout() {
   cookies().delete("tokenRefreshIn");
 }
 
+// Sanity CMS functions - noStore() prevents Next.js from caching these responses
 export async function getEnvironment() {
+  noStore();
   const response = await client.fetch(`*[_type == "environment"][0]`);
   return response;
 }
+
 export async function getHomeData() {
+  noStore();
   const response = await client.fetch(`*[_type == "home"][0]`);
   return response;
 }
+
 export async function getProData() {
+  noStore();
   const response = await client.fetch(`*[_type == "pro"][0]`);
   return response;
 }
+
 export async function getPartnerData() {
+  noStore();
   const response = await client.fetch(`*[_type == "partner"][0]`);
   return response;
 }
+
 export async function getProLoginData() {
+  noStore();
   const response = await client.fetch(`*[_type == "proLogin"][0]`);
   return response;
 }
+
 export async function getProSignupData() {
+  noStore();
   const response = await client.fetch(`*[_type == "proRegister"][0]`);
   return response;
 }
+
 export async function getPartnerLoginData() {
+  noStore();
   const response = await client.fetch(`*[_type == "partnerLogin"][0]`);
   return response;
 }
+
 export async function getPartnerSignupData() {
+  noStore();
   const response = await client.fetch(`*[_type == "partnerRegister"][0]`);
   return response;
 }
+
 export async function getResourcePagesData() {
+  noStore();
   const response = await client.fetch(`*[_type == "resourcePages"][0]`);
   return response;
 }
 
 export async function getFooterData() {
+  noStore();
   const response = await client.fetch(`*[_type == "footer"][0]`);
   return response;
 }

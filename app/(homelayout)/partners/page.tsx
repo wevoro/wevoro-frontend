@@ -11,9 +11,8 @@ import Image from 'next/image';
 import { getEnvironment, getPartnerData } from '@/app/actions';
 import StayTuned from '@/components/global/landing/stay-tuned';
 import { transformEnvironment } from '@/utils/transformEnvironment';
-export const dynamic = 'force-dynamic';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function PartnerLandingPage() {
   const environment = await getEnvironment();

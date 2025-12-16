@@ -6,7 +6,8 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: true, // Set to false if statically generating pages, using ISR or tag-based revalidation
+  // Disable CDN to get fresh content - CDN caches for ~60 seconds
+  useCdn: false,
 });
 
 const builder = imageUrlBuilder(client);

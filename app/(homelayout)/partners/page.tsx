@@ -12,12 +12,11 @@ import { getEnvironment, getPartnerData } from '@/app/actions';
 import StayTuned from '@/components/global/landing/stay-tuned';
 import { transformEnvironment } from '@/utils/transformEnvironment';
 
-export const dynamic = 'force-dynamic';
-
 export default async function PartnerLandingPage() {
   const environment = await getEnvironment();
   const environmentType = transformEnvironment(environment?.environmentType);
   const partnerData = await getPartnerData();
+  console.log('🚀 ~ PartnerLandingPage ~ partnerData:', partnerData);
   const {
     section1 = {},
     section2 = {},
@@ -82,7 +81,7 @@ export default async function PartnerLandingPage() {
         className='absolute md:-right-36 -right-24 top-[40rem] md:top-[60rem] md:w-[689px] w-[248px] md:h-[512px] h-[184px]'
       />
 
-      <WhyWevoro source='partner' features={features} />
+      <WhyWevoro source='partner' {...section2} features={features} />
       <Image
         src='/vector-expand.svg'
         alt='partner bg'

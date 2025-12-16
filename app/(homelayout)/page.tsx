@@ -12,8 +12,6 @@ import { getEnvironment, getHomeData } from '@/app/actions';
 import StayTuned from '@/components/global/landing/stay-tuned';
 import { transformEnvironment } from '@/utils/transformEnvironment';
 
-export const dynamic = 'force-dynamic';
-
 export default async function Home() {
   const environment = await getEnvironment();
   const environmentType = transformEnvironment(environment?.environmentType);

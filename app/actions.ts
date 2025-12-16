@@ -2,7 +2,6 @@
 import api from "@/lib/axiosInterceptor";
 import { client } from "@/sanity/lib/client";
 import { cookies } from "next/headers";
-import { unstable_noStore as noStore } from "next/cache";
 
 export async function getUser() {
   try {
@@ -120,64 +119,96 @@ export async function logout() {
   cookies().delete("tokenRefreshIn");
 }
 
-// Sanity CMS functions - noStore() prevents Next.js from caching these responses
+// Sanity CMS functions - use tag-based caching for on-demand revalidation
+// Tags are invalidated via webhook when content is published in Sanity
+
 export async function getEnvironment() {
-  noStore();
-  const response = await client.fetch(`*[_type == "environment"][0]`);
+  const response = await client.fetch(
+    `*[_type == "environment"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-environment"] } }
+  );
   return response;
 }
 
 export async function getHomeData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "home"][0]`);
+  const response = await client.fetch(
+    `*[_type == "home"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-home"] } }
+  );
   return response;
 }
 
 export async function getProData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "pro"][0]`);
+  const response = await client.fetch(
+    `*[_type == "pro"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-pro"] } }
+  );
   return response;
 }
 
 export async function getPartnerData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "partner"][0]`);
+  const response = await client.fetch(
+    `*[_type == "partner"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-partner"] } }
+  );
   return response;
 }
 
 export async function getProLoginData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "proLogin"][0]`);
+  const response = await client.fetch(
+    `*[_type == "proLogin"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-proLogin"] } }
+  );
   return response;
 }
 
 export async function getProSignupData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "proRegister"][0]`);
+  const response = await client.fetch(
+    `*[_type == "proRegister"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-proRegister"] } }
+  );
   return response;
 }
 
 export async function getPartnerLoginData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "partnerLogin"][0]`);
+  const response = await client.fetch(
+    `*[_type == "partnerLogin"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-partnerLogin"] } }
+  );
   return response;
 }
 
 export async function getPartnerSignupData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "partnerRegister"][0]`);
+  const response = await client.fetch(
+    `*[_type == "partnerRegister"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-partnerRegister"] } }
+  );
   return response;
 }
 
 export async function getResourcePagesData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "resourcePages"][0]`);
+  const response = await client.fetch(
+    `*[_type == "resourcePages"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-resourcePages"] } }
+  );
   return response;
 }
 
 export async function getFooterData() {
-  noStore();
-  const response = await client.fetch(`*[_type == "footer"][0]`);
+  const response = await client.fetch(
+    `*[_type == "footer"][0]`,
+    {},
+    { next: { tags: ["sanity", "sanity-footer"] } }
+  );
   return response;
 }
 

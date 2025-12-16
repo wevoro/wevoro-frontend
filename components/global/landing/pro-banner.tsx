@@ -10,6 +10,8 @@ const ProBanner = ({
   description,
   buttonText,
   environmentType,
+  googlePlayLink,
+  appStoreLink,
 }: any) => {
   return (
     <div className='pro-banner-bg'>
@@ -41,25 +43,37 @@ const ProBanner = ({
             />
           </div>
 
-          {/* {environmentType !== 'waitlist' && (
+          {environmentType !== 'waitlist' && (
             <div className='-mt-12 max-w-[471px] mx-auto'>
               <p className='text-[#6C6C6C] md:text-base text-sm'>
                 Download Now
               </p>
               <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>
-                <img
-                  src='/app-store.svg'
-                  alt='Download on the App Store'
-                  className='w-[174px] h-[72px] md:w-full md:h-full'
-                />
-                <img
-                  src='/playstore.svg'
-                  alt='Get it on Google Play'
-                  className='w-[174px] h-[72px] md:w-full md:h-full'
-                />
+                <a
+                  href={appStoreLink}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <img
+                    src='/app-store.svg'
+                    alt='Download on the App Store'
+                    className='w-[174px] h-[72px] md:w-full md:h-full'
+                  />
+                </a>
+                <a
+                  href={googlePlayLink}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <img
+                    src='/playstore.svg'
+                    alt='Get it on Google Play'
+                    className='w-[174px] h-[72px] md:w-full md:h-full'
+                  />
+                </a>
               </div>
             </div>
-          )} */}
+          )}
         </div>
       </Container>
     </div>

@@ -6,8 +6,8 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  // Disable CDN to get fresh content - CDN caches for ~60 seconds
-  useCdn: false,
+  // Use CDN for cached content - revalidated via webhook when content changes
+  useCdn: true,
 });
 
 const builder = imageUrlBuilder(client);

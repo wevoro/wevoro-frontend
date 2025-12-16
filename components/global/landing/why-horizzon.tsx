@@ -21,6 +21,7 @@ export default function WhyWevoro({
   titleBold?: string;
   environmentType?: string;
 }) {
+  console.log('🚀 ~ WhyWevoro ~ features:', titleLight, titleBold);
   return (
     <Container className='md:my-24 my-16'>
       {source === 'pro' && (

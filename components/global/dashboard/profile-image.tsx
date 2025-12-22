@@ -1,4 +1,5 @@
 import { useAppContext } from '@/lib/context';
+import { useUserContext } from '@/lib/contexts';
 import { Camera } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -14,7 +15,7 @@ const ProfileImage = ({
   isPartnerFromPro?: boolean;
   userProfileImage?: string;
 }) => {
-  const { refetchUser } = useAppContext();
+  const { refetchUser } = useUserContext();
 
   const [profileImage, setProfileImage] = useState(
     userProfileImage || '/dummy-profile-pic.jpg'

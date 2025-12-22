@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 
 import { Pencil } from 'lucide-react';
 import { useAppContext } from '@/lib/context';
+import { useUIContext } from '@/lib/contexts';
 
 export default function EditAction({ data, source }: any) {
-  const { openEditModal, setAdminEditData } = useAppContext();
+  const { openEditModal, setAdminEditData } = useUIContext();
 
   const handleEdit = () => {
     setAdminEditData({ data, source });
-    openEditModal();
+    openEditModal(data, source);
   };
 
   return (

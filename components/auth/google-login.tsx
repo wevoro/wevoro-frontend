@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useAppContext } from '@/lib/context';
+
+import { useAuthContext } from '@/lib/contexts';
 
 interface GoogleLoginProps {
   source: string;
@@ -8,7 +9,7 @@ interface GoogleLoginProps {
 
 export default function GoogleLogin({ source }: GoogleLoginProps) {
   const { logInWithGoogle, isLoading, setIsLoading, querySuffix, id } =
-    useAppContext();
+    useAuthContext();
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

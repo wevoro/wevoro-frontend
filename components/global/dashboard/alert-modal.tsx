@@ -10,10 +10,11 @@ import {
 import { PartnerRequestModal } from './partner-request-modal';
 import { useAppContext } from '@/lib/context';
 import { cn } from '@/lib/utils';
+import { useUIContext } from '@/lib/contexts';
 
 export function AlertModal() {
   const { isOpenAlert, closeAlert, actionData, openOfferAction } =
-    useAppContext();
+    useUIContext();
 
   const title =
     actionData?.type === 'accept'

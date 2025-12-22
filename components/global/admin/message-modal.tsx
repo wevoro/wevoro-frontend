@@ -11,13 +11,14 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/lib/context';
+import { useNotificationsContext } from '@/lib/contexts';
 import { useState } from 'react';
 
 export function MessageModal({ children, data }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const { sendNotification } = useAppContext();
+  const { sendNotification } = useNotificationsContext();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

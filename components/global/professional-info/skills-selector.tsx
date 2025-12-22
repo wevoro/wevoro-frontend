@@ -1,10 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PlusIcon, XIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const SkillsSelector = ({ errors, setValue, watchSkills }: any) => {
   const [selectedSkills, setSelectedSkills] = useState<string[]>(watchSkills);
+
+  useEffect(() => {
+    if (watchSkills && watchSkills.length > 0) {
+      setSelectedSkills(watchSkills);
+    }
+  }, [watchSkills]);
+
   const availableSkills = [
     'PPE',
     'VACCINE',

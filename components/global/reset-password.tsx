@@ -4,8 +4,8 @@ import * as z from 'zod';
 
 import Auth from '@/components/auth/auth';
 import AuthForm from '@/components/auth/auth-form';
-import { useAppContext } from '@/lib/context';
 import { useSearchParams } from 'next/navigation';
+import { useAuthContext } from '@/lib/contexts';
 
 const loginFields = [
   {
@@ -34,11 +34,12 @@ export default function ResetPassword({
   source,
   image,
 }: any) {
-  const { handleResetPassword } = useAppContext();
+  // const { handleResetPassword } = useAppContext();
+  const { handleResetPassword } = useAuthContext();
   const params = useSearchParams();
   const email = params.get('email');
   const handleSubmit = async (data: any) => {
-    await handleResetPassword(data, email, source);
+    await handleResetPassword(data, email!, source);
   };
 
   return (

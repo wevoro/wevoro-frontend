@@ -1,9 +1,9 @@
 import { CircleHelp, Star } from 'lucide-react';
 import React from 'react';
-import { useAppContext } from '@/lib/context';
+import { useUserContext } from '@/lib/contexts';
 
 const PartnerAccountInfo = () => {
-  const { user } = useAppContext();
+  const { user } = useUserContext();
 
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>

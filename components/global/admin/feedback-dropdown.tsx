@@ -19,10 +19,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { useAppContext } from '@/lib/context';
+import { useAdminContext } from '@/lib/contexts';
 
 const FeedbackDropdown = ({ data }: { data: any }) => {
-  const { refetchFeedbacks, refetchQaFeedbacks } = useAppContext();
+  const { refetchFeedbacks, refetchQaFeedbacks } = useAdminContext();
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

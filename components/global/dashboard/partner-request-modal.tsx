@@ -17,16 +17,27 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import {
+  useNotificationsContext,
+  useOffersContext,
+  useUIContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 export function PartnerRequestModal({ proUser }: { proUser: any }) {
-  const {
-    isPartnerOpen,
-    closePartner,
-    refetchOffers,
-    offerData,
-    user,
-    sendNotification,
-  } = useAppContext();
+  // const {
+  //   isPartnerOpen,
+  //   closePartner,
+  //   refetchOffers,
+  //   offerData,
+  //   user,
+  //   sendNotification,
+  // } = useAppContext();
+  const { user } = useUserContext();
+  const { isPartnerOpen, closePartner, offerData } = useUIContext();
+  const { sendNotification } = useNotificationsContext();
+  const { refetchOffers } = useOffersContext();
+
   const { id } = useParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

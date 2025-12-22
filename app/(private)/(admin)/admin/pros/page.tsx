@@ -12,11 +12,12 @@ import {
 import { DataTable } from '@/components/global/admin/data-table';
 import { proColumns } from '@/components/global/admin/columns';
 import Title from '@/components/global/title';
-import { useAppContext } from '@/lib/context';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAdminContext } from '@/lib/contexts';
 
 export default function ProsPage() {
-  const { pros, qaPros } = useAppContext();
+  // const { pros, qaPros } = useAppContext();
+  const { pros, qaPros } = useAdminContext();
 
   const searchParams = useSearchParams();
   const status = searchParams.get('status');

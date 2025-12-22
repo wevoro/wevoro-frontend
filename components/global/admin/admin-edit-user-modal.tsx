@@ -14,16 +14,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import OnboardPersonalInfo from '../onboard-personal-info';
 import OnboardProfessionalInfo from '../onboard-professional-info';
 import OnboardDocumentUpload from '../onboard-document-upload';
-import { useAppContext } from '@/lib/context';
+import { useOnboardContext, useUIContext } from '@/lib/contexts';
 
 export function AdminEditUserModal() {
-  const {
-    handleSavePersonalInfo,
-    isOpenEditModal,
-    closeEditModal,
-    adminEditData,
-  } = useAppContext();
-
+  const { handleSavePersonalInfo } = useOnboardContext();
+  const { closeEditModal, isOpenEditModal, adminEditData } = useUIContext();
   // console.log({ data });
 
   return (
@@ -67,7 +62,7 @@ export function AdminEditUserModal() {
                     variant='default'
                     className='rounded-lg'
                     onClick={() =>
-                      handleSavePersonalInfo(adminEditData?.source)
+                      handleSavePersonalInfo(adminEditData?.source!)
                     }
                   >
                     Save

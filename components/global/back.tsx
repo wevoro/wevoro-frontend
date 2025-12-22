@@ -1,12 +1,13 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
-import { useAppContext } from '@/lib/context';
+import { useAuthContext } from '@/lib/contexts';
 
 const Back: React.FC<{ disabled?: boolean }> = ({ disabled }) => {
   const router = useRouter();
-  const { shouldStorePro } = useAppContext();
+
+  const { shouldStorePro } = useAuthContext();
 
   const handleBack = () => {
     if (shouldStorePro) {

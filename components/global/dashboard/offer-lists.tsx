@@ -23,17 +23,18 @@ import { OfferDropdown } from './offer-dropdown';
 import OfferActionModal from './offer-action-modal';
 import { statusIcons, statusTexts } from '@/utils/status';
 import { statusColors } from '@/utils/status';
+import {
+  useNotificationsContext,
+  useOffersContext,
+  useUIContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 const OfferLists = ({ offers, source }: any) => {
-  const {
-    openAlert,
-    isOffersLoading,
-    refetchOffers,
-    setActionData,
-    sendNotification,
-    user,
-  } = useAppContext();
-
+  const { user } = useUserContext();
+  const { sendNotification } = useNotificationsContext();
+  const { refetchOffers, isOffersLoading } = useOffersContext();
+  const { setActionData, openAlert } = useUIContext();
   const handleRespond = (offer: any) => {
     setActionData({
       id: offer._id,

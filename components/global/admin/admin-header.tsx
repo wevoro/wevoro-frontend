@@ -3,14 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useAppContext } from '@/lib/context';
+import { useNotificationsContext } from '@/lib/contexts';
 import { cn } from '@/lib/utils';
 import { Bell, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
 const AdminHeader = () => {
-  const { isUndreadNotification } = useAppContext();
+  const { isUnreadNotification } = useNotificationsContext();
   const pathName = usePathname();
 
   const items = [
@@ -20,7 +20,7 @@ const AdminHeader = () => {
         <div className='relative'>
           <Bell className='h-4 w-4 lg:h-6 lg:w-6' />
 
-          {isUndreadNotification?.length > 0 && (
+          {isUnreadNotification?.length > 0 && (
             <div className='absolute top-0 right-0 w-2 h-2 bg-[#33B55B] rounded-full'></div>
           )}
         </div>

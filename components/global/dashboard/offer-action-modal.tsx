@@ -13,16 +13,18 @@ import { useAppContext } from '@/lib/context';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  useNotificationsContext,
+  useOffersContext,
+  useUIContext,
+  useUserContext,
+} from '@/lib/contexts';
 
 export default function OfferActionModal() {
-  const {
-    isOpenOfferAction,
-    closeOfferAction,
-    actionData,
-    refetchOffers,
-    sendNotification,
-    user,
-  } = useAppContext();
+  const { user } = useUserContext();
+  const { sendNotification } = useNotificationsContext();
+  const { refetchOffers } = useOffersContext();
+  const { actionData, isOpenOfferAction, closeOfferAction } = useUIContext();
   const router = useRouter();
 
   const [notes, setNotes] = useState('');

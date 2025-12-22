@@ -6,12 +6,20 @@ import {
   getOffers,
   getQaFeedbacks,
   getQaUsers,
-  getTokens,
+  getAuthStatus,
   getUser,
   getUsers,
   logout,
 } from '@/app/actions';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
 import app from '@/app/firebase/firebase.init';
 import { toast } from 'sonner';
@@ -57,38 +65,39 @@ const ContextProvider = ({ children }: any) => {
   const queryString = searchParams.toString();
   const querySuffix = queryString ? `?${queryString}` : '';
 
-  const openEditModal = (data: any, source: string) => {
+  const openEditModal = useCallback((data: any, source: string) => {
+    setAdminEditData({ data, source });
     setIsOpenEditModal(true);
-  };
+  }, []);
 
-  const closeEditModal = () => {
+  const closeEditModal = useCallback(() => {
     setIsOpenEditModal(false);
-  };
+  }, []);
 
-  const openOfferAction = () => {
+  const openOfferAction = useCallback(() => {
     setIsOpenOfferAction(true);
-  };
+  }, []);
 
-  const closeOfferAction = () => {
+  const closeOfferAction = useCallback(() => {
     setIsOpenOfferAction(false);
-  };
+  }, []);
 
-  const openAlert = () => {
+  const openAlert = useCallback(() => {
     setIsOpenAlert(true);
-  };
+  }, []);
 
-  const openPartner = (data: any) => {
+  const openPartner = useCallback((data: any) => {
     setIsPartnerOpen(true);
     setOfferData(data);
-  };
+  }, []);
 
-  const closeAlert = () => {
+  const closeAlert = useCallback(() => {
     setIsOpenAlert(false);
-  };
+  }, []);
 
-  const closePartner = () => {
+  const closePartner = useCallback(() => {
     setIsPartnerOpen(false);
-  };
+  }, []);
 
   const {
     refetch: refetchUser,
@@ -99,6 +108,8 @@ const ContextProvider = ({ children }: any) => {
     queryFn: async () => {
       return await getUser();
     },
+    refetchOnWindowFocus: false,
+    // refetchOnMount: false,
   });
 
   const {
@@ -167,26 +178,48 @@ const ContextProvider = ({ children }: any) => {
     },
   });
 
-  const pendingOffers = offers?.filter(
-    (offer: any) => offer.status === 'pending'
+  const pendingOffers = useMemo(
+    () => offers?.filter((offer: any) => offer.status === 'pending') || [],
+    [offers]
   );
 
-  const pros = users?.filter((user: any) => user.role === 'pro') || [];
-  const partners = users?.filter((user: any) => user.role === 'partner') || [];
-  const jobOffers = offers?.filter((offer: any) => offer.status !== 'pending');
+  const pros = useMemo(
+    () => users?.filter((user: any) => user.role === 'pro') || [],
+    [users]
+  );
 
-  const qaPros = qaUsers?.filter((user: any) => user.role === 'pro') || [];
-  const qaPartners =
-    qaUsers?.filter((user: any) => user.role === 'partner') || [];
+  const partners = useMemo(
+    () => users?.filter((user: any) => user.role === 'partner') || [],
+    [users]
+  );
+
+  const jobOffers = useMemo(
+    () => offers?.filter((offer: any) => offer.status !== 'pending') || [],
+    [offers]
+  );
+
+  const qaPros = useMemo(
+    () => qaUsers?.filter((user: any) => user.role === 'pro') || [],
+    [qaUsers]
+  );
+
+  const qaPartners = useMemo(
+    () => qaUsers?.filter((user: any) => user.role === 'partner') || [],
+    [qaUsers]
+  );
 
   useEffect(() => {
-    const getCookies = async () => {
-      const cookies = await getTokens();
+    const getAuthData = async () => {
+      const authStatus = await getAuthStatus();
       setIsRefreshed(false);
-      setCookies(cookies);
+      // Map new auth status to cookies shape for backward compatibility
+      setCookies({
+        isAuthenticated: authStatus.isAuthenticated,
+        expiresAt: authStatus.expiresAt,
+      });
     };
 
-    getCookies();
+    getAuthData();
   }, [isRefreshed]);
 
   // if (user?.status === 'blocked') {
@@ -199,7 +232,7 @@ const ContextProvider = ({ children }: any) => {
     }
   }, [user?.status, router]);
 
-  const logInWithGoogle = async () => {
+  const logInWithGoogle = useCallback(async () => {
     let result = null,
       error = null;
     try {
@@ -209,357 +242,500 @@ const ContextProvider = ({ children }: any) => {
     }
 
     return { result, error };
-  };
+  }, []);
 
-  const logOut = async () => {
+  const logOut = useCallback(async () => {
     await logout();
     router.push('/');
-  };
-  const deleteAccount = async () => {
+  }, [router]);
+
+  const deleteAccount = useCallback(async () => {
     await fetch('/api/user/delete-account', {
       method: 'DELETE',
     });
 
     router.push('/logout');
-  };
+  }, [router]);
 
-  const isPersonalInfoCompleted =
-    Object.keys(user?.personalInfo || {}).length > 0;
-  const isProfessionalInfoCompleted =
-    Object.keys(user?.professionalInfo || {}).length > 0;
-  const isDocumentUploadCompleted =
-    Object.keys(user?.documents || {}).length > 0;
-
-  const isUndreadNotification = notifications?.filter(
-    (noti: any) => !noti.isRead
+  const isPersonalInfoCompleted = useMemo(
+    () => Object.keys(user?.personalInfo || {}).length > 0,
+    [user?.personalInfo]
   );
 
-  const handleLogin = async (data: any, source: string) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: data.email,
-        password: data.password,
-        source,
-      }),
-    });
+  const isProfessionalInfoCompleted = useMemo(
+    () => Object.keys(user?.professionalInfo || {}).length > 0,
+    [user?.professionalInfo]
+  );
 
-    const responseData: any = await response.json();
-    refetchUser();
-    source === 'admin' && refetchUsers();
-    if (responseData.status === 200) {
-      const completionPercentage = responseData.completionPercentage;
-      if (source === 'admin') {
-        window.location.href = '/admin';
-        // router.push('/admin');
-      } else {
-        const proPath =
-          completionPercentage > 50
-            ? '/pro/profile'
-            : '/pro/onboard/personal-info';
+  const isDocumentUploadCompleted = useMemo(
+    () => Object.keys(user?.documents || {}).length > 0,
+    [user?.documents]
+  );
 
-        const partnerPath =
-          completionPercentage > 50
-            ? querySuffix
-              ? `/partner/pros/${id}?s=true`
-              : '/partner/profile'
-            : `/partner/onboard/personal-info${querySuffix}`;
+  const isUndreadNotification = useMemo(
+    () => notifications?.filter((noti: any) => !noti.isRead) || [],
+    [notifications]
+  );
 
-        source === 'pro' && router.push(proPath);
-        source === 'partner' && router.push(partnerPath);
-        return toast.success(responseData.message || `Login successful`, {
+  const handleLogin = useCallback(
+    async (data: any, source: string) => {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          source,
+        }),
+      });
+
+      const responseData: any = await response.json();
+      refetchUser();
+      if (source === 'admin') refetchUsers();
+      if (responseData.status === 200) {
+        const completionPercentage = responseData.completionPercentage;
+        if (source === 'admin') {
+          window.location.href = '/admin';
+        } else {
+          const proPath =
+            completionPercentage > 50
+              ? '/pro/profile'
+              : '/pro/onboard/personal-info';
+
+          const partnerPath =
+            completionPercentage > 50
+              ? querySuffix
+                ? `/partner/pros/${id}?s=true`
+                : '/partner/profile'
+              : `/partner/onboard/personal-info${querySuffix}`;
+
+          if (source === 'pro') router.push(proPath);
+          if (source === 'partner') router.push(partnerPath);
+          toast.success(responseData.message || `Login successful`, {
+            position: 'top-center',
+          });
+        }
+      }
+
+      if (responseData.status === 500) {
+        toast.error(responseData.message || `Login failed`, {
           position: 'top-center',
         });
       }
-    }
+    },
+    [router, refetchUser, refetchUsers, querySuffix, id]
+  );
 
-    if (responseData.status === 500) {
-      return toast.error(responseData.message || `Login failed`, {
-        position: 'top-center',
+  const handleSignup = useCallback(
+    async (data: any, source: string) => {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          role: source,
+        }),
       });
-    }
-  };
 
-  const handleSignup = async (data: any, source: string) => {
-    const response = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: data.email,
-        password: data.password,
-        // phone: data.phone,
-        role: source,
-      }),
-    });
+      const responseData: any = await response.json();
 
-    const responseData: any = await response.json();
-
-    if (responseData.status === 200) {
-      source === 'pro'
-        ? router.push('/pro/login')
-        : router.push(`/partner/login${querySuffix}`);
-      return toast.success(responseData.message || `Signup successful`, {
-        position: 'top-center',
-      });
-    }
-
-    if (responseData.status === 500) {
-      return toast.error(responseData.message || `Signup failed`, {
-        position: 'top-center',
-      });
-    }
-  };
-
-  const handleForgotPassword = async (data: any, source: string) => {
-    const response = await fetch('/api/auth/forgot-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: data.email,
-      }),
-    });
-
-    const responseData: any = await response.json();
-
-    if (responseData.status === 200) {
-      const otpExpiry = responseData.otpExpiry;
-
-      window.localStorage.setItem('otpExpiry', otpExpiry);
-
-      source === 'pro'
-        ? (window.location.href = `/pro/verify-otp?email=${data.email}`)
-        : (window.location.href = `/partner/verify-otp?email=${data.email}`);
-      return toast.success(responseData.message || `OTP sent successfully`, {
-        position: 'top-center',
-      });
-    }
-
-    if (responseData.status === 500) {
-      return toast.error(responseData.message || `OTP sending failed`, {
-        position: 'top-center',
-      });
-    }
-  };
-  const handleResetPassword = async (
-    data: any,
-    email: string,
-    source: string
-  ) => {
-    const response = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        password: data.password,
-      }),
-    });
-
-    const responseData: any = await response.json();
-
-    if (responseData.status === 200) {
-      source === 'pro'
-        ? (window.location.href = `/pro/login`)
-        : (window.location.href = `/partner/login`);
-      return toast.success(
-        responseData.message || `Password reset successfull`,
-        {
-          position: 'top-center',
+      if (responseData.status === 200) {
+        if (source === 'pro') {
+          router.push('/pro/login');
+        } else {
+          router.push(`/partner/login${querySuffix}`);
         }
-      );
-    }
+        toast.success(responseData.message || `Signup successful`, {
+          position: 'top-center',
+        });
+        return;
+      }
 
-    if (responseData.status === 500) {
-      return toast.error(responseData.message || `Password reset failed`, {
-        position: 'top-center',
+      if (responseData.status === 500) {
+        toast.error(responseData.message || `Signup failed`, {
+          position: 'top-center',
+        });
+      }
+    },
+    [router, querySuffix]
+  );
+
+  const handleForgotPassword = useCallback(
+    async (data: any, source: string) => {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+        }),
       });
-    }
-  };
 
-  const handleResendOTP = async (email: string) => {
+      const responseData: any = await response.json();
+
+      if (responseData.status === 200) {
+        const otpExpiry = responseData.otpExpiry;
+        window.localStorage.setItem('otpExpiry', otpExpiry);
+
+        if (source === 'pro') {
+          window.location.href = `/pro/verify-otp?email=${data.email}`;
+        } else {
+          window.location.href = `/partner/verify-otp?email=${data.email}`;
+        }
+        toast.success(responseData.message || `OTP sent successfully`, {
+          position: 'top-center',
+        });
+        return;
+      }
+
+      if (responseData.status === 500) {
+        toast.error(responseData.message || `OTP sending failed`, {
+          position: 'top-center',
+        });
+      }
+    },
+    []
+  );
+  const handleResetPassword = useCallback(
+    async (data: any, email: string, source: string) => {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password: data.password,
+        }),
+      });
+
+      const responseData: any = await response.json();
+
+      if (responseData.status === 200) {
+        if (source === 'pro') {
+          window.location.href = `/pro/login`;
+        } else {
+          window.location.href = `/partner/login`;
+        }
+        toast.success(responseData.message || `Password reset successful`, {
+          position: 'top-center',
+        });
+        return;
+      }
+
+      if (responseData.status === 500) {
+        toast.error(responseData.message || `Password reset failed`, {
+          position: 'top-center',
+        });
+      }
+    },
+    []
+  );
+
+  const handleResendOTP = useCallback(async (email: string) => {
     setIsResendOTPLoading(true);
     const response = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-      }),
+      body: JSON.stringify({ email }),
     });
 
     const responseData: any = await response.json();
 
     if (responseData.status === 200) {
       setIsOtpResend(true);
-
       const otpExpiry = responseData.otpExpiry;
-
       window.localStorage.setItem('otpExpiry', otpExpiry);
       setIsResendOTPLoading(false);
-      return toast.success(responseData.message || `OTP resent successfully`, {
+      toast.success(responseData.message || `OTP resent successfully`, {
         position: 'top-center',
       });
+      return;
     }
 
     if (responseData.status === 500) {
       setIsResendOTPLoading(false);
-      return toast.error(responseData.message || `OTP resending failed`, {
+      toast.error(responseData.message || `OTP resending failed`, {
         position: 'top-center',
       });
     }
-  };
+  }, []);
 
-  const handleVerifyOTP = async (otp: any, email: string, source: string) => {
-    const response = await fetch('/api/auth/verify-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        otp,
-      }),
-    });
+  const handleVerifyOTP = useCallback(
+    async (otp: any, email: string, source: string) => {
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      });
 
-    const responseData: any = await response.json();
+      const responseData: any = await response.json();
 
-    if (responseData.status === 200) {
-      source === 'pro'
-        ? (window.location.href = `/pro/reset-password?email=${email}`)
-        : (window.location.href = `/partner/reset-password?email=${email}`);
-      return toast.success(
-        responseData.message || `OTP verified successfully`,
-        {
-          position: 'top-center',
+      if (responseData.status === 200) {
+        if (source === 'pro') {
+          window.location.href = `/pro/reset-password?email=${email}`;
+        } else {
+          window.location.href = `/partner/reset-password?email=${email}`;
         }
-      );
-    }
+        toast.success(responseData.message || `OTP verified successfully`, {
+          position: 'top-center',
+        });
+        return;
+      }
 
-    if (responseData.status === 500) {
-      return toast.error(responseData.message || `OTP verification failed`, {
-        position: 'top-center',
+      if (responseData.status === 500) {
+        toast.error(responseData.message || `OTP verification failed`, {
+          position: 'top-center',
+        });
+      }
+    },
+    []
+  );
+
+  const sendNotification = useCallback(
+    async (message: string, userId: string, email?: string) => {
+      await fetch('/api/user/notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          user: userId,
+          email,
+        }),
       });
-    }
-  };
+    },
+    []
+  );
 
-  const sendNotification = async (
-    message: string,
-    user: string,
-    email?: string
-  ) => {
-    await fetch('/api/user/notification', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message,
-        user,
-        email,
-      }),
-    });
-  };
+  const handleSavePersonalInfo = useCallback(
+    async (source: string) => {
+      try {
+        if (personalInfoRef.current) {
+          console.log('insidee', personalInfoRef.current);
+          await personalInfoRef.current.submitForm();
+        }
 
-  const handleSavePersonalInfo = async (source: string) => {
-    try {
-      if (personalInfoRef.current) {
-        console.log('insidee', personalInfoRef.current);
-        await personalInfoRef.current.submitForm();
+        if (source === 'pro' && professionalInfoRef.current) {
+          await professionalInfoRef.current.submitForm();
+        }
+        if (source === 'pro' && documentUploadRef.current) {
+          console.log('documentUploadRef.current', documentUploadRef.current);
+          await documentUploadRef.current.submitForm();
+        }
+        closeEditModal();
+      } catch (error) {
+        console.error('Error submitting forms:', error);
       }
-
-      if (source === 'pro' && professionalInfoRef.current) {
-        await professionalInfoRef.current.submitForm();
-      }
-      if (source === 'pro' && documentUploadRef.current) {
-        console.log('documentUploadRef.current', documentUploadRef.current);
-        await documentUploadRef.current.submitForm();
-      }
-      closeEditModal();
-    } catch (error) {
-      console.error('Error submitting forms:', error);
-    }
-  };
+    },
+    [closeEditModal]
+  );
 
   // console.log({ user });
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      // User data
+      user,
+      isPersonalInfoCompleted,
+      isProfessionalInfoCompleted,
+      isDocumentUploadCompleted,
+      refetchUser,
+      isUserLoading,
+
+      // Alert modal
+      openAlert,
+      closeAlert,
+      isOpenAlert,
+
+      // Partner modal
+      openPartner,
+      closePartner,
+      isPartnerOpen,
+
+      // Cookies
+      cookies,
+      isRefreshed,
+      setIsRefreshed,
+
+      // Auth
+      logOut,
+      logInWithGoogle,
+      isLoading,
+      setIsLoading,
+      handleLogin,
+      handleSignup,
+      handleForgotPassword,
+      handleVerifyOTP,
+      handleResendOTP,
+      isOtpResend,
+      isResendOTPLoading,
+      setIsResendOTPLoading,
+      handleResetPassword,
+      deleteAccount,
+
+      // Offers
+      offers,
+      refetchOffers,
+      isOffersLoading,
+      offerData,
+      setOfferData,
+      pendingOffers,
+      jobOffers,
+
+      // Offer action modal
+      actionData,
+      setActionData,
+      isOpenOfferAction,
+      openOfferAction,
+      closeOfferAction,
+
+      // URL params
+      querySuffix,
+      shouldStorePro,
+      id,
+
+      // Notifications
+      notifications,
+      refetchNotifications,
+      isUndreadNotification,
+      sendNotification,
+
+      // Admin: Users
+      users,
+      refetchUsers,
+      isUsersLoading,
+      pros,
+      partners,
+
+      // Admin: QA Users
+      qaPros,
+      qaPartners,
+      refetchQaUsers,
+      isQaUsersLoading,
+
+      // Admin: Feedbacks
+      feedbacks,
+      isFeedbacksLoading,
+      isFeedbacksError,
+      refetchFeedbacks,
+      qaFeedbacks,
+      isQaFeedbacksLoading,
+      isQaFeedbacksError,
+      refetchQaFeedbacks,
+      openFeedbackModal,
+      setOpenFeedbackModal,
+
+      // Onboarding refs
+      personalInfoRef,
+      professionalInfoRef,
+      documentUploadRef,
+      handleSavePersonalInfo,
+
+      // Edit modal
+      openEditModal,
+      closeEditModal,
+      isOpenEditModal,
+      adminEditData,
+      setAdminEditData,
+    }),
+    [
+      // User data
+      user,
+      isPersonalInfoCompleted,
+      isProfessionalInfoCompleted,
+      isDocumentUploadCompleted,
+      refetchUser,
+      isUserLoading,
+
+      // Alert modal
+      openAlert,
+      closeAlert,
+      isOpenAlert,
+
+      // Partner modal
+      openPartner,
+      closePartner,
+      isPartnerOpen,
+
+      // Cookies
+      cookies,
+      isRefreshed,
+
+      // Auth
+      logOut,
+      logInWithGoogle,
+      isLoading,
+      handleLogin,
+      handleSignup,
+      handleForgotPassword,
+      handleVerifyOTP,
+      handleResendOTP,
+      isOtpResend,
+      isResendOTPLoading,
+      handleResetPassword,
+      deleteAccount,
+
+      // Offers
+      offers,
+      refetchOffers,
+      isOffersLoading,
+      offerData,
+      pendingOffers,
+      jobOffers,
+
+      // Offer action modal
+      actionData,
+      isOpenOfferAction,
+      openOfferAction,
+      closeOfferAction,
+
+      // URL params
+      querySuffix,
+      shouldStorePro,
+      id,
+
+      // Notifications
+      notifications,
+      refetchNotifications,
+      isUndreadNotification,
+      sendNotification,
+
+      // Admin: Users
+      users,
+      refetchUsers,
+      isUsersLoading,
+      pros,
+      partners,
+
+      // Admin: QA Users
+      qaPros,
+      qaPartners,
+      refetchQaUsers,
+      isQaUsersLoading,
+
+      // Admin: Feedbacks
+      feedbacks,
+      isFeedbacksLoading,
+      isFeedbacksError,
+      refetchFeedbacks,
+      qaFeedbacks,
+      isQaFeedbacksLoading,
+      isQaFeedbacksError,
+      refetchQaFeedbacks,
+      openFeedbackModal,
+
+      // Onboarding refs (refs are stable, no need to include)
+      handleSavePersonalInfo,
+
+      // Edit modal
+      openEditModal,
+      closeEditModal,
+      isOpenEditModal,
+      adminEditData,
+    ]
+  );
+
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        isPersonalInfoCompleted,
-        isProfessionalInfoCompleted,
-        isDocumentUploadCompleted,
-        refetchUser,
-        openAlert,
-        openPartner,
-        closeAlert,
-        closePartner,
-        isOpenAlert,
-        isPartnerOpen,
-        cookies,
-        isRefreshed,
-        setIsRefreshed,
-        logOut,
-        logInWithGoogle,
-        isLoading,
-        setIsLoading,
-        handleLogin,
-        handleSignup,
-        handleForgotPassword,
-        handleVerifyOTP,
-        handleResendOTP,
-        isOtpResend,
-        isResendOTPLoading,
-        setIsResendOTPLoading,
-        handleResetPassword,
-        offers,
-        refetchOffers,
-        isOffersLoading,
-        offerData,
-        setOfferData,
-        querySuffix,
-        shouldStorePro,
-        id,
-        actionData,
-        setActionData,
-        pendingOffers,
-        isOpenOfferAction,
-        openOfferAction,
-        closeOfferAction,
-        jobOffers,
-        notifications,
-        refetchNotifications,
-        isUserLoading,
-        isUndreadNotification,
-        sendNotification,
-        deleteAccount,
-        users,
-        refetchUsers,
-        isUsersLoading,
-        personalInfoRef,
-        professionalInfoRef,
-        documentUploadRef,
-        handleSavePersonalInfo,
-        openEditModal,
-        closeEditModal,
-        isOpenEditModal,
-        adminEditData,
-        setAdminEditData,
-        pros,
-        partners,
-        qaPros,
-        qaPartners,
-        refetchQaUsers,
-        isQaUsersLoading,
-        feedbacks,
-        isFeedbacksLoading,
-        isFeedbacksError,
-        refetchFeedbacks,
-        qaFeedbacks,
-        isQaFeedbacksLoading,
-        isQaFeedbacksError,
-        refetchQaFeedbacks,
-        openFeedbackModal,
-        setOpenFeedbackModal,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 };
 

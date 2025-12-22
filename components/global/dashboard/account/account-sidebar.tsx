@@ -4,13 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import ProfileName from '../profile-name';
 import ProAccountInfo from './pro-account-info';
-import { useAppContext } from '@/lib/context';
+import { useAuthContext, useUserContext } from '@/lib/contexts';
 import PartnerAccountInfo from './partner-account-info';
 
 const AccountSidebar = () => {
-  const { user, isUserLoading, deleteAccount } = useAppContext();
+  const { user, isUserLoading } = useUserContext();
+  const { deleteAccount } = useAuthContext();
   const name =
-    user?.personalInfo?.firstName + ' ' + user?.personalInfo?.lastName;
+    user?.personalInfo?.firstName && user?.personalInfo?.lastName
+      ? `${user?.personalInfo?.firstName} ${user?.personalInfo?.lastName}`
+      : 'N/A';
   const status = user?.status;
 
   if (isUserLoading) {

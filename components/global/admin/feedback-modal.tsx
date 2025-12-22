@@ -13,9 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { Check, User, PhoneCall } from 'lucide-react';
 import moment from 'moment';
-import { useAppContext } from '@/lib/context';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useAdminContext } from '@/lib/contexts';
 
 interface FeedbackModalProps {
   data: any;
@@ -23,7 +23,7 @@ interface FeedbackModalProps {
 }
 
 export function FeedbackModal({ data, children }: FeedbackModalProps) {
-  const { refetchFeedbacks, refetchQaFeedbacks } = useAppContext();
+  const { refetchFeedbacks, refetchQaFeedbacks } = useAdminContext();
 
   const [open, setOpen] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');

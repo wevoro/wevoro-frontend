@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 import React, {
   forwardRef,
@@ -9,17 +8,25 @@ import React, {
 import Title from '@/components/global/title';
 import { Input } from '@/components/ui/input';
 import OnboardButton from '@/components/global/onboard-button';
-import { CloudUploadIcon, LinkIcon } from 'lucide-react';
+import { CloudUploadIcon, LinkIcon, Sparkles } from 'lucide-react';
 import AddMore from '@/components/global/professional-info/add-more';
 import Remove from '@/components/global/professional-info/remove';
 import SkillsSelector from '@/components/global/professional-info/skills-selector';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { useAppContext } from '@/lib/context';
+
 import { toast } from 'sonner';
 import LoadingOverlay from '@/components/global/loading-overlay';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Editor from '../ui/editor';
+import {
+  useAdminContext,
+  useOnboardContext,
+  useUIContext,
+  useUserContext,
+} from '@/lib/contexts';
+import { Button } from '../ui/button';
+import { AutoFillAlert } from './dashboard/autofill-alert';
 
 const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { from, userFromAdmin, onClose } = props;
@@ -27,22 +34,38 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const searchParams = useSearchParams();
   const isEdit = searchParams.get('edit') === 'true';
 
-  const {
-    user,
-    refetchUser,
-    professionalInfoRef,
-    refetchUsers,
-    refetchQaUsers,
-  } = useAppContext();
+  const { professionalInfoRef, extractedData, setExtractedData } =
+    useOnboardContext();
+  const { user, refetchUser, isUserLoading } = useUserContext();
+  console.log('🚀 ~ user:', Boolean({}));
+  const { refetchUsers, refetchQaUsers } = useAdminContext();
+  const { setOpenAutoFillModal } = useUIContext();
+  const extractedProfessionalInfo = extractedData?.professionalInformation;
+  console.log('🚀 ~ extractedProfessionalInfo:', extractedProfessionalInfo);
 
-  const userData =
-    from && userFromAdmin?.professionalInfo
+  const userData = extractedProfessionalInfo
+    ? extractedProfessionalInfo
+    : from && userFromAdmin?.professionalInfo
       ? userFromAdmin?.professionalInfo
       : !from && user?.professionalInfo
         ? user?.professionalInfo
         : {};
 
   const { education, experience, certifications, skills } = userData;
+
+  useEffect(() => {
+    if (
+      extractedProfessionalInfo &&
+      Object.keys(extractedProfessionalInfo).length > 0
+    ) {
+      reset({
+        education: extractedProfessionalInfo.education,
+        experience: extractedProfessionalInfo.experience,
+        certifications: extractedProfessionalInfo.certifications,
+        skills: extractedProfessionalInfo.skills,
+      });
+    }
+  }, [extractedProfessionalInfo]);
 
   const processedCertifications = certifications?.map((certification: any) => {
     return {
@@ -55,7 +78,6 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         : '',
     };
   });
-  console.log('🚀 ~ processedCertifications:', processedCertifications);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -91,7 +113,6 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       ],
       certifications: processedCertifications || [
         {
-          fileId: new Date().getTime(),
           title: '',
           institution: '',
           issueDate: '',
@@ -142,63 +163,56 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   }, [isMounted]);
 
   const onSubmit = async (data: any) => {
-    console.log('🚀 ~ onSubmit ~ data:', data);
     try {
+      // Skip submission if form is not dirty and not in edit mode
       if (!isDirty && !isEdit && !from) {
         return router.push('/pro/onboard/document-upload');
       }
 
+      setExtractedData(null);
+
       setIsLoading(true);
-      const certificationData = data.certifications.map(
-        (certification: any) => {
-          return {
-            ...certification,
-            issueDate: certification.issueDate
-              ? new Date(certification.issueDate).toISOString()
-              : '',
-            expireDate: certification.expireDate
-              ? new Date(certification.expireDate).toISOString()
-              : '',
-          };
-        }
-      );
-      console.log('🚀 ~ onSubmit ~ certificationData:', certificationData);
-
-      data.certifications = certificationData;
-
-      const certificationFiles = data.certifications.map(
-        (certification: any) => {
-          return {
-            certificateFile: certification.certificateFile?.[0] || '',
-            fileId: certification.fileId || new Date().getTime().toString(),
-          };
-        }
-      );
-
-      const newCertificationData = data.certifications.map(
-        (certification: any) => {
-          return {
-            ...certification,
-            // ...(certification.certificateFile ? { certificateFile: '' } : {}),
-          };
-        }
-      );
-      // console.log({ certificationFiles, newCertificationData });
-
       const formData = new FormData();
-      if (newCertificationData?.length > 0) {
-        data.certifications = newCertificationData;
-      }
 
-      for (const file of certificationFiles) {
-        if (typeof file.certificateFile === 'object' && file.certificateFile) {
-          formData.append(`${file.fileId}`, file.certificateFile, file.fileId);
+      // Process certifications: format dates and clean up data
+      const processedCertifications = data.certifications.map(
+        (cert: any, index: number) => {
+          // Get the actual file if it exists (from file input)
+          const uploadedFile = cert.certificateFile?.[0];
+          const hasNewFile = uploadedFile instanceof File;
+
+          // If there's a new file to upload, append it with index as key
+          if (hasNewFile) {
+            formData.append(`certification_${index}`, uploadedFile);
+          }
+
+          // Build clean certification object
+          const { certificateFile, fileId, ...cleanCert } = cert;
+
+          return {
+            ...cleanCert,
+            // Format dates to ISO strings
+            issueDate: cert.issueDate
+              ? new Date(cert.issueDate).toISOString()
+              : '',
+            expireDate: cert.expireDate
+              ? new Date(cert.expireDate).toISOString()
+              : '',
+            // Preserve existing certificateFile URL if it's a string (already uploaded)
+            ...(typeof certificateFile === 'string' && certificateFile
+              ? { certificateFile }
+              : {}),
+          };
         }
-      }
+      );
 
-      // console.log({ data });
+      // Prepare final data payload
+      const payload = {
+        ...data,
+        certifications: processedCertifications,
+      };
 
-      formData.append('data', JSON.stringify(data));
+      formData.append('data', JSON.stringify(payload));
 
       if (from === 'admin') {
         formData.append('id', userFromAdmin?._id);
@@ -210,13 +224,12 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       });
 
       const responseData = await response.json();
-      // console.log('🚀 ~ onSubmit ~ responseData:', responseData);
+
       if (responseData.status === 200) {
         refetchUser();
         if (from === 'admin') {
           refetchUsers();
           refetchQaUsers();
-          // onClose && onClose();
         }
         reset();
         if (!from) {
@@ -234,17 +247,27 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       } else {
         toast.error(responseData.message || 'Something went wrong!');
       }
-      setIsLoading(false);
     } catch (error: any) {
-      setIsLoading(false);
-      console.log('inside catch', error);
+      console.error('Professional info submission error:', error);
       toast.error(error.message || 'Something went wrong!');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useImperativeHandle(professionalInfoRef, () => ({
+  // @ts-nocheck
+  useImperativeHandle(professionalInfoRef, (): any => ({
     submitForm: () => handleSubmit(onSubmit)(),
   }));
+
+  // Helper to safely access array field errors with proper typing
+  const getArrayFieldError = (
+    fieldErrors: any,
+    index: number,
+    fieldName: string
+  ) => {
+    return fieldErrors?.[index]?.[fieldName];
+  };
 
   const renderError = (message: string) => {
     return <p className='text-red-500 text-sm'>{message}</p>;
@@ -263,7 +286,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
 
   return (
     <form ref={professionalInfoRef} onSubmit={handleSubmit(onSubmit)}>
-      <Title text='Professional Info' />
+      <div className='flex items-center justify-between mb-8'>
+        <Title text='Professional Info' className='mb-0' />
+        <AutoFillAlert source='professional-info' />
+      </div>
 
       {isLoading && <LoadingOverlay />}
 
@@ -293,12 +319,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                         !!watch(`education.${index}.fieldOfStudy`) ||
                         !!watch(`education.${index}.grade`),
                     })}
-                    isError={!!errors.education?.[index]?.degree}
+                    isError={
+                      !!getArrayFieldError(errors.education, index, 'degree')
+                    }
                   />
-                  {errors.education &&
-                    errors.education[index] &&
-                    errors.education[index].degree &&
-                    renderError(errors.education[index].degree.message!)}
+                  {getArrayFieldError(errors.education, index, 'degree') &&
+                    renderError(
+                      getArrayFieldError(errors.education, index, 'degree')
+                        .message!
+                    )}
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-[#1C1C1C]'>
@@ -314,12 +343,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                         !!watch(`education.${index}.fieldOfStudy`) ||
                         !!watch(`education.${index}.grade`),
                     })}
-                    isError={!!errors.education?.[index]?.institution}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.education,
+                        index,
+                        'institution'
+                      )
+                    }
                   />
-                  {errors.education &&
-                    errors.education[index] &&
-                    errors.education[index].institution &&
-                    renderError(errors.education[index].institution.message!)}
+                  {getArrayFieldError(errors.education, index, 'institution') &&
+                    renderError(
+                      getArrayFieldError(errors.education, index, 'institution')
+                        .message!
+                    )}
                 </div>
               </div>
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
@@ -398,12 +434,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                         !!watch(`experience.${index}.duration`) ||
                         !!watch(`experience.${index}.responsibilities`),
                     })}
-                    isError={!!errors.experience?.[index]?.jobTitle}
+                    isError={
+                      !!getArrayFieldError(errors.experience, index, 'jobTitle')
+                    }
                   />
-                  {errors.experience &&
-                    errors.experience[index] &&
-                    errors.experience[index].jobTitle &&
-                    renderError(errors.experience[index].jobTitle.message!)}
+                  {getArrayFieldError(errors.experience, index, 'jobTitle') &&
+                    renderError(
+                      getArrayFieldError(errors.experience, index, 'jobTitle')
+                        .message!
+                    )}
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-[#1C1C1C]'>
@@ -413,7 +452,13 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
                     placeholder='Input Text'
                     {...register(`experience.${index}.companyName`)}
-                    isError={!!errors.experience?.[index]?.companyName}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.experience,
+                        index,
+                        'companyName'
+                      )
+                    }
                   />
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -424,7 +469,9 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
                     placeholder='Input Text'
                     {...register(`experience.${index}.duration`)}
-                    isError={!!errors.experience?.[index]?.duration}
+                    isError={
+                      !!getArrayFieldError(errors.experience, index, 'duration')
+                    }
                   />
                 </div>
               </div>
@@ -488,12 +535,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.title`, {
                       required: from !== 'admin' && 'Title is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.title}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'title'
+                      )
+                    }
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].title &&
-                    renderError(errors.certifications[index].title.message!)}
+                  {getArrayFieldError(errors.certifications, index, 'title') &&
+                    renderError(
+                      getArrayFieldError(errors.certifications, index, 'title')
+                        .message!
+                    )}
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-[#1C1C1C]'>
@@ -509,13 +563,25 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       required:
                         from !== 'admin' && 'Name of Institute is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.institution}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'institution'
+                      )
+                    }
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].institution &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'institution'
+                  ) &&
                     renderError(
-                      errors.certifications[index].institution.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'institution'
+                      ).message!
                     )}
                 </div>
               </div>
@@ -534,14 +600,26 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.issueDate`, {
                       required: from !== 'admin' && 'Issue Date is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.issueDate}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'issueDate'
+                      )
+                    }
                     max={new Date().toISOString().split('T')[0]}
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].issueDate &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'issueDate'
+                  ) &&
                     renderError(
-                      errors.certifications[index].issueDate.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'issueDate'
+                      ).message!
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -558,14 +636,26 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.expireDate`, {
                       required: from !== 'admin' && 'Expire Date is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.expireDate}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'expireDate'
+                      )
+                    }
                     min={getIssueDate(index)}
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].expireDate &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'expireDate'
+                  ) &&
                     renderError(
-                      errors.certifications[index].expireDate.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'expireDate'
+                      ).message!
                     )}
                 </div>
               </div>
@@ -600,13 +690,25 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.credentialId`, {
                       required: from !== 'admin' && 'Credential ID is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.credentialId}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'credentialId'
+                      )
+                    }
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].credentialId &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'credentialId'
+                  ) &&
                     renderError(
-                      errors.certifications[index].credentialId.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'credentialId'
+                      ).message!
                     )}
                 </div>
               </div>
@@ -650,11 +752,17 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     //   );
                     // }}
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].certificateFile &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'certificateFile'
+                  ) &&
                     renderError(
-                      errors.certifications[index].certificateFile.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'certificateFile'
+                      ).message!
                     )}
                   {watchCertificationFileData[index]?.certificateFile &&
                     watchCertificationFileData[index]?.certificateFile?.[0]
@@ -729,7 +837,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           />
           {errors.skills &&
             errors.skills.message &&
-            renderError(errors.skills.message)}
+            renderError(errors.skills.message as string)}
         </div>
 
         {from !== 'admin' && (

@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import Auth from '@/components/auth/auth';
 import AuthForm from '@/components/auth/auth-form';
-import { useAppContext } from '@/lib/context';
+import { useAuthContext } from '@/lib/contexts';
 
 const signupFields = [
   {
@@ -54,7 +54,7 @@ export default function ProSignup({
   leftDescription,
   alreadyHaveAccount,
 }: any) {
-  const { handleSignup } = useAppContext();
+  const { handleSignup } = useAuthContext();
 
   return (
     <Auth

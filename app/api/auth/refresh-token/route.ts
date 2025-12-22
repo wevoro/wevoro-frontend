@@ -1,44 +1,37 @@
 import { logout } from "@/app/actions";
 import api from "@/lib/axiosInterceptor";
-import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  // Call your Express backend
+export async function POST(req: NextRequest) {
   try {
-    const { refreshToken } = await req.json();
+    // Read refresh token from httpOnly cookie (secure) instead of request body
+    const refreshToken = cookies().get("refreshToken")?.value;
+
+    if (!refreshToken) {
+      await logout();
+      return NextResponse.json(
+        { status: 401, message: "No refresh token found" },
+        { status: 401 }
+      );
+    }
 
     const response = await api.post(`/auth/refresh-token`, {
       refreshToken,
     });
 
-    const { accessToken, refreshToken: newRefreshToken } = response.data?.data;
-    const res = NextResponse.json({ message: "Token refreshed" });
+    const { accessToken } = response.data?.data;
+    const res = NextResponse.json({ message: "Token refreshed", status: 200 });
 
+    // Only refresh the ACCESS token, NOT the refresh token
+    // This implements "absolute session timeout" - refresh token keeps its original expiry
     res.cookies.delete("accessToken");
-    res.cookies.delete("refreshToken");
-    res.cookies.delete("tokenRefreshIn");
-
-    const now = new Date();
-    const tokenRefreshIn = new Date(now.getTime() + 59 * 60 * 1000);
 
     res.cookies.set("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000, // 1 hour
-      path: "/",
-    });
-
-    res.cookies.set("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000, // 1 hour
-      path: "/",
-    });
-
-    res.cookies.set("tokenRefreshIn", tokenRefreshIn.toISOString(), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 59 * 60 * 1000, // 59 minutes
+      sameSite: "lax",
+      maxAge: 60 * 60, // 1 hour (for testing) - change to 60 * 60 for production
       path: "/",
     });
 
@@ -47,9 +40,11 @@ export async function POST(req: Request) {
     console.log("error from refresh token", error);
 
     await logout();
-    return NextResponse.json({
-      status: 500,
-      message: "Token refresh failed",
-    });
+    return NextResponse.json(
+      { status: 401, message: "Token refresh failed" },
+      { status: 401 }
+    );
   }
 }
+
+

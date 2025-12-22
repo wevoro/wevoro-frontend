@@ -17,9 +17,9 @@ export default function Navbar({
 }: {
   environmentType: string;
 }) {
-  const { user } = useUserContext();
+  const { user, isUserLoading } = useUserContext();
   const { isAuthenticated } = useCookiesContext();
-  console.log('🚀 ~ Navbar ~ isAuthenticated:', isAuthenticated);
+  console.log('🚀 ~ Navbar ~ isAuthenticated:', isAuthenticated, isUserLoading);
 
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -215,45 +215,47 @@ export default function Navbar({
               </Button>
             </div>
           ) : (
-            <>
-              {!user?.email && (
-                <div className='hidden md:flex items-center space-x-6'>
-                  {pathname !== '/' ? (
-                    <>
-                      <Link
-                        href={registerPath}
-                        className='text-[#6C6C6C] hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
-                      >
-                        Register
-                      </Link>
-
-                      <Button
-                        href={loginPath}
-                        className='text-white h-10 px-5 rounded-lg font-medium'
-                      >
-                        Login
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <SelectAuthPath type='Register'>
-                        <Button
-                          variant='special'
+            !isUserLoading && (
+              <>
+                {!user?.email && (
+                  <div className='hidden md:flex items-center space-x-6'>
+                    {pathname !== '/' ? (
+                      <>
+                        <Link
+                          href={registerPath}
                           className='text-[#6C6C6C] hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
                         >
                           Register
-                        </Button>
-                      </SelectAuthPath>
-                      <SelectAuthPath type='Login'>
-                        <Button className='text-white h-10 px-5 rounded-lg font-medium'>
+                        </Link>
+
+                        <Button
+                          href={loginPath}
+                          className='text-white h-10 px-5 rounded-lg font-medium'
+                        >
                           Login
                         </Button>
-                      </SelectAuthPath>
-                    </>
-                  )}
-                </div>
-              )}
-            </>
+                      </>
+                    ) : (
+                      <>
+                        <SelectAuthPath type='Register'>
+                          <Button
+                            variant='special'
+                            className='text-[#6C6C6C] hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
+                          >
+                            Register
+                          </Button>
+                        </SelectAuthPath>
+                        <SelectAuthPath type='Login'>
+                          <Button className='text-white h-10 px-5 rounded-lg font-medium'>
+                            Login
+                          </Button>
+                        </SelectAuthPath>
+                      </>
+                    )}
+                  </div>
+                )}
+              </>
+            )
           )}
           {user?.email && (
             <div className='hidden md:flex items-center space-x-6'>

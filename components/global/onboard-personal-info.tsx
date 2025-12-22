@@ -105,7 +105,10 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
   };
 
   useEffect(() => {
-    if (extractedPersonalInfo) {
+    if (
+      extractedPersonalInfo &&
+      Object.keys(extractedPersonalInfo).length > 0
+    ) {
       reset(extractedPersonalInfo);
     }
   }, [extractedPersonalInfo]);
@@ -206,7 +209,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
       <div className='flex items-center justify-between mb-8'>
         <Title text='Personal Information' className='mb-0' />
-        <AutoFillAlert />
+        <AutoFillAlert source='personal-info' />
       </div>
 
       <div className='flex flex-col gap-8'>

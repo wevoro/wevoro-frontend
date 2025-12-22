@@ -13,7 +13,8 @@ import { useOnboardContext, useUIContext } from '@/lib/contexts';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export default function AutoFillModal() {
-  const { openAutoFillModal, setOpenAutoFillModal } = useUIContext();
+  const { openAutoFillModal, setOpenAutoFillModal, autoFillClicked } =
+    useUIContext();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -85,6 +86,10 @@ export default function AutoFillModal() {
 
       if (responseData.status === 200) {
         console.log('Autofill successful:', responseData.data);
+
+        if (autoFillClicked === 'professional-info') {
+          delete responseData.data.personalInformation;
+        }
         setExtractedData(responseData.data);
         handleManual();
       } else {
@@ -147,11 +152,13 @@ export default function AutoFillModal() {
             </div>
           ) : (
             <>
-              <DialogHeader>
-                <DialogTitle className='text-center text-2xl md:text-3xl font-medium text-[#1C1C1C]'>
-                  How would you like to continue?
-                </DialogTitle>
-              </DialogHeader>
+              {!autoFillClicked && (
+                <DialogHeader>
+                  <DialogTitle className='text-center text-2xl md:text-3xl font-medium text-[#1C1C1C]'>
+                    How would you like to continue?
+                  </DialogTitle>
+                </DialogHeader>
+              )}
 
               <div className='flex flex-col gap-4 pt-4'>
                 {/* Automatically Option */}
@@ -179,23 +186,25 @@ export default function AutoFillModal() {
                 </button>
 
                 {/* Manually Option */}
-                <button
-                  onClick={handleManual}
-                  className='group flex flex-col items-center rounded-[24px] border border-gray-200 bg-white p-6 text-center transition-all hover:border-gray-300 hover:bg-gray-50'
-                >
-                  <div className='mb-3'>
-                    <Pencil
-                      className='h-7 w-7 text-[#008000]'
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                  <h3 className='mb-2 text-base md:text-xl font-medium text-[#1C1C1C]'>
-                    Manually
-                  </h3>
-                  <p className='text-sm text-[#6C6C6C]'>
-                    Fill the needed information manually
-                  </p>
-                </button>
+                {!autoFillClicked && (
+                  <button
+                    onClick={handleManual}
+                    className='group flex flex-col items-center rounded-[24px] border border-gray-200 bg-white p-6 text-center transition-all hover:border-gray-300 hover:bg-gray-50'
+                  >
+                    <div className='mb-3'>
+                      <Pencil
+                        className='h-7 w-7 text-[#008000]'
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <h3 className='mb-2 text-base md:text-xl font-medium text-[#1C1C1C]'>
+                      Manually
+                    </h3>
+                    <p className='text-sm text-[#6C6C6C]'>
+                      Fill the needed information manually
+                    </p>
+                  </button>
+                )}
 
                 {error && (
                   <p className='text-base text-red-600 text-center mt-2'>

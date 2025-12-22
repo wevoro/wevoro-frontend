@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 import React, {
   forwardRef,
@@ -38,7 +37,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { professionalInfoRef, extractedData, setExtractedData } =
     useOnboardContext();
   const { user, refetchUser, isUserLoading } = useUserContext();
-  console.log('🚀 ~ user:', user);
+  console.log('🚀 ~ user:', Boolean({}));
   const { refetchUsers, refetchQaUsers } = useAdminContext();
   const { setOpenAutoFillModal } = useUIContext();
   const extractedProfessionalInfo = extractedData?.professionalInformation;
@@ -55,8 +54,16 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { education, experience, certifications, skills } = userData;
 
   useEffect(() => {
-    if (extractedProfessionalInfo) {
-      reset(extractedProfessionalInfo);
+    if (
+      extractedProfessionalInfo &&
+      Object.keys(extractedProfessionalInfo).length > 0
+    ) {
+      reset({
+        education: extractedProfessionalInfo.education,
+        experience: extractedProfessionalInfo.experience,
+        certifications: extractedProfessionalInfo.certifications,
+        skills: extractedProfessionalInfo.skills,
+      });
     }
   }, [extractedProfessionalInfo]);
 
@@ -248,9 +255,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     }
   };
 
-  useImperativeHandle(professionalInfoRef, () => ({
+  // @ts-nocheck
+  useImperativeHandle(professionalInfoRef, (): any => ({
     submitForm: () => handleSubmit(onSubmit)(),
   }));
+
+  // Helper to safely access array field errors with proper typing
+  const getArrayFieldError = (
+    fieldErrors: any,
+    index: number,
+    fieldName: string
+  ) => {
+    return fieldErrors?.[index]?.[fieldName];
+  };
 
   const renderError = (message: string) => {
     return <p className='text-red-500 text-sm'>{message}</p>;
@@ -271,7 +288,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     <form ref={professionalInfoRef} onSubmit={handleSubmit(onSubmit)}>
       <div className='flex items-center justify-between mb-8'>
         <Title text='Professional Info' className='mb-0' />
-        <AutoFillAlert />
+        <AutoFillAlert source='professional-info' />
       </div>
 
       {isLoading && <LoadingOverlay />}
@@ -302,12 +319,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                         !!watch(`education.${index}.fieldOfStudy`) ||
                         !!watch(`education.${index}.grade`),
                     })}
-                    isError={!!errors.education?.[index]?.degree}
+                    isError={
+                      !!getArrayFieldError(errors.education, index, 'degree')
+                    }
                   />
-                  {errors.education &&
-                    errors.education[index] &&
-                    errors.education[index].degree &&
-                    renderError(errors.education[index].degree.message!)}
+                  {getArrayFieldError(errors.education, index, 'degree') &&
+                    renderError(
+                      getArrayFieldError(errors.education, index, 'degree')
+                        .message!
+                    )}
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-[#1C1C1C]'>
@@ -323,12 +343,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                         !!watch(`education.${index}.fieldOfStudy`) ||
                         !!watch(`education.${index}.grade`),
                     })}
-                    isError={!!errors.education?.[index]?.institution}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.education,
+                        index,
+                        'institution'
+                      )
+                    }
                   />
-                  {errors.education &&
-                    errors.education[index] &&
-                    errors.education[index].institution &&
-                    renderError(errors.education[index].institution.message!)}
+                  {getArrayFieldError(errors.education, index, 'institution') &&
+                    renderError(
+                      getArrayFieldError(errors.education, index, 'institution')
+                        .message!
+                    )}
                 </div>
               </div>
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
@@ -407,12 +434,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                         !!watch(`experience.${index}.duration`) ||
                         !!watch(`experience.${index}.responsibilities`),
                     })}
-                    isError={!!errors.experience?.[index]?.jobTitle}
+                    isError={
+                      !!getArrayFieldError(errors.experience, index, 'jobTitle')
+                    }
                   />
-                  {errors.experience &&
-                    errors.experience[index] &&
-                    errors.experience[index].jobTitle &&
-                    renderError(errors.experience[index].jobTitle.message!)}
+                  {getArrayFieldError(errors.experience, index, 'jobTitle') &&
+                    renderError(
+                      getArrayFieldError(errors.experience, index, 'jobTitle')
+                        .message!
+                    )}
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-[#1C1C1C]'>
@@ -422,7 +452,13 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
                     placeholder='Input Text'
                     {...register(`experience.${index}.companyName`)}
-                    isError={!!errors.experience?.[index]?.companyName}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.experience,
+                        index,
+                        'companyName'
+                      )
+                    }
                   />
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -433,7 +469,9 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
                     placeholder='Input Text'
                     {...register(`experience.${index}.duration`)}
-                    isError={!!errors.experience?.[index]?.duration}
+                    isError={
+                      !!getArrayFieldError(errors.experience, index, 'duration')
+                    }
                   />
                 </div>
               </div>
@@ -497,12 +535,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.title`, {
                       required: from !== 'admin' && 'Title is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.title}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'title'
+                      )
+                    }
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].title &&
-                    renderError(errors.certifications[index].title.message!)}
+                  {getArrayFieldError(errors.certifications, index, 'title') &&
+                    renderError(
+                      getArrayFieldError(errors.certifications, index, 'title')
+                        .message!
+                    )}
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-[#1C1C1C]'>
@@ -518,13 +563,25 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       required:
                         from !== 'admin' && 'Name of Institute is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.institution}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'institution'
+                      )
+                    }
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].institution &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'institution'
+                  ) &&
                     renderError(
-                      errors.certifications[index].institution.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'institution'
+                      ).message!
                     )}
                 </div>
               </div>
@@ -543,14 +600,26 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.issueDate`, {
                       required: from !== 'admin' && 'Issue Date is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.issueDate}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'issueDate'
+                      )
+                    }
                     max={new Date().toISOString().split('T')[0]}
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].issueDate &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'issueDate'
+                  ) &&
                     renderError(
-                      errors.certifications[index].issueDate.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'issueDate'
+                      ).message!
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -567,14 +636,26 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.expireDate`, {
                       required: from !== 'admin' && 'Expire Date is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.expireDate}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'expireDate'
+                      )
+                    }
                     min={getIssueDate(index)}
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].expireDate &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'expireDate'
+                  ) &&
                     renderError(
-                      errors.certifications[index].expireDate.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'expireDate'
+                      ).message!
                     )}
                 </div>
               </div>
@@ -609,13 +690,25 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     {...register(`certifications.${index}.credentialId`, {
                       required: from !== 'admin' && 'Credential ID is required',
                     })}
-                    isError={!!errors.certifications?.[index]?.credentialId}
+                    isError={
+                      !!getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'credentialId'
+                      )
+                    }
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].credentialId &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'credentialId'
+                  ) &&
                     renderError(
-                      errors.certifications[index].credentialId.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'credentialId'
+                      ).message!
                     )}
                 </div>
               </div>
@@ -659,11 +752,17 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     //   );
                     // }}
                   />
-                  {errors.certifications &&
-                    errors.certifications[index] &&
-                    errors.certifications[index].certificateFile &&
+                  {getArrayFieldError(
+                    errors.certifications,
+                    index,
+                    'certificateFile'
+                  ) &&
                     renderError(
-                      errors.certifications[index].certificateFile.message!
+                      getArrayFieldError(
+                        errors.certifications,
+                        index,
+                        'certificateFile'
+                      ).message!
                     )}
                   {watchCertificationFileData[index]?.certificateFile &&
                     watchCertificationFileData[index]?.certificateFile?.[0]
@@ -738,7 +837,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           />
           {errors.skills &&
             errors.skills.message &&
-            renderError(errors.skills.message)}
+            renderError(errors.skills.message as string)}
         </div>
 
         {from !== 'admin' && (

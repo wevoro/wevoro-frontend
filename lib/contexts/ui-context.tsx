@@ -47,7 +47,9 @@ interface UIContextValue {
 
   // AutoFill Modal
   openAutoFillModal: boolean;
+  autoFillClicked: string;
   setOpenAutoFillModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setAutoFillClicked: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const UIContext = createContext<UIContextValue | null>(null);
@@ -88,6 +90,7 @@ export function UIProvider({ children }: UIProviderProps) {
 
   // AutoFill Modal
   const [openAutoFillModal, setOpenAutoFillModal] = useState(false);
+  const [autoFillClicked, setAutoFillClicked] = useState('');
 
   // Alert Modal handlers
   const openAlert = useCallback(() => {
@@ -162,6 +165,8 @@ export function UIProvider({ children }: UIProviderProps) {
       // AutoFill Modal
       openAutoFillModal,
       setOpenAutoFillModal,
+      autoFillClicked,
+      setAutoFillClicked,
     }),
     [
       isOpenAlert,
@@ -181,6 +186,8 @@ export function UIProvider({ children }: UIProviderProps) {
       closeEditModal,
       openFeedbackModal,
       openAutoFillModal,
+      autoFillClicked,
+      setAutoFillClicked,
     ]
   );
 

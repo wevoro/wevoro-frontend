@@ -13,8 +13,8 @@ import { useUIContext } from '@/lib/contexts';
 import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
-export function AutoFillAlert() {
-  const { setOpenAutoFillModal } = useUIContext();
+export function AutoFillAlert({ source }: { source: string }) {
+  const { setOpenAutoFillModal, setAutoFillClicked } = useUIContext();
   const [open, setOpen] = useState(false);
 
   return (
@@ -49,6 +49,7 @@ export function AutoFillAlert() {
             className={cn('w-full md:h-[60px] rounded-[12px]')}
             onClick={() => {
               setOpenAutoFillModal(true);
+              setAutoFillClicked(source);
               setOpen(false);
             }}
           >

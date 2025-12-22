@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import Auth from '@/components/auth/auth';
 import AuthForm from '@/components/auth/auth-form';
-import { useAuthContext } from '@/lib/contexts';
+import { useAppContext } from '@/lib/context';
 
 const loginFields = [
   {
@@ -30,8 +30,7 @@ const loginFields = [
 ];
 
 export default function AdminLogin({}: any) {
-  // const { handleLogin } = useAppContext();
-  const { handleLogin } = useAuthContext();
+  const { handleLogin } = useAppContext();
 
   return (
     <Auth

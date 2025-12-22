@@ -12,11 +12,12 @@ import {
 import { DataTable } from '@/components/global/admin/data-table';
 import { partnerColumns } from '@/components/global/admin/columns';
 import Title from '@/components/global/title';
-import { useAppContext } from '@/lib/context';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAdminContext } from '@/lib/contexts';
 
 export default function PartnersPage() {
-  const { partners, qaPartners } = useAppContext();
+  // const { partners, qaPartners } = useAppContext();
+  const { partners, qaPartners } = useAdminContext();
   const router = useRouter();
 
   const searchParams = useSearchParams();

@@ -63,7 +63,7 @@ const StayTuned = () => {
     >
       <Container className='flex flex-col lg:flex-row justify-between items-center gap-4'>
         <div className='max-w-md flex flex-col gap-4 text-center lg:text-left mx-auto lg:mx-0'>
-          <h2 className='lg:text-[45px] text-[31px] font-light text-green-900 lg:leading-[49.5px] leading-[34.1px] text-center lg:text-left'>
+          <h2 className='lg:text-[45px] text-[31px] font-light text-secondary lg:leading-[49.5px] leading-[34.1px] text-center lg:text-left'>
             <span className='font-medium'>Stay tuned</span> with our latest
             updates
           </h2>

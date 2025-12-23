@@ -12,6 +12,7 @@ export default function Comparison({
   titleBold,
   comparisons,
 }: any) {
+  console.log('🚀 ~ Comparison ~ comparisons:', comparisons);
   const heightRefs = Array.from({ length: 6 }, () =>
     useRef<HTMLDivElement>(null)
   );
@@ -26,8 +27,8 @@ export default function Comparison({
   }, [isMobile]);
 
   return (
-    <Container className='pb-32'>
-      <h2 className='md:text-[45px] text-[31px] font-light text-green-900 md:leading-[54px] leading-[37.2px] text-center transition-all duration-300 mb-32 md:max-w-none max-w-[343px] mx-auto'>
+    <Container className='pb-32 pt-12'>
+      <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[54px] leading-[37.2px] text-center transition-all duration-300 mb-32 md:max-w-none max-w-[343px] mx-auto'>
         <span className='font-medium'>{titleBold}</span> {titleLight}
       </h2>
       <div className='flex'>
@@ -54,7 +55,7 @@ export default function Comparison({
           <h2 className='text-lg md:text-[28px] text-center font-normal mb-4'>
             Wevoro
           </h2>
-          <div className='space-y-'>
+          <div className=''>
             {Array.from({ length: comparisons?.length }).map((_, index) => (
               <div
                 key={index}
@@ -75,12 +76,9 @@ export default function Comparison({
           </h2>
           <div className='space-y-'>
             <Checkmark isFirst={true} height={heights[0]} />
-            <Cross height={heights[1]} />
-            <Cross height={heights[2]} />
-            <Cross height={heights[3]} />
-            {/* <Cross height={heights[3]} />
-            <Cross height={heights[4]} />
-            <Checkmark height={heights[5]} /> */}
+            {Array.from({ length: comparisons?.length - 1 }).map((_, index) => (
+              <Cross key={index} height={heights[index + 1]} />
+            ))}
           </div>
         </div>
       </div>

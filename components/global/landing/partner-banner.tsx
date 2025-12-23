@@ -17,7 +17,7 @@ const PartnerBanner = ({
     <div className='partner-banner-bg'>
       <Container className='h-full w-full pt-32 pb-12 text-center relative z-10'>
         <div className='flex flex-col gap-9 max-w-4xl mx-auto'>
-          <h1 className='md:text-[50px] text-[31px] font-light text-green-900 md:leading-[55px] leading-[34.1px]'>
+          <h1 className='md:text-[50px] text-[31px] font-light text-secondary md:leading-[55px] leading-[34.1px]'>
             {titleLight} <span className='font-medium'>{titleBold}</span>
           </h1>
           <p className='md:text-lg text-sm text-[#6C6C6C]'>{description}</p>

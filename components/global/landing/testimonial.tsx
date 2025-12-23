@@ -26,7 +26,7 @@ const Testimonial = ({
             'linear-gradient(90deg, #FFFFFF 0%, rgba(255, 255, 255, 0.6) 25%, #FFFFFF 50%, rgba(255, 255, 255, 0.6) 75%, #FFFFFF 100%)',
         }}
       >
-        <h2 className='md:text-[48px] text-[31px] font-light text-green-900 md:leading-[57.6px] leading-[37.2px] max-w-[780px] mx-auto transition-all duration-300 relative'>
+        <h2 className='md:text-[48px] text-[31px] font-light text-secondary md:leading-[57.6px] leading-[37.2px] max-w-[780px] mx-auto transition-all duration-300 relative'>
           <span className='font-medium'>
             <img
               src='/quote.svg'

@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { getEnvironment, getPartnerData } from '@/app/actions';
 import StayTuned from '@/components/global/landing/stay-tuned';
 import { transformEnvironment } from '@/utils/transformEnvironment';
+import Solution from '@/components/global/landing/solution';
 
 export default async function PartnerLandingPage() {
   const environment = await getEnvironment();
@@ -24,7 +25,7 @@ export default async function PartnerLandingPage() {
     section4 = {},
     section5 = {},
     section6 = {},
-    section7 = {},
+    solution = {},
     section8 = {},
   } = partnerData || {};
 
@@ -91,9 +92,10 @@ export default async function PartnerLandingPage() {
       />
       <ExpandJob {...section3} environmentType={environmentType} />
       <Features {...section4} />
+      <Solution {...solution} />
       <GetStarted images={images} stepsBgColor={stepsBgColor} steps={steps} />
       <Grow source='partner' {...section6} environmentType={environmentType} />
-      <Testimonial source='partner' {...section7} />
+      {/* <Testimonial source='partner' {...section7} /> */}
       <Faqs {...section8} />
       <StayTuned />
     </div>

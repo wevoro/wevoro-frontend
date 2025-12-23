@@ -187,9 +187,103 @@ export const proType = defineType({
         }),
       ],
     }),
+
+    defineField({
+      name: 'solution',
+      title: 'Section 5',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'title',
+          title: 'Title',
+          type: 'string',
+        }),
+        defineField({
+          name: 'description',
+          title: 'Description',
+          type: 'text',
+        }),
+        defineField({
+          name: 'comparisonBoxes',
+          title: 'Comparisons',
+          type: 'array',
+          validation: (Rule) => Rule.max(2),
+          of: [
+            {
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'type',
+                  title: 'Type',
+                  type: 'string',
+                  options: {
+                    list: [
+                      { title: 'Problem', value: 'problem' },
+                      { title: 'Solution', value: 'solution' },
+                    ],
+                  },
+                }),
+                defineField({
+                  name: 'title',
+                  title: 'Title',
+                  type: 'string',
+                }),
+                defineField({
+                  name: 'hasBadge',
+                  title: 'Display as Badge',
+                  type: 'boolean',
+                  initialValue: false,
+                }),
+                defineField({
+                  name: 'items',
+                  title: 'Items',
+                  type: 'array',
+                  of: [
+                    {
+                      type: 'object',
+                      fields: [
+                        defineField({
+                          name: 'title',
+                          title: 'Title',
+                          type: 'string',
+                        }),
+                        defineField({
+                          name: 'description',
+                          title: 'Description',
+                          type: 'text',
+                        }),
+                      ],
+                      preview: {
+                        select: {
+                          title: 'title',
+                          subtitle: 'description',
+                        },
+                      },
+                    },
+                  ],
+                }),
+              ],
+              preview: {
+                select: {
+                  title: 'title',
+                  subtitle: 'type',
+                },
+              },
+            },
+          ],
+        }),
+        defineField({
+          name: 'footerText',
+          title: 'Footer Text',
+          type: 'text',
+        }),
+      ],
+    }),
+
+
     defineField({
       name: "section5",
-      title: "Section 5",
+      title: "Section 6",
       type: "object",
       fields: [
         defineField({
@@ -230,7 +324,7 @@ export const proType = defineType({
 
     defineField({
       name: "section6",
-      title: "Section 6",
+      title: "Section 7",
       type: "object",
       fields: [
         defineField({
@@ -245,9 +339,33 @@ export const proType = defineType({
           type: "string",
         }),
         defineField({
-          name: "buttonText",
-          title: "Button Text",
-          type: "string",
+          name: 'buttons',
+          title: 'Buttons',
+          type: 'array',
+          validation: (Rule) => Rule.max(2),
+          of: [
+            {
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'text',
+                  title: 'Button Text',
+                  type: 'string',
+                }),
+                defineField({
+                  name: 'href',
+                  title: 'Button Link',
+                  type: 'string',
+                }),
+              ],
+              preview: {
+                select: {
+                  title: 'text',
+                  subtitle: 'href',
+                },
+              },
+            },
+          ],
         }),
         defineField({
           name: "appStoreLink",
@@ -261,34 +379,7 @@ export const proType = defineType({
         }),
       ],
     }),
-    defineField({
-      name: "section7",
-      title: "Section 7",
-      type: "object",
-      fields: [
-        defineField({
-          name: "titleBold",
-          title: "Title Bold",
-          type: "string",
-        }),
-
-        defineField({
-          name: "titleLight",
-          title: "Title Light",
-          type: "string",
-        }),
-        defineField({
-          name: "description",
-          title: "Description",
-          type: "string",
-        }),
-        defineField({
-          name: "personName",
-          title: "Person Name",
-          type: "string",
-        }),
-      ],
-    }),
+  
     defineField({
       name: "section8",
       title: "Section 8",

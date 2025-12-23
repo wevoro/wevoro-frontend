@@ -11,6 +11,7 @@ import { BriefcaseIcon, FileIcon, IdCardIcon, UserIcon } from 'lucide-react';
 import { getEnvironment, getHomeData } from '@/app/actions';
 import StayTuned from '@/components/global/landing/stay-tuned';
 import { transformEnvironment } from '@/utils/transformEnvironment';
+import Solution from '@/components/global/landing/solution';
 
 export default async function Home() {
   const environment = await getEnvironment();
@@ -19,6 +20,7 @@ export default async function Home() {
   const {
     section1 = {},
     section2 = {},
+    solution = {},
     section3 = {},
     section4 = {},
     section5 = {},
@@ -79,12 +81,13 @@ export default async function Home() {
         environmentType={environmentType}
       />
 
-      <GetStarted images={images} stepsBgColor={stepsBgColor} steps={steps} />
-      <Career {...section4} environmentType={environmentType} />
+      <Solution {...solution} />
       <Partners {...section5} environmentType={environmentType} />
+      <Career {...section4} environmentType={environmentType} />
+      <GetStarted images={images} stepsBgColor={stepsBgColor} steps={steps} />
       <Comparison {...section6} />
       <Grow source='home' {...section7} environmentType={environmentType} />
-      <Testimonial source='home' {...section8} />
+      {/* <Testimonial source='home' {...section8} /> */}
       <div id='faqs'>
         <Faqs {...section9} />
       </div>

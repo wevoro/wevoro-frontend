@@ -21,7 +21,7 @@ const ExpandJob = ({
       <Container className='py-20'>
         <div className='flex gap-12 lg:flex-row flex-col items-center'>
           <div className='flex flex-col md:gap-10 gap-6'>
-            <h2 className='md:text-[45px] text-[31px] font-light text-green-900 md:leading-[49.5px] leading-[34.1px] text-center md:text-left transition-all duration-300'>
+            <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[49.5px] leading-[34.1px] text-center md:text-left transition-all duration-300'>
               <span className='font-medium'>{titleBold}</span> {titleLight}
             </h2>
 

@@ -23,12 +23,12 @@ export default function GetStarted({
   return (
     <div
       className={cn(
-        'relative md:pt-28 pb-40 pt-16 overflow-hidden transition-colors duration-300',
+        'relative md:pt-28 pb-40 pt-16 overflow-hidden transition-colors duration-300 my-20',
         stepsBgColor[activeStep as unknown as keyof typeof stepsBgColor]
       )}
     >
       <Container>
-        <h2 className='md:text-[45px] text-[31px] font-light text-green-900 md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300'>
+        <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300'>
           Get started in just a few{' '}
           <span className='font-medium'>simple steps</span>
         </h2>

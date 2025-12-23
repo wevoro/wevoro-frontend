@@ -14,6 +14,7 @@ const Grow = ({
   appStoreLink,
   buttonText,
   environmentType,
+  buttons,
 }: {
   source: string;
   title: string;
@@ -22,6 +23,12 @@ const Grow = ({
   appStoreLink: string;
   buttonText: string;
   environmentType: string;
+  buttons: [
+    {
+      href: string;
+      text: string;
+    },
+  ];
 }) => {
   const bgImage =
     source === 'partner'
@@ -30,7 +37,18 @@ const Grow = ({
         ? '/pro-grow.webp'
         : '/home-grow.webp';
 
-  const buttonHref = source === 'partner' ? '/partner/signup' : '/pro/signup';
+  // const buttonHref = source === 'partner' ? '/partner/signup' : '/pro/signup';
+
+  // const buttons = [
+  //   {
+  //     href: buttonHref,
+  //     text: buttonText,
+  //   },
+  //   {
+  //     href: buttonHref,
+  //     text: buttonText,
+  //   },
+  // ];
 
   return (
     <div className='relative h-full w-full py-32'>
@@ -58,12 +76,23 @@ const Grow = ({
               Join the waitlist
             </Button>
           ) : (
-            <Button
-              href={buttonHref}
-              className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto md:mx-0'
-            >
-              {buttonText}
-            </Button>
+            <div className='flex sm:flex-row flex-col gap-4'>
+              {buttons?.map((button, index) => (
+                <Button
+                  key={index}
+                  href={button.href}
+                  className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto md:mx-0'
+                >
+                  {button.text}
+                </Button>
+              ))}
+              {/* <Button
+                href={buttonHref}
+                className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto md:mx-0'
+              >
+                {buttonText}
+              </Button> */}
+            </div>
           )}
           {/* {environmentType !== 'waitlist' && (
             <div>

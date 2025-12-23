@@ -5,6 +5,7 @@ import * as jose from 'jose';
 const jwtConfig = {
   secret: new TextEncoder().encode(process.env.JWT_SECRET),
 };
+// console.log('🚀 ~ jwtConfig:', process.env.JWT_SECRET);
 
 export const isAuthenticated = async (token: string) => {
   // let token = req.headers.get('authorization') || req.headers.get('Authorization')

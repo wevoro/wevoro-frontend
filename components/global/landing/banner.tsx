@@ -9,7 +9,7 @@ import { cn, scrollToSection } from '@/lib/utils';
 
 const Banner = ({
   appStoreLink,
-  buttonText,
+  ctaCards,
   googlePlayLink,
   titleLight,
   titleBold,
@@ -32,54 +32,70 @@ const Banner = ({
         quality={100}
       />
       <Container>
-        <div className='max-w-md flex flex-col gap-9 text-center md:text-left mx-auto md:mx-0'>
-          <h1 className='md:text-[50px] text-[31px] font-light text-green-900 md:leading-[55px] leading-[34.1px]'>
+        <div className='max-w-3xl flex flex-col gap-9 text-center md:text-left mx-auto md:mx-0'>
+          <h1 className='md:text-[50px] text-[31px] font-light text-secondary md:leading-[55px] leading-[34.1px]'>
             {titleLight} <span className='font-medium'>{titleBold}</span>
           </h1>
           <p className='md:text-lg text-sm text-[#6C6C6C]'>{description}</p>
-          <div className='flex flex-col md:flex-row gap-4'>
-            {environmentType !== 'waitlist' && (
-              <Button
-                href='/pro/signup'
-                className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto md:mx-0'
-              >
-                {buttonText}
-              </Button>
-            )}
-            {environmentType === 'waitlist' && (
-              <Button
-                variant='outline'
-                onClick={() => scrollToSection('joinwaitlist')}
-                className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto md:mx-0 bg-transparent text-white hover:bg-primary hover:text-white hover:border-primary'
-              >
-                Join the Wait list <MoveUpRight className='w-6 h-6 ml-2' />
-              </Button>
-            )}
-          </div>
-          {/* {environmentType !== 'waitlist' && (
-            <div className='mt-4'>
-              <p className='text-[#6C6C6C] md:text-base text-sm'>
-                Download Now
-              </p>
-              <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>
-                <a href={appStoreLink} target='_blank'>
-                  <img
-                    src='/app-store.svg'
-                    alt='Download on the App Store'
-                    className='w-[174px] h-[72px] md:w-full md:h-full'
-                  />
-                </a>
-                <a href={googlePlayLink} target='_blank'>
-                  <img
-                    src='/playstore.svg'
-                    alt='Get it on Google Play'
-                    className='w-[174px] h-[72px] md:w-full md:h-full'
-                  />
-                </a>
-              </div>
-            </div>
-          )} */}
         </div>
+
+        <div className='flex flex-col md:flex-row gap-4 mt-12'>
+          {ctaCards?.map((card: any, index: number) => (
+            <div
+              key={index}
+              className='flex-1 rounded-[32px] bg-[#FCFCFEE5] p-6 md:p-14'
+            >
+              <div className='flex justify-center md:justify-start mb-3'>
+                <span className='inline-flex w-fit px-6 py-3 rounded-full bg-[#BBF8DC] text-secondary text-sm font-medium uppercase tracking-[-2] '>
+                  {card.badge}
+                </span>
+              </div>
+              <h2 className='text-2xl md:text-4xl text-center md:text-left text-secondary mb-6'>
+                {card.title}
+              </h2>
+              <ul className='space-y-3 text-[#6C6C6C]  tracking-[-2]  text-sm md:text-lg mb-8 flex-1'>
+                {card.features?.map((feature: string, featureIndex: number) => (
+                  <li key={featureIndex} className='flex items-start gap-2'>
+                    <span className='text-[#1A5632]'>•</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              {environmentType !== 'waitlist' && (
+                <Button
+                  href={card.href}
+                  className='px-6 md:px-9 h-12 md:h-14 rounded-[12px] w-full md:w-fit text-sm md:text-base font-semibold'
+                >
+                  {card.buttonText}
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* {environmentType !== 'waitlist' && (
+          <div className='mt-8'>
+            <p className='text-white text-center md:text-base text-sm'>
+              Download Now
+            </p>
+            <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>
+              <a href={appStoreLink} target='_blank'>
+                <img
+                  src='/app-store.svg'
+                  alt='Download on the App Store'
+                  className='w-[174px] h-[72px] md:w-full md:h-full'
+                />
+              </a>
+              <a href={googlePlayLink} target='_blank'>
+                <img
+                  src='/playstore.svg'
+                  alt='Get it on Google Play'
+                  className='w-[174px] h-[72px] md:w-full md:h-full'
+                />
+              </a>
+            </div>
+          </div>
+        )} */}
       </Container>
     </div>
   );

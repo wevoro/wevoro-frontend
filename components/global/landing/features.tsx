@@ -48,7 +48,7 @@ const Features = ({ titleLight, titleBold, horizzonFeatures }: any) => {
 
   return (
     <Container className='md:my-24 my-16 flex flex-col gap-12'>
-      <h2 className='md:text-[45px] text-[31px] font-light text-green-900 md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300'>
+      <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300'>
         {titleLight} <span className='font-medium'>{titleBold}</span>
       </h2>
 

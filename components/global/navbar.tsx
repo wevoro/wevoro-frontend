@@ -19,7 +19,7 @@ export default function Navbar({
 }) {
   const { user, isUserLoading } = useUserContext();
   const { isAuthenticated } = useCookiesContext();
-  console.log('🚀 ~ Navbar ~ isAuthenticated:', isAuthenticated, isUserLoading);
+  // console.log('🚀 ~ Navbar ~ isAuthenticated:', isAuthenticated, isUserLoading);
 
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);

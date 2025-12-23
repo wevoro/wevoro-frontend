@@ -5,6 +5,7 @@ import Features from '@/components/global/landing/features';
 import GetStarted from '@/components/global/landing/get-started';
 import Grow from '@/components/global/landing/grow';
 import ProBanner from '@/components/global/landing/pro-banner';
+import Solution from '@/components/global/landing/solution';
 import StayTuned from '@/components/global/landing/stay-tuned';
 import Testimonial from '@/components/global/landing/testimonial';
 import WhyWevoro from '@/components/global/landing/why-horizzon';
@@ -23,7 +24,7 @@ export default async function ProLandingPage() {
     section4 = {},
     section5 = {},
     section6 = {},
-    section7 = {},
+    solution = {},
     section8 = {},
   } = proData || {};
 
@@ -80,6 +81,7 @@ export default async function ProLandingPage() {
         className='absolute md:-right-36 -right-24 top-[40rem] md:top-[60rem] md:w-[689px] w-[248px] md:h-[512px] h-[184px]'
       />
       <WhyWevoro source='pro' {...section2} features={features} />
+
       <Image
         src='/vector-expand-pro.svg'
         alt='partner bg'
@@ -89,9 +91,10 @@ export default async function ProLandingPage() {
       />
       <CareerPro {...section3} environmentType={environmentType} />
       <Features {...section4} />
+      <Solution {...solution} />
       <GetStarted images={images} stepsBgColor={stepsBgColor} steps={steps} />
       <Grow source='pro' {...section6} environmentType={environmentType} />
-      <Testimonial source='pro' {...section7} />
+      {/* <Testimonial source='pro' {...section7} /> */}
       <Faqs {...section8} />
       <StayTuned />
     </div>

@@ -91,9 +91,9 @@ export default async function ProLandingPage() {
       />
       <CareerPro {...section3} environmentType={environmentType} />
       <Features {...section4} />
+      <Grow source='pro' {...section6} environmentType={environmentType} />
       <Solution {...solution} />
       <GetStarted images={images} stepsBgColor={stepsBgColor} steps={steps} />
-      <Grow source='pro' {...section6} environmentType={environmentType} />
       {/* <Testimonial source='pro' {...section7} /> */}
       <Faqs {...section8} />
       <StayTuned />

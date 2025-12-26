@@ -40,7 +40,7 @@ export default async function Home() {
     });
 
   const images = {
-    null: '/doctor.webp',
+    null: '/business-woman.png',
     0: '/professional.webp',
     1: '/document-info.webp',
     2: '/profile.webp',

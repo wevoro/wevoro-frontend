@@ -29,7 +29,7 @@ export default async function PartnerLandingPage() {
     section8 = {},
   } = partnerData || {};
 
-  const whyUsImages = ['/expedite.svg', '/turnover.svg', '/cost.svg'];
+  const whyUsImages = ['/expedite.svg', '/cost.svg', '/turnover.svg'];
 
   const features =
     section2?.features &&
@@ -41,7 +41,7 @@ export default async function PartnerLandingPage() {
     });
 
   const images = {
-    null: '/get-started-partner.webp',
+    null: '/partner-business-woman.png',
     0: '/registration.webp',
     1: '/review-cna.webp',
     2: '/send-offer.webp',
@@ -92,9 +92,9 @@ export default async function PartnerLandingPage() {
       />
       <ExpandJob {...section3} environmentType={environmentType} />
       <Features {...section4} />
+      <Grow source='partner' {...section6} environmentType={environmentType} />
       <Solution {...solution} />
       <GetStarted images={images} stepsBgColor={stepsBgColor} steps={steps} />
-      <Grow source='partner' {...section6} environmentType={environmentType} />
       {/* <Testimonial source='partner' {...section7} /> */}
       <Faqs {...section8} />
       <StayTuned />

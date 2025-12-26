@@ -23,7 +23,7 @@ export default function GetStarted({
   return (
     <div
       className={cn(
-        'relative md:pt-28 pb-40 pt-16 overflow-hidden transition-colors duration-300 my-20',
+        'relative md:pt-28 pb-40 pt-16 overflow-hidden transition-colors duration-300 mt-20',
         stepsBgColor[activeStep as unknown as keyof typeof stepsBgColor]
       )}
     >
@@ -45,10 +45,10 @@ export default function GetStarted({
             <Image
               src={images[activeStep as unknown as keyof typeof images]}
               alt='Healthcare professional with tablet'
-              width={660}
+              width={560}
               height={500}
               className={cn(
-                'relative z-20 w-full transition-all duration-300 max-h-[620px]',
+                'relative z-20 w-full transition-all duration-300 max-h-[620px] max-w-[460px]',
                 activeStep !== null && 'max-w-[300px] mx-auto'
               )}
               priority

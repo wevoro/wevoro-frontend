@@ -6,6 +6,7 @@ import Container from '../container';
 import { Button } from '@/components/ui/button';
 import { MoveUpRight } from 'lucide-react';
 import { cn, scrollToSection } from '@/lib/utils';
+import Link from 'next/link';
 
 const Banner = ({
   appStoreLink,
@@ -16,6 +17,7 @@ const Banner = ({
   description,
   environmentType,
 }: any) => {
+  // console.log('🚀 ~ Banner ~ badgeLink:', badgeLink);
   return (
     <div
       className={cn(
@@ -46,9 +48,12 @@ const Banner = ({
               className='flex-1 rounded-[32px] bg-[#FCFCFEE5] p-6 md:p-14'
             >
               <div className='flex justify-center md:justify-start mb-3'>
-                <span className='inline-flex w-fit px-6 py-3 rounded-full bg-[#BBF8DC] text-secondary text-sm font-medium uppercase tracking-[-2] '>
-                  {card.badge}
-                </span>
+                <Link
+                  href={card?.badgeLink}
+                  className='inline-flex w-fit px-6 py-3 rounded-full bg-[#BBF8DC] text-secondary text-sm font-medium uppercase tracking-[-2] '
+                >
+                  {card?.badge}
+                </Link>
               </div>
               <h2 className='text-2xl md:text-4xl text-center md:text-left text-secondary mb-6'>
                 {card.title}

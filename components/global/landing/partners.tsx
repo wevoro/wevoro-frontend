@@ -2,7 +2,7 @@ import React from 'react';
 import Container from '../container';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { scrollToSection } from '@/lib/utils';
+// import { scrollToSection } from '@/lib/utils';
 import PartnerButton from './partner-button';
 
 const Partners = ({

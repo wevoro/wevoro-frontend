@@ -50,6 +50,11 @@ export const homeType = defineType({
                   title: 'Badge Text',
                   type: 'string',
                 }),
+                 defineField({
+                  name: 'badgeLink',
+                  title: 'Badge Link',
+                  type: 'string',
+                }),
                 defineField({
                   name: 'title',
                   title: 'Card Title',
@@ -60,6 +65,7 @@ export const homeType = defineType({
                   title: 'Button Text',
                   type: 'string',
                 }),
+               
                 defineField({
                   name: 'href',
                   title: 'Button Link',

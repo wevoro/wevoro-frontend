@@ -44,12 +44,12 @@ const Solution = ({
               key={boxIndex}
               className={cn(
                 `flex-1 px-4 py-10 md:p-12`,
-                box.type === 'problem' ? 'bg-[#FFF5F5]' : 'bg-[#F0FFF4]'
+                box.type === 'problem' ? 'bg-[#FFF5F5]' : 'bg-[#BBF8DC]'
               )}
             >
               <div>
                 {box.hasBadge ? (
-                  <div className='inline-block bg-[#1A5632] text-white font-medium text-lg md:text-[28px] leading-[120%] px-6 py-2 rounded-r-full mb-8 md:mb-12 -ml-4 md:-ml-14 italic'>
+                  <div className='inline-block bg-[#1A5632] text-white font-medium text-lg md:text-[28px] leading-[120%] px-6 py-2  mb-8 md:mb-12 -ml-4 md:-ml-14 italic'>
                     {box.title}
                   </div>
                 ) : (

@@ -105,6 +105,16 @@ export const homeType = defineType({
       type: 'object',
       fields: [
         defineField({
+          name: 'titleLight',
+          title: 'Title Light',
+          type: 'string',
+        }),
+        defineField({
+          name: 'titleBold',
+          title: 'Title Bold',
+          type: 'string',
+        }),
+        defineField({
           name: 'features',
           title: 'Features',
           type: 'array',

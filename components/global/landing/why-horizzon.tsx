@@ -21,19 +21,18 @@ export default function WhyWevoro({
   titleBold?: string;
   environmentType?: string;
 }) {
-  // console.log('🚀 ~ WhyWevoro ~ features:', titleLight, titleBold);
+  console.log('🚀 ~ WhyWevoro ~ features:', titleLight, titleBold);
   return (
     <Container className='md:my-24 my-16'>
-      {source === 'pro' && (
+      <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300 mb-12'>
+        {titleLight} <span className='font-medium'>{titleBold}</span>
+      </h2>
+
+      {/* {source === 'partner' && (
         <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300 mb-12'>
           {titleLight} <span className='font-medium'>{titleBold}</span>
         </h2>
-      )}
-      {source === 'partner' && (
-        <h2 className='md:text-[45px] text-[31px] font-light text-secondary md:leading-[54px] leading-[37.2px] text-center max-w-[509px] mx-auto transition-all duration-300 mb-12'>
-          {titleLight} <span className='font-medium'>{titleBold}</span>
-        </h2>
-      )}
+      )} */}
       <div className='grid gap-9 md:grid-cols-3'>
         {features?.map((item, index) => (
           <div key={index} className='flex flex-col items-center text-center'>

@@ -102,7 +102,7 @@ export default function AutoFillModal() {
       setError(error.message);
     } finally {
       setLoading(false);
-      // Reset the file input so the same file can be selected again
+
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }

@@ -35,7 +35,7 @@ export function AutoFillAlert({ source }: { source: string }) {
           <AlertDialogTitle className='font-semibold text-base md:text-lg text-center'>
             Continue with Auto Filling?
           </AlertDialogTitle>
-          <AlertDialogDescription className='text-center text-[#6C6C6C] text-sm md:text-base font-normal !my-0 bg-white px-6 py-2 rounded-sm'>
+          <AlertDialogDescription className='text-center text-muted-foreground text-sm md:text-base font-normal !my-0 bg-white px-6 py-2 rounded-sm'>
             You are about to use AI auto filling feature. All the information
             filled out by you will be replaced. Would your like to proceed?
           </AlertDialogDescription>

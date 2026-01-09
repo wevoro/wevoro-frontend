@@ -47,6 +47,13 @@ export default function FloatingFeedback() {
     { step: 'initial' }
   );
   const [isBotTyping, setIsBotTyping] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+  const [dragConstraints, setDragConstraints] = useState({
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useUserContext();
   const email = user?.email;
@@ -62,6 +69,7 @@ export default function FloatingFeedback() {
   // console.log('🚀 ~ FloatingFeedback ~ user:', user);
   // LocalStorage keys
   const LS_KEY = 'ffc';
+  const LS_BUTTON_POSITION_KEY = 'ffc_button_position';
 
   // Save chat state to localStorage
   const saveChatToLocalStorage = (data: {
@@ -94,6 +102,24 @@ export default function FloatingFeedback() {
     } catch {}
   };
 
+  // Save button position to localStorage
+  const saveButtonPositionToLocalStorage = (pos: { x: number; y: number }) => {
+    try {
+      localStorage.setItem(LS_BUTTON_POSITION_KEY, JSON.stringify(pos));
+    } catch {}
+  };
+
+  // Restore button position from localStorage
+  const restoreButtonPositionFromLocalStorage = () => {
+    try {
+      const data = localStorage.getItem(LS_BUTTON_POSITION_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        setButtonPosition(parsed);
+      }
+    } catch {}
+  };
+
   const getCurrentTime = () => {
     const now = new Date();
     return now.toLocaleTimeString('en-US', {
@@ -115,6 +141,30 @@ export default function FloatingFeedback() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isBotTyping]);
+
+  // Restore button position from localStorage on mount
+  useEffect(() => {
+    restoreButtonPositionFromLocalStorage();
+  }, []);
+
+  // Set drag constraints based on window size (client-side only)
+  useEffect(() => {
+    const updateConstraints = () => {
+      setDragConstraints({
+        top: -window.innerHeight + 80,
+        left: -window.innerWidth + 80,
+        right: 0,
+        bottom: 0,
+      });
+    };
+
+    // Set initial constraints
+    updateConstraints();
+
+    // Update constraints on window resize
+    window.addEventListener('resize', updateConstraints);
+    return () => window.removeEventListener('resize', updateConstraints);
+  }, []);
 
   // Save chat state to localStorage whenever it changes and chat is open (not closed)
   useEffect(() => {
@@ -465,10 +515,28 @@ export default function FloatingFeedback() {
   return (
     <>
       {/* Floating Action Button */}
-      <div className='fixed bottom-6 right-6 z-50'>
+      <motion.div
+        drag
+        dragMomentum={false}
+        dragElastic={0.1}
+        dragConstraints={dragConstraints}
+        // style={{
+        //   x: buttonPosition.x,
+        //   y: buttonPosition.y,
+        // }}
+        onDragEnd={(_, info) => {
+          const newPosition = {
+            x: buttonPosition.x + info.offset.x,
+            y: buttonPosition.y + info.offset.y,
+          };
+          setButtonPosition(newPosition);
+          saveButtonPositionToLocalStorage(newPosition);
+        }}
+        className='fixed bottom-6 right-6 z-50 cursor-grab active:cursor-grabbing'
+      >
         <Button
           onClick={handleOpen}
-          className='h-[62px] w-[62px] rounded-full transition-all duration-200 inline-flex items-center justify-center bg-white'
+          className='h-[62px] w-[62px] rounded-full transition-all duration-200 inline-flex items-center justify-center bg-white pointer-events-auto relative'
           style={{
             boxShadow: '0px 8px 8px 0px rgba(0, 0, 0, 0.1)',
           }}
@@ -476,13 +544,11 @@ export default function FloatingFeedback() {
           <Image
             src='/wevoro.png'
             alt='wevoro'
-            // width={22}
-            // height={32}
             fill
-            className='w-full h-full object-contain'
+            className='object-contain pointer-events-none'
           />
         </Button>
-      </div>
+      </motion.div>
 
       {/* Feedback Modal with Animation */}
       <AnimatePresence>
@@ -521,7 +587,9 @@ export default function FloatingFeedback() {
                         </AvatarFallback>
                       </Avatar>
 
-                      <span className='text-xs text-[#6C6C6C]'>Today</span>
+                      <span className='text-xs text-muted-foreground'>
+                        Today
+                      </span>
                     </div>
                   )}
 
@@ -569,7 +637,7 @@ export default function FloatingFeedback() {
                           >
                             <div className='flex items-center gap-2.5'>
                               {msg.type === 'user' && (
-                                <span className='text-xs text-[#6C6C6C] flex-shrink-0'>
+                                <span className='text-xs text-muted-foreground flex-shrink-0'>
                                   {msg.timestamp}
                                 </span>
                               )}
@@ -578,7 +646,7 @@ export default function FloatingFeedback() {
                                   'rounded-[8px] p-3 ',
                                   msg.type === 'user'
                                     ? 'text-white text-sm bg-[#01400F]  '
-                                    : 'bg-[#F9F9FA] text-[#1C1C1C] text-sm',
+                                    : 'bg-[#F9F9FA] text-tertiary text-sm',
                                   msg.type === 'user' &&
                                     !msg.content.includes(' ') &&
                                     msg.content.length > 30 &&
@@ -625,7 +693,7 @@ export default function FloatingFeedback() {
                         !canUseTextInput || conversationState.step === 'ended'
                       }
                       className={cn(
-                        'flex-1 bg-transparent outline-none border-none text-[#6C6C6C] placeholder-[#6C6C6C] px-2 text-sm',
+                        'flex-1 bg-transparent outline-none border-none text-muted-foreground placeholder-muted-foreground px-2 text-sm',
                         !canUseTextInput && 'bg-white cursor-not-allowed'
                       )}
                       style={{

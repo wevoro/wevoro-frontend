@@ -44,7 +44,7 @@ interface UserContextValue {
   refetchUser: () => void;
   isPersonalInfoCompleted: boolean;
   isProfessionalInfoCompleted: boolean;
-  isDocumentUploadCompleted: boolean;
+  // isDocumentUploadCompleted: boolean;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -74,8 +74,6 @@ export function UserProvider({ children }: UserProviderProps) {
       return await getUser();
     },
     refetchOnWindowFocus: false,
-    // refetchOnMount: false, // Prevent duplicate fetches on Strict Mode
-    // staleTime: 60 * 1000,
   });
 
   // Redirect blocked users
@@ -95,10 +93,10 @@ export function UserProvider({ children }: UserProviderProps) {
     [user?.professionalInfo]
   );
 
-  const isDocumentUploadCompleted = useMemo(
-    () => Object.keys(user?.documents || {}).length > 0,
-    [user?.documents]
-  );
+  // const isDocumentUploadCompleted = useMemo(
+  //   () => Object.keys(user?.documents || {}).length > 0,
+  //   [user?.documents]
+  // );
 
   const value = useMemo<UserContextValue>(
     () => ({
@@ -107,7 +105,7 @@ export function UserProvider({ children }: UserProviderProps) {
       refetchUser,
       isPersonalInfoCompleted,
       isProfessionalInfoCompleted,
-      isDocumentUploadCompleted,
+      // isDocumentUploadCompleted,
     }),
     [
       user,
@@ -115,7 +113,7 @@ export function UserProvider({ children }: UserProviderProps) {
       refetchUser,
       isPersonalInfoCompleted,
       isProfessionalInfoCompleted,
-      isDocumentUploadCompleted,
+      // isDocumentUploadCompleted,
     ]
   );
   // if (isUserLoading) {

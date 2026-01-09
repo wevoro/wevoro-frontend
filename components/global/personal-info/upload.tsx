@@ -25,7 +25,7 @@ const Upload = ({ image, register, imageFile }: any) => {
               />
             ) : (
               <div className='bg-accent rounded-full w-9 h-9 flex items-center justify-center'>
-                <Camera className='w-5 h-5 text-[#6C6C6C]' />
+                <Camera className='w-5 h-5 text-muted-foreground' />
               </div>
             )}
           </div>

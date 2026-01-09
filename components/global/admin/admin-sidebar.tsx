@@ -73,7 +73,7 @@ export function AdminSidebar() {
                         'flex items-center gap-6 py-3 rounded-lg transition-colors',
                         {
                           'text-primary font-bold': isActive,
-                          'text-[#1C1C1C] hover:text-primary hover:font-bold':
+                          'text-tertiary hover:text-primary hover:font-bold':
                             !isActive,
                           'pointer-events-none opacity-50': item.disabled,
                         }

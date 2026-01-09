@@ -90,7 +90,7 @@ const Notifications = () => {
                   <X className='size-5' />
                 </Button>
               </div>
-              <span className='text-[#6C6C6C] text-xs'>
+              <span className='text-muted-foreground text-xs'>
                 {moment(noti.createdAt).format('DD MMM, YYYY, h:mm A')}
               </span>
             </div>

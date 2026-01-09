@@ -14,7 +14,7 @@ const SectionDescription = ({
       {/<[a-z][\s\S]*>/i.test(text) ? (
         <div
           className={cn(
-            'text-[#1C1C1C] font-medium *:break-words',
+            'text-tertiary font-medium *:break-words',
             from === 'admin' ? 'text-sm md:text-base' : 'text-sm md:text-xl',
             className
           )}
@@ -23,7 +23,7 @@ const SectionDescription = ({
       ) : (
         <p
           className={cn(
-            'text-[#1C1C1C] font-medium',
+            'text-tertiary font-medium',
             from === 'admin' ? 'text-sm md:text-base' : 'text-sm md:text-xl',
             className
           )}

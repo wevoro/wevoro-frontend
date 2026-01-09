@@ -67,7 +67,7 @@ const StayTuned = () => {
             <span className='font-medium'>Stay tuned</span> with our latest
             updates
           </h2>
-          <p className='lg:text-lg text-sm text-[#6C6C6C]'>
+          <p className='lg:text-lg text-sm text-muted-foreground'>
             Join our waiting list by filling your email
           </p>
         </div>

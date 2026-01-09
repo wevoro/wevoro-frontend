@@ -29,8 +29,8 @@ const Tabs: React.FC = () => {
             <span
               className={`text-base md:text-xl ${
                 pathname === item.href
-                  ? 'text-[#1C1C1C] font-semibold'
-                  : 'text-[#6C6C6C]'
+                  ? 'text-tertiary font-semibold'
+                  : 'text-muted-foreground'
               }`}
             >
               {item.label}

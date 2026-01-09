@@ -127,10 +127,10 @@ export default function AutoFillModal() {
                 <Sparkles className='h-10 w-10 text-[#008000]' />
               </div>
 
-              <h3 className='mt-8 text-xl font-semibold text-[#1C1C1C]'>
+              <h3 className='mt-8 text-xl font-semibold text-tertiary'>
                 Analyzing Your Resume
               </h3>
-              <p className='mt-2 text-sm text-[#6C6C6C] text-center max-w-[280px]'>
+              <p className='mt-2 text-sm text-muted-foreground text-center max-w-[280px]'>
                 Our AI is extracting your information. This may take a moment.
               </p>
 
@@ -154,7 +154,7 @@ export default function AutoFillModal() {
             <>
               {!autoFillClicked && (
                 <DialogHeader>
-                  <DialogTitle className='text-center text-2xl md:text-3xl font-medium text-[#1C1C1C]'>
+                  <DialogTitle className='text-center text-2xl md:text-3xl font-medium text-tertiary'>
                     How would you like to continue?
                   </DialogTitle>
                 </DialogHeader>
@@ -173,13 +173,13 @@ export default function AutoFillModal() {
                     />
                     <Sparkles className='absolute -right-2 -top-1 h-4 w-4 text-[#008000]' />
                   </div>
-                  <h3 className='mb-2 text-base md:text-xl font-medium text-[#1C1C1C]'>
+                  <h3 className='mb-2 text-base md:text-xl font-medium text-tertiary'>
                     Automatically{' '}
                     <span className='italic font-normal'>
                       (AI-Auto Filling)
                     </span>
                   </h3>
-                  <p className='text-sm text-[#6C6C6C] max-w-[460px]'>
+                  <p className='text-sm text-muted-foreground max-w-[460px]'>
                     Upload your up-to-date resume and the AI will manage to fill
                     the information automatically
                   </p>
@@ -197,10 +197,10 @@ export default function AutoFillModal() {
                         strokeWidth={1.5}
                       />
                     </div>
-                    <h3 className='mb-2 text-base md:text-xl font-medium text-[#1C1C1C]'>
+                    <h3 className='mb-2 text-base md:text-xl font-medium text-tertiary'>
                       Manually
                     </h3>
-                    <p className='text-sm text-[#6C6C6C]'>
+                    <p className='text-sm text-muted-foreground'>
                       Fill the needed information manually
                     </p>
                   </button>

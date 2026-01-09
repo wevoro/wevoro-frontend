@@ -238,7 +238,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
 
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
           <div className='flex flex-col gap-3'>
-            <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+            <label className='text-base font-medium leading-[22.4px] text-tertiary'>
               First name{' '}
               {from !== 'admin' && <span className='text-red-500'>*</span>}
             </label>
@@ -255,7 +255,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               renderError(errors.firstName.message as string)}
           </div>
           <div className='flex flex-col gap-3'>
-            <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+            <label className='text-base font-medium leading-[22.4px] text-tertiary'>
               Last name{' '}
               {from !== 'admin' && <span className='text-red-500'>*</span>}
             </label>
@@ -273,7 +273,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           {source === 'pro' && (
             <>
               <div className='flex flex-col gap-3'>
-                <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+                <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                   Date of Birth{' '}
                   {from !== 'admin' && <span className='text-red-500'>*</span>}
                 </label>
@@ -329,7 +329,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           {source === 'partner' && (
             <>
               <div className='flex flex-col gap-3'>
-                <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+                <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                   Company Name{' '}
                   {from !== 'admin' && <span className='text-red-500'>*</span>}
                 </label>
@@ -398,7 +398,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               source === 'pro' && 'col-span-2'
             )}
           >
-            <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+            <label className='text-base font-medium leading-[22.4px] text-tertiary'>
               Phone Number{' '}
               {from !== 'admin' && <span className='text-red-500'>*</span>}
             </label>
@@ -422,7 +422,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
 
           {source === 'partner' && (
             <div className='flex flex-col gap-3'>
-              <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                 Date of Establishment{' '}
                 {from !== 'admin' && <span className='text-red-500'>*</span>}
               </label>
@@ -449,7 +449,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
             Address
           </h2>
           <div className='flex flex-col gap-3'>
-            <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+            <label className='text-base font-medium leading-[22.4px] text-tertiary'>
               Street address{' '}
               {from !== 'admin' && <span className='text-red-500'>*</span>}
             </label>
@@ -466,7 +466,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           </div>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
             <div className='flex flex-col gap-3'>
-              <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                 City{' '}
                 {from !== 'admin' && <span className='text-red-500'>*</span>}
               </label>
@@ -482,7 +482,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                 renderError(errors.address.city.message as string)}
             </div>
             <div className='flex flex-col gap-3'>
-              <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                 State/Province{' '}
                 {from !== 'admin' && <span className='text-red-500'>*</span>}
               </label>
@@ -498,7 +498,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                 renderError(errors.address.state.message as string)}
             </div>
             <div className='flex flex-col gap-3'>
-              <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                 Postal/Zip code{' '}
                 {from !== 'admin' && <span className='text-red-500'>*</span>}
               </label>
@@ -514,7 +514,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                 renderError(errors.address.zipCode.message as string)}
             </div>
             <div className='flex flex-col gap-3'>
-              <label className='text-base font-medium leading-[22.4px] text-[#1C1C1C]'>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
                 Country{' '}
                 {from !== 'admin' && <span className='text-red-500'>*</span>}
               </label>
@@ -538,7 +538,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               <OnboardButton
                 text='Cancel'
                 onClick={() => router.back()}
-                className='w-full bg-white text-[#1C1C1C] border border-gray-300 hover:text-white'
+                className='w-full bg-white text-tertiary border border-gray-300 hover:text-white'
               />
             )}
             <OnboardButton

@@ -10,8 +10,8 @@ interface AddMoreProps {
 
 const AddMore = ({
   handleAdd,
-  iconBgColor = 'bg-[#1C1C1C]',
-  textColor = 'text-[#1C1C1C]',
+  iconBgColor = 'bg-tertiary',
+  textColor = 'text-tertiary',
 }: AddMoreProps) => {
   return (
     <div

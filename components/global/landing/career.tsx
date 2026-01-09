@@ -23,7 +23,7 @@ const Career = ({
             <span className='font-medium'>{titleLight}</span> {titleBold}
           </h2>
         </div>
-        <p className='md:text-lg text-sm text-[#6C6C6C] md:text-left text-center'>
+        <p className='md:text-lg text-sm text-muted-foreground md:text-left text-center'>
           {description}
         </p>
         <CareerButton

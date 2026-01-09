@@ -33,7 +33,7 @@ const Solution = ({
         <h2 className='md:text-[45px] text-[31px] text-secondary md:leading-[54px] leading-[37.2px] text-center transition-all duration-300 mb-3 md:max-w-none max-w-[343px] mx-auto'>
           {title}
         </h2>
-        <p className='text-[#6C6C6C] text-center md:text-lg text-sm mb-10'>
+        <p className='text-muted-foreground text-center md:text-lg text-sm mb-10'>
           {description}
         </p>
 
@@ -72,7 +72,7 @@ const Solution = ({
                         <h4 className='text-secondary text-lg md:text-2xl'>
                           {item.title}
                         </h4>
-                        <p className='text-[#6C6C6C] text-sm md:text-lg mt-1 md:mt-2'>
+                        <p className='text-muted-foreground text-sm md:text-lg mt-1 md:mt-2'>
                           {item.description}
                         </p>
                       </div>

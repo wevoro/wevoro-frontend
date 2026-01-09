@@ -1,6 +1,7 @@
 'use client';
 
 import { useUserContext } from '@/lib/contexts';
+import { useDocumentContext } from '@/lib/contexts/document-context';
 import { cn } from '@/lib/utils';
 import { IdCard, User, FileText, Check } from 'lucide-react';
 import moment from 'moment';
@@ -15,19 +16,11 @@ const Steps = ({
   isEdit?: boolean;
 }) => {
   const pathname = usePathname();
-  // const {
-  //   // user,
-  //   isPersonalInfoCompleted,
-  //   isProfessionalInfoCompleted,
-  //   isDocumentUploadCompleted,
-  // } = useUserContext();
 
-  const {
-    user,
-    isPersonalInfoCompleted,
-    isProfessionalInfoCompleted,
-    isDocumentUploadCompleted,
-  } = useUserContext();
+  const { user, isPersonalInfoCompleted, isProfessionalInfoCompleted } =
+    useUserContext();
+  const { documents } = useDocumentContext();
+  const isDocumentUploadCompleted = documents?.length! > 0;
 
   // console.log({ user });
 
@@ -35,15 +28,12 @@ const Steps = ({
   const isEditProfessionalInfo = pathname.includes(
     'edit/professional-information'
   );
-  const isEditDocumentUpload = pathname.includes('edit/documents');
 
   const updatedAt = isEditPersonalInfo
     ? user?.personalInfo?.updatedAt
     : isEditProfessionalInfo
       ? user?.professionalInfo?.updatedAt
-      : isEditDocumentUpload
-        ? user?.documents?.updatedAt
-        : null;
+      : null;
 
   const proSteps = [
     {
@@ -87,9 +77,7 @@ const Steps = ({
     ? 'Personal Information'
     : isEditProfessionalInfo
       ? 'Professional Information'
-      : isEditDocumentUpload
-        ? 'Document Upload'
-        : 'Personal Information';
+      : 'Personal Information';
 
   return (
     <ul className='space-y-6 list-none pl-0'>
@@ -108,9 +96,9 @@ const Steps = ({
                 <p className='text-lg font-medium'>{label}</p>
 
                 {updatedAt && (
-                  <p className='text-sm font-medium text-[#6C6C6C]'>
+                  <p className='text-sm font-medium text-muted-foreground'>
                     Last updated{' '}
-                    <span className='text-[#1C1C1C]'>
+                    <span className='text-tertiary'>
                       {moment(updatedAt).format('h:mm a, d MMM yyyy')}
                     </span>
                   </p>
@@ -129,7 +117,7 @@ const Steps = ({
                   href={step.link}
                   className={cn(
                     'flex items-center',
-                    isActive ? 'text-[#1C1C1C]' : 'text-[#8d8d8d]',
+                    isActive ? 'text-tertiary' : 'text-[#8d8d8d]',
                     step.disabled && 'cursor-not-allowed'
                   )}
                   onClick={(e) => {
@@ -158,7 +146,7 @@ const Steps = ({
                     <span
                       className={cn(
                         'text-sm font-medium',
-                        isActive ? 'text-[#6C6C6C]' : 'text-[#b6b6b6]'
+                        isActive ? 'text-muted-foreground' : 'text-[#b6b6b6]'
                       )}
                     >
                       Step - {step.id}

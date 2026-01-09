@@ -64,7 +64,7 @@ const ProfileImage = ({
         className='rounded-full w-full h-full object-cover p-1 bg-white'
       />
       {!isProProfileFromPartner && !isPublicProPage && !isPartnerFromPro && (
-        <label className='absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-[#1C1C1C] p-1 rounded-full cursor-pointer md:w-14 md:h-14 w-7 h-7 sm:w-10  sm:h-10 flex items-center justify-center text-white'>
+        <label className='absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-tertiary p-1 rounded-full cursor-pointer md:w-14 md:h-14 w-7 h-7 sm:w-10  sm:h-10 flex items-center justify-center text-white'>
           <input
             type='file'
             accept='image/*'

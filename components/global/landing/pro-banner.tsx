@@ -21,7 +21,9 @@ const ProBanner = ({
             {titleLight}
             <span className='font-medium'>{titleBold}</span>
           </h1>
-          <p className='md:text-lg text-sm text-[#6C6C6C]'>{description}</p>
+          <p className='md:text-lg text-sm text-muted-foreground'>
+            {description}
+          </p>
           {environmentType === 'waitlist' ? (
             <ProButton />
           ) : (
@@ -45,7 +47,7 @@ const ProBanner = ({
 
           {/* {environmentType !== 'waitlist' && (
             <div className='-mt-12 max-w-[471px] mx-auto'>
-              <p className='text-[#6C6C6C] md:text-base text-sm'>
+              <p className='text-muted-foreground md:text-base text-sm'>
                 Download Now
               </p>
               <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>

@@ -18,8 +18,9 @@ export default function Navbar({
   environmentType: string;
 }) {
   const { user, isUserLoading } = useUserContext();
+  console.log('🚀 ~ Navbar ~ user:', user);
   const { isAuthenticated } = useCookiesContext();
-  // console.log('🚀 ~ Navbar ~ isAuthenticated:', isAuthenticated, isUserLoading);
+  console.log('🚀 ~ Navbar ~ isAuthenticated:', isAuthenticated);
 
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -101,7 +102,7 @@ export default function Navbar({
                         className={`text-base font-medium ${
                           pathname === item.href
                             ? 'text-primary'
-                            : 'text-[#6C6C6C]'
+                            : 'text-muted-foreground'
                         }`}
                         onClick={() => setIsOpen(false)}
                       >
@@ -134,7 +135,7 @@ export default function Navbar({
                               </Button>
                               <Link
                                 href={registerPath}
-                                className='text-[#6C6C6C] hover:text-primary text-base font-medium'
+                                className='text-muted-foreground hover:text-primary text-base font-medium'
                                 onClick={() => setIsOpen(false)}
                               >
                                 Register
@@ -153,7 +154,7 @@ export default function Navbar({
                               <SelectAuthPath type='Register'>
                                 <Button
                                   variant='link'
-                                  className='text-[#6C6C6C] hover:text-primary text-base font-medium'
+                                  className='text-muted-foreground hover:text-primary text-base font-medium'
                                   // onClick={() => setIsOpen(false)}
                                 >
                                   Register
@@ -171,7 +172,7 @@ export default function Navbar({
                       <Button
                         href={user?.role === 'admin' ? '/admin' : profilePath}
                         variant='link'
-                        className='text-[#6C6C6C] hover:text-primary text-base font-medium'
+                        className='text-muted-foreground hover:text-primary text-base font-medium'
                         onClick={() => setIsOpen(false)}
                       >
                         {user?.role === 'admin' ? 'Admin' : 'Profile'}
@@ -196,7 +197,7 @@ export default function Navbar({
                   className={`inline-flex items-center px-1 pt-1 text-base font-normal ${
                     pathname === item.href
                       ? 'text-primary'
-                      : 'text-[#1C1C1C] hover:text-primary transition-colors'
+                      : 'text-tertiary hover:text-primary transition-colors'
                   }`}
                 >
                   {item.name}
@@ -223,7 +224,7 @@ export default function Navbar({
                       <>
                         <Link
                           href={registerPath}
-                          className='text-[#6C6C6C] hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
+                          className='text-muted-foreground hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
                         >
                           Register
                         </Link>
@@ -240,7 +241,7 @@ export default function Navbar({
                         <SelectAuthPath type='Register'>
                           <Button
                             variant='special'
-                            className='text-[#6C6C6C] hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
+                            className='text-muted-foreground hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
                           >
                             Register
                           </Button>
@@ -261,7 +262,7 @@ export default function Navbar({
             <div className='hidden md:flex items-center space-x-6'>
               <Link
                 href={user?.role === 'admin' ? '/admin' : profilePath}
-                className='text-[#6C6C6C] hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
+                className='text-muted-foreground hover:text-primary px-3 py-2 rounded-md text-base font-medium transition-colors'
               >
                 {user?.role === 'admin' ? 'Admin' : 'Profile'}
               </Link>

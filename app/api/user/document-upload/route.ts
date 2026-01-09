@@ -1,52 +1,75 @@
-import api from "@/lib/axiosInterceptor";
-import { NextResponse } from "next/server";
+import api from '@/lib/axiosInterceptor';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const referer = req.headers.get("referer");
-    let env = "prod";
+    // Determine environment from referer
+    const referer = req.headers.get('referer');
+    let env = 'prod';
     if (referer) {
       const parsedUrl = new URL(referer);
-      env = parsedUrl.searchParams.get("env") || "prod";
+      env = parsedUrl.searchParams.get('env') || 'prod';
     }
+
     const bodyData = await req.formData();
-    const entries = Object.fromEntries(bodyData.entries());
 
-    const { certificate, resume, governmentId, data, id } = entries;
+    // Extract fields from the form data
+    const category = bodyData.get('category');
+    const documentType = bodyData.get('documentType');
+    const title = bodyData.get('title');
+    const isProtected = bodyData.get('isProtected');
+    const consent = bodyData.get('consent');
+    const file = bodyData.get('file');
 
+    if (!file) {
+      return NextResponse.json(
+        { status: 400, message: 'File is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create new FormData to send to backend
     const formData = new FormData();
+    formData.append('category', category as string);
+    formData.append('documentType', documentType as string);
+    formData.append('title', title as string);
+    formData.append('isProtected', isProtected as string);
+    formData.append('consent', consent as string);
+    formData.append('file', file as File);
 
-    if (certificate) formData.append("certificate", certificate as File);
-    if (resume) formData.append("resume", resume as File);
-    if (governmentId) formData.append("governmentId", governmentId as File);
-    if (data) formData.append("data", data);
-
-    const queryId = id ? `?id=${id}` : "";
-
-    console.log("🚀 ~ POST ~ queryId  from document upload:", queryId);
-
+    // Use QA API URL if env is qa, otherwise use default
     const apiUrl =
-      env === "qa"
-        ? `${process.env.NEXT_PUBLIC_QA_API_URL}/user/documents${queryId}`
-        : `/user/documents${queryId}`;
+      env === 'qa'
+        ? `${process.env.NEXT_PUBLIC_QA_API_URL}/document/upload`
+        : '/document/upload';
 
-    const response = await api.patch(apiUrl, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    const response = await api.post(apiUrl, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
-    console.log("🚀 ~ POST ~ response:", response.data);
 
     if (response.status === 200) {
-      const res = NextResponse.json({
+      return NextResponse.json({
         status: 200,
-        message: "Documents uploaded successfully",
+        message: 'Document uploaded successfully',
+        data: response.data.data,
       });
-      return res;
     }
-  } catch (error: any) {
-    console.error("Documents upload failed:", error.response);
+
     return NextResponse.json({
-      status: 500,
-      message: error.response.data.message,
+      status: response.status,
+      message: response.data.message || 'Upload failed',
     });
+  } catch (error: any) {
+    console.error(
+      'Document upload failed:',
+      error.response?.data || error.message
+    );
+    return NextResponse.json(
+      {
+        status: error.response?.status || 500,
+        message: error.response?.data?.message || 'Document upload failed',
+      },
+      { status: error.response?.status || 500 }
+    );
   }
 }

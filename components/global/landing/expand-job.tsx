@@ -25,7 +25,7 @@ const ExpandJob = ({
               <span className='font-medium'>{titleBold}</span> {titleLight}
             </h2>
 
-            <p className='md:text-lg text-sm text-[#1C1C1C] md:text-left text-center'>
+            <p className='md:text-lg text-sm text-tertiary md:text-left text-center'>
               {description}
             </p>
           </div>
@@ -42,7 +42,7 @@ const ExpandJob = ({
           <h3 className='text-lg md:text-[28px] text-secondary leading-[19.8px] md:leading-[30.8px] mb-6'>
             {subtitle}
           </h3>
-          <p className='md:text-lg text-sm text-[#1C1C1C] '>{subDescription}</p>
+          <p className='md:text-lg text-sm text-tertiary'>{subDescription}</p>
           <div className='grid sm:grid-cols-2 grid-cols-1 gap-3 mt-9 w-full'>
             {partnerCategories?.map((item: any, index: number) => (
               <div

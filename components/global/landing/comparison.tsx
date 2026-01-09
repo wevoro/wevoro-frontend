@@ -110,7 +110,9 @@ function Feature({
     >
       <h3 className='font-normal md:text-[25px] text-lg pb-2'>{title}</h3>
       {description && (
-        <p className='md:text-base text-xs text-[#6C6C6C]'>{description}</p>
+        <p className='md:text-base text-xs text-muted-foreground'>
+          {description}
+        </p>
       )}
     </div>
   );

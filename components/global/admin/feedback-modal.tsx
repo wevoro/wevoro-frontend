@@ -110,7 +110,7 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
       <DialogContent className='max-w-[561px] max-h-[90vh] overflow-y-auto p-8'>
         <DialogHeader className='flex justify-between flex-row mt-8 mb-4'>
           <div className='flex flex-col gap-1 w-max'>
-            <DialogTitle className='text-sm text-[#6C6C6C] font-normal'>
+            <DialogTitle className='text-sm text-muted-foreground font-normal'>
               {formatDate(data.createdAt)}
             </DialogTitle>
             <div className='flex gap-2 w-max'>
@@ -118,7 +118,7 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
                 <div
                   key={index}
                   className={cn(
-                    'text-xs p-2 rounded-[30px] w-max bg-[#F9F9FA] text-[#6C6C6C]'
+                    'text-xs p-2 rounded-[30px] w-max bg-[#F9F9FA] text-muted-foreground'
                   )}
                 >
                   {selection}
@@ -143,8 +143,9 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
         <div className='space-y-5'>
           <div className='border border-[#DFE2E0] rounded-lg p-4'>
             <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-base text-[#1C1C1C] inline-flex items-center gap-2'>
-                <User className='size-5 text-[#6C6C6C]' /> User Information
+              <h3 className='text-base text-tertiary inline-flex items-center gap-2'>
+                <User className='size-5 text-muted-foreground' /> User
+                Information
               </h3>
 
               {data.user?.phone && (
@@ -171,40 +172,40 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
                   width={58}
                   height={58}
                 />
-                <span className='text-base font-medium text-[#1C1C1C]'>
+                <span className='text-base font-medium text-tertiary'>
                   {data.user?.name}
                 </span>
               </div>
               {/* Right: Details */}
               <div className='flex-1 grid grid-cols-2 gap-y-3 text-sm'>
-                <div className='text-[#6C6C6C] font-medium flex items-center'>
+                <div className='text-muted-foreground font-medium flex items-center'>
                   Type
                 </div>
-                <div className='text-right text-[#1C1C1C] font-normal'>
+                <div className='text-right text-tertiary font-normal'>
                   {data.user?.role}
                 </div>
-                <div className='text-[#6C6C6C] font-medium flex items-center'>
+                <div className='text-muted-foreground font-medium flex items-center'>
                   Email
                 </div>
-                <div className='text-right text-[#1C1C1C] font-normal truncate'>
+                <div className='text-right text-tertiary font-normal truncate'>
                   {data.user?.email}
                 </div>
                 {data.user?.phone && (
                   <>
-                    <div className='text-[#6C6C6C] font-medium flex items-center'>
+                    <div className='text-muted-foreground font-medium flex items-center'>
                       Phone
                     </div>
-                    <div className='text-right text-[#1C1C1C] font-normal'>
+                    <div className='text-right text-tertiary font-normal'>
                       {data.user?.phone}
                     </div>
                   </>
                 )}
                 {data.user?.address && (
                   <>
-                    <div className='text-[#6C6C6C] font-medium flex items-center'>
+                    <div className='text-muted-foreground font-medium flex items-center'>
                       Address
                     </div>
-                    <div className='text-right text-[#1C1C1C] font-normal'>
+                    <div className='text-right text-tertiary font-normal'>
                       {data.user?.address}
                     </div>
                   </>
@@ -215,7 +216,7 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
 
           {/* Message Details */}
           <div>
-            <h3 className='text-base font-medium text-[#1C1C1C] mb-4'>
+            <h3 className='text-base font-medium text-tertiary mb-4'>
               Message Details
             </h3>
             <div className='bg-[#F9F9FA] rounded-lg py-4 px-6'>
@@ -225,7 +226,7 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
 
           {/* Reply Message */}
           <div>
-            <h3 className='text-sm text-[#1C1C1C] mb-4'>Reply Message</h3>
+            <h3 className='text-sm text-tertiary mb-4'>Reply Message</h3>
             <div className='space-y-4'>
               <Textarea
                 placeholder='Enter your message...'

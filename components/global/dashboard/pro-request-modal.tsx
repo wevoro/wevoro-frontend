@@ -118,8 +118,8 @@ export function ProRequestModal({
           </div>
         </DialogHeader>
         <div className='flex flex-col gap-6 my-8'>
-          <p className='md:text-base text-sm text-[#1C1C1C] flex items-center gap-2'>
-            <FileClock className='md:w-6 md:h-6 w-4 h-4 text-[#6C6C6C]' />
+          <p className='md:text-base text-sm text-tertiary flex items-center gap-2'>
+            <FileClock className='md:w-6 md:h-6 w-4 h-4 text-muted-foreground' />
             The client is requesting:
           </p>
           {offer?.documentsNeeded?.map((document: any, idx: number) => (
@@ -136,11 +136,11 @@ export function ProRequestModal({
                     )}
                   />
                   <div>
-                    <h2 className='md:text-base text-sm text-[#1C1C1C]'>
+                    <h2 className='md:text-base text-sm text-tertiary'>
                       {document?.title}
                     </h2>
                     {files.find((f) => f.id === document?._id) ? (
-                      <span className='text-[10px] text-[#6C6C6C]'>
+                      <span className='text-[10px] text-muted-foreground'>
                         {files.find((f) => f.id === document?._id)?.file?.name}{' '}
                         (
                         {(
@@ -158,7 +158,7 @@ export function ProRequestModal({
                         <Link2 className='w-4 h-4' /> View
                       </Link>
                     ) : (
-                      <span className='text-[10px] text-[#6C6C6C]'>
+                      <span className='text-[10px] text-muted-foreground'>
                         image or pdf formats, up to 3MB.
                       </span>
                     )}

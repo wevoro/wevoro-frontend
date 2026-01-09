@@ -15,6 +15,7 @@ import {
   UIProvider,
   UserProvider,
 } from './contexts';
+import DocumentProvider from './contexts/document-context';
 
 // export const queryClient = new QueryClient();
 export default function Provider({ children }: any) {
@@ -42,11 +43,12 @@ export default function Provider({ children }: any) {
                 <CookiesProvider>
                   <NotificationsProvider>
                     <OffersProvider>
-                      {children}
-
-                      <Toaster />
-                      <Toaster2 />
-                      <FloatingFeedback />
+                      <DocumentProvider>
+                        {children}
+                        <Toaster />
+                        <Toaster2 />
+                        <FloatingFeedback />
+                      </DocumentProvider>
                     </OffersProvider>
                   </NotificationsProvider>
                 </CookiesProvider>

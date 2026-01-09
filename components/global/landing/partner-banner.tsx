@@ -20,7 +20,9 @@ const PartnerBanner = ({
           <h1 className='md:text-[50px] text-[31px] font-light text-secondary md:leading-[55px] leading-[34.1px]'>
             {titleLight} <span className='font-medium'>{titleBold}</span>
           </h1>
-          <p className='md:text-lg text-sm text-[#6C6C6C]'>{description}</p>
+          <p className='md:text-lg text-sm text-muted-foreground'>
+            {description}
+          </p>
           {environmentType !== 'waitlist' ? (
             <Button
               href='/partner/signup'
@@ -43,7 +45,7 @@ const PartnerBanner = ({
           </div>
 
           {/* <div className='-mt-12 max-w-[471px] mx-auto'>
-            <p className='text-[#6C6C6C] md:text-base text-sm'>Download Now</p>
+            <p className='text-muted-foreground md:text-base text-sm'>Download Now</p>
             <div className='flex md:space-x-6 pt-2 md:flex-row flex-col justify-center items-center'>
               <a href={appStoreLink} target='_blank' rel='noopener noreferrer'>
                 <img

@@ -7,6 +7,7 @@ const REFRESH_BUFFER_MS = 1 * 30 * 1000; // Refresh 1 minute before expiry
 
 const RefreshToken = () => {
   const { isAuthenticated, expiresAt, setIsRefreshed } = useAuthStatusContext();
+  // console.log('🚀 ~ RefreshToken ~ isAuthenticated:', isAuthenticated);
   const isRefreshingRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,12 +49,12 @@ const RefreshToken = () => {
   }, [setIsRefreshed]);
 
   useEffect(() => {
-    console.log(
-      '[RefreshToken] useEffect triggered - isAuthenticated:',
-      isAuthenticated,
-      'expiresAt:',
-      expiresAt
-    );
+    // console.log(
+    //   '[RefreshToken] useEffect triggered - isAuthenticated:',
+    //   isAuthenticated,
+    //   'expiresAt:',
+    //   expiresAt
+    // );
 
     // Clear any existing timeout
     if (timeoutRef.current) {

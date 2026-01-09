@@ -38,7 +38,9 @@ const Banner = ({
           <h1 className='md:text-[50px] text-[31px] font-light text-secondary md:leading-[55px] leading-[34.1px]'>
             {titleLight} <span className='font-medium'>{titleBold}</span>
           </h1>
-          <p className='md:text-lg text-sm text-[#6C6C6C]'>{description}</p>
+          <p className='md:text-lg text-sm text-muted-foreground'>
+            {description}
+          </p>
         </div>
 
         <div className='flex flex-col md:flex-row gap-4 mt-12'>
@@ -58,7 +60,7 @@ const Banner = ({
               <h2 className='text-2xl md:text-4xl text-center md:text-left text-secondary mb-6'>
                 {card.title}
               </h2>
-              <ul className='space-y-3 text-[#6C6C6C]  tracking-[-2]  text-sm md:text-lg mb-8 flex-1'>
+              <ul className='space-y-3 text-muted-foreground  tracking-[-2]  text-sm md:text-lg mb-8 flex-1'>
                 {card.features?.map((feature: string, featureIndex: number) => (
                   <li key={featureIndex} className='flex items-start gap-2'>
                     <span className='text-[#1A5632]'>•</span>

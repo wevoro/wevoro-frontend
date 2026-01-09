@@ -23,26 +23,19 @@ export async function POST(req: Request) {
         completionPercentage,
       });
 
-      res.cookies.set('accessToken', accessToken, {
+         res.cookies.set('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 1000, // 1 hour
+        sameSite: 'lax',
+        maxAge: 60 * 60, // 5 minutes in seconds (for testing)
         path: '/',
       });
       res.cookies.set('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 1000, // 1 hour
-        path: '/',
-      });
-
-      const now = new Date();
-      const tokenRefreshIn = new Date(now.getTime() + 29 * 60000);
-
-      res.cookies.set('tokenRefreshIn', tokenRefreshIn.toISOString(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 59 * 60 * 1000, // 59 minutes
+        sameSite: 'lax',
+        // maxAge: 3 * 60, // 10 minutes in seconds (for testing)
+        maxAge: 7 * 24 * 60 * 60,
         path: '/',
       });
 

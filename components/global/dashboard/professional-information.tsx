@@ -230,10 +230,7 @@ const SectionTitle = ({
 }) => {
   return (
     <h3
-      className={cn(
-        'text-xl md:text-2xl font-medium text-[#1C1C1C]',
-        className
-      )}
+      className={cn('text-xl md:text-2xl font-medium text-tertiary', className)}
     >
       {text}
     </h3>
@@ -249,7 +246,7 @@ const SectionTitle = ({
 // }) => {
 //   return (
 //     <p
-//       className={cn('text-sm md:text-xl text-[#1C1C1C] font-medium', className)}
+//       className={cn('text-sm md:text-xl text-tertiary font-medium', className)}
 //     >
 //       {text}
 //     </p>

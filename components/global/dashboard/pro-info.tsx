@@ -50,11 +50,11 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
         </div>
         {!isProProfileFromPartner && !isPublicProPage && (
           <div className='flex flex-col gap-3 flex-1 xl:-mt-10'>
-            <p className='text-sm sm:text-base font-semibold text-[#1C1C1C]'>
+            <p className='text-sm sm:text-base font-semibold text-tertiary'>
               Share Link with Employers
             </p>
             <div className='flex items-center justify-between bg-[#FAFAFA] pl-4 pr-2 sm:h-[52px] h-10 rounded-lg max-w-[480px] relative'>
-              <span className='text-sm sm:text-lg text-[#1C1C1C] mr-4 truncate max-w-[250px] sm:max-w-[300px]'>
+              <span className='text-sm sm:text-lg text-tertiary mr-4 truncate max-w-[250px] sm:max-w-[300px]'>
                 {proLinkGenerator(user?.personalInfo?.firstName, user?._id)}
               </span>
               <Button

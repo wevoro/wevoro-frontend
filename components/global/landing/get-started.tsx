@@ -83,7 +83,7 @@ export default function GetStarted({
                   className={`md:text-xl text-sm transition-colors duration-300 ${
                     activeStep === index
                       ? 'text-green-800 font-bold'
-                      : 'text-[#1C1C1C]'
+                      : 'text-tertiary'
                   }`}
                 >
                   Step {index + 1}
@@ -106,7 +106,7 @@ export default function GetStarted({
                   </span>
                 </div>
                 {activeStep === index && (
-                  <p className='text-sm md:text-base text-[#1C1C1C] transition-all duration-300'>
+                  <p className='text-sm md:text-base text-tertiary transition-all duration-300'>
                     {item.description}
                   </p>
                 )}

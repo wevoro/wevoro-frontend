@@ -106,8 +106,8 @@ const EachSkill = ({
       className={cn(
         'flex items-center gap-1.5 rounded-[12px] h-11 font-medium text-sm px-3 py-1',
         type === 'add'
-          ? 'bg-white text-[#1C1C1C] hover:bg-[#1C1C1C] hover:text-white '
-          : 'bg-[#1C1C1C] text-white hover:bg-white hover:text-black'
+          ? 'bg-white text-tertiary hover:bg-tertiary hover:text-white '
+          : 'bg-tertiary text-white hover:bg-white hover:text-black'
       )}
       disabled={selectedSkills?.includes(skill)}
       onClick={() =>

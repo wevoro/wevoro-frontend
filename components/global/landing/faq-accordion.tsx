@@ -19,7 +19,7 @@ const FaqAccordion = ({ faqs }: { faqs: any }) => {
             >
               {item.question}
             </AccordionTrigger>
-            <AccordionContent className='text-sm md:text-base text-[#6C6C6C] pl-[52px] rounded-md leading-[28px]'>
+            <AccordionContent className='text-sm md:text-base text-muted-foreground pl-[52px] rounded-md leading-[28px]'>
               {item.answer}
             </AccordionContent>
           </AccordionItem>

@@ -1,117 +1,289 @@
 'use client';
-import React from 'react';
-import EditBtn from './edit-btn';
+import React, { useState } from 'react';
 import Title from '../title';
-import { MoreHorizontal } from 'lucide-react';
-import { useAppContext } from '@/lib/context';
-import NoData from '../no-data';
+import {
+  Plus,
+  MoreHorizontal,
+  LockKeyhole,
+  Globe,
+  Trash2,
+  Pencil,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUserContext } from '@/lib/contexts';
-
-const isImageFile = (file: string) => {
-  const extension = file?.split('.').pop()?.toLowerCase() || '';
-  const imageExtensions = ['jpg', 'jpeg', 'png', 'svg'];
-  return imageExtensions.includes(extension);
-};
-
-const getFileType = (file: string) => {
-  const extension = file?.split('.').pop()?.toLowerCase() || '';
-  const imageExtensions = ['jpg', 'jpeg', 'png', 'svg'];
-
-  if (imageExtensions.includes(extension)) {
-    return extension.toUpperCase();
-  } else if (extension === 'pdf') {
-    return 'PDF';
-  } else {
-    return extension.toUpperCase() || 'FILE';
-  }
-};
-
-const getFileIcon = (file: string) => {
-  return isImageFile(file) ? '/image.svg' : '/file.svg';
-};
+import { Button } from '@/components/ui/button';
+import UploadDocumentModal from './upload-document-modal';
+import { useDocumentContext } from '@/lib/contexts/document-context';
+import { fileIcons, getFileType } from '@/utils/file';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 const Documents: React.FC<{ proUser?: any; from?: string }> = ({
   proUser,
   from,
 }) => {
-  const { user } = useUserContext();
-  const userData = proUser ? proUser : user;
-  const documents = userData?.documents;
+  const { documents, refetchDocuments } = useDocumentContext();
+  const medicalDocuments = documents?.filter(
+    (document) => document.category === 'medical'
+  );
+  const nonMedicalDocuments = documents?.filter(
+    (document) => document.category === 'non_medical'
+  );
 
-  const noData = !documents;
-
-  const availableDocuments = [
-    documents?.certificate && {
-      name: 'Certificate',
-      type: getFileType(documents?.certificate),
-      image: getFileIcon(documents?.certificate),
-      url: documents?.certificate,
-    },
-    documents?.resume && {
-      name: 'Resume',
-      type: getFileType(documents?.resume),
-      image: getFileIcon(documents?.resume),
-      url: documents?.resume,
-    },
-    documents?.governmentId && {
-      name: 'Government ID',
-      type: getFileType(documents?.governmentId),
-      image: getFileIcon(documents?.governmentId),
-      url: documents?.governmentId,
-    },
-  ].filter(Boolean);
   return (
-    <div
-      className={cn(
-        'bg-white md:rounded-[16px]',
-        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
-      )}
-    >
-      <div className='flex items-center justify-between border-b pb-4 mb-8'>
-        <Title text='Documents' className='mb-0 !text-lg md:!text-2xl' />
-        {from !== 'admin' && <EditBtn href={`/pro/edit/documents?edit=true`} />}
-      </div>
+    <>
+      <div
+        className={cn(
+          'bg-white md:rounded-2xl',
+          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+        )}
+      >
+        <Title
+          text='Non Medical Document'
+          className={cn(
+            'border-b pb-4',
+            from === 'onboard'
+              ? '!text-lg md:!text-xl'
+              : '!text-lg md:!text-2xl'
+          )}
+        />
 
-      {!noData ? (
-        <div className='flex flex-wrap md:flex-nowrap gap-6'>
-          {availableDocuments.map((document, index) => (
-            <div
-              onClick={() => {
-                window.open(document.url, '_blank');
-              }}
+        <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
+          {nonMedicalDocuments?.map((document, index) => (
+            <EachDocument
+              document={document}
               key={index}
-              className='flex flex-col justify-between p-4 md:p-8 border rounded-[24px] w-full h-32 md:h-48 cursor-pointer'
-            >
-              <div className='flex justify-between'>
-                {isImageFile(document.url) ? (
-                  <img
-                    src={document.url}
-                    alt={document.type}
-                    className='size-[40px] md:size-[60px] mr-2 object-cover rounded-md'
-                  />
-                ) : (
-                  <img
-                    src={document.image}
-                    alt={document.type}
-                    className='size-[40px] md:size-[60px] mr-2'
-                  />
-                )}
+              refetchDocuments={refetchDocuments}
+            />
+          ))}
+          {from !== 'onboard' && (
+            <UploadDocumentButton
+              category='non_medical'
+              hasDocumets={nonMedicalDocuments?.length! > 0}
+            />
+          )}
+        </div>
+      </div>
+      <div
+        className={cn(
+          'bg-white md:rounded-2xl',
+          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+        )}
+      >
+        <Title
+          text='Medical Document'
+          className={cn(
+            'border-b pb-4',
+            from === 'onboard'
+              ? '!text-lg md:!text-xl'
+              : '!text-lg md:!text-2xl'
+          )}
+        />
 
-                <MoreHorizontal className='size-4 md:size-8 cursor-pointer' />
-              </div>
-
-              <p className='text-sm md:text-lg font-medium text-[#1C1C1C]'>
-                {document.name}
-              </p>
+        <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
+          {medicalDocuments?.map((document, index) => (
+            <div key={index}>
+              <EachDocument
+                document={document}
+                refetchDocuments={refetchDocuments}
+              />
             </div>
           ))}
+          {from !== 'onboard' && (
+            <UploadDocumentButton
+              category='medical'
+              hasDocumets={medicalDocuments?.length! > 0}
+            />
+          )}
         </div>
-      ) : (
-        <NoData />
-      )}
-    </div>
+      </div>
+    </>
   );
 };
 
 export default Documents;
+
+const EachDocument = ({
+  document,
+  refetchDocuments,
+}: {
+  document: any;
+  refetchDocuments: () => void;
+}) => {
+  return (
+    <div className='flex flex-col gap-6 justify-between p-4 md:p-6 border rounded-[24px] w-full cursor-pointer'>
+      <div className='flex justify-between gap-2'>
+        <img
+          src={fileIcons[getFileType(document.url)]}
+          alt={document.title}
+          className='size-[30px] md:size-[40px] lg:size-[60px]'
+        />
+
+        <div className='flex items-center'>
+          <Button
+            size='icon'
+            variant='ghost'
+            className='size-6 md:size-8 lg:size-10 cursor-pointer bg-accent hover:bg-gray-100 md:rounded-xl'
+          >
+            {document.privacy === 'protected' ? (
+              <Globe className='size-3 md:size-5' />
+            ) : (
+              <LockKeyhole className='size-3 md:size-5' />
+            )}
+          </Button>
+          <MoreDropdown
+            document={document}
+            refetchDocuments={refetchDocuments}
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
+          {document.title}
+        </p>
+        <p className='text-xs sm:text-sm md:text-base font-medium text-muted-foreground uppercase'>
+          {document.documentType}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const UploadDocumentButton = ({
+  category,
+  hasDocumets,
+}: {
+  category: string;
+  hasDocumets: boolean;
+}) => {
+  console.log('🚀 ~ UploadDocumentButton ~ hasDocumets:', hasDocumets);
+  return (
+    <UploadDocumentModal category={category}>
+      <Button
+        variant='special'
+        className={cn(
+          'flex flex-col items-center justify-center p-4 md:p-8 border border-[#BBF8DC] rounded-3xl w-full cursor-pointer',
+          hasDocumets ? 'h-full' : 'h-[186px]'
+        )}
+      >
+        <p className='md:size-10 size-8 rounded-full bg-green-600 flex items-center justify-center hover:bg-green-700 transition-colors'>
+          <Plus className='w-5 h-5 text-white' strokeWidth={2.5} />
+        </p>
+      </Button>
+    </UploadDocumentModal>
+  );
+};
+
+export function MoreDropdown({
+  document,
+  refetchDocuments,
+}: {
+  document: any;
+  refetchDocuments: () => void;
+}) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(
+        `/api/user/document-delete?documentId=${document._id}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.status === 200) {
+        toast.success('Document deleted successfully!');
+        refetchDocuments();
+        setShowDeleteDialog(false);
+      } else {
+        toast.error(result.message || 'Failed to delete document');
+      }
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete document. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='md:rounded-xl size-6 md:size-8 lg:size-10'
+          >
+            <MoreHorizontal className='size-3 md:size-5 cursor-pointer' />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuGroup>
+            <UploadDocumentModal document={document}>
+              <DropdownMenuItem
+                className='cursor-pointer'
+                onSelect={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                <Pencil />
+                <span>Update</span>
+              </DropdownMenuItem>
+            </UploadDocumentModal>
+            <DropdownMenuItem
+              className='cursor-pointer'
+              onSelect={() => setShowDeleteDialog(true)}
+            >
+              <Trash2 />
+              <span>Remove</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              document &quot;{document.title}&quot;.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

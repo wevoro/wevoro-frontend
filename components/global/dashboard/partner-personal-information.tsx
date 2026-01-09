@@ -167,7 +167,7 @@ const SectionTitle = ({
   return (
     <h3
       className={cn(
-        'text-sm md:text-base font-medium text-[#6C6C6C]',
+        'text-sm md:text-base font-medium text-muted-foreground',
         className
       )}
     >

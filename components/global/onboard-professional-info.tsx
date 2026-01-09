@@ -306,7 +306,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             >
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Degree
                   </label>
                   <Input
@@ -330,7 +330,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Institution
                   </label>
                   <Input
@@ -360,7 +360,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               </div>
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Year of Graduation
                   </label>
                   <Input
@@ -371,7 +371,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   />
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Field of Study
                   </label>
                   <Input
@@ -381,7 +381,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   />
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Grade
                   </label>
                   <Input
@@ -422,7 +422,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             >
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Job Title
                   </label>
                   <Input
@@ -445,7 +445,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Company Name
                   </label>
                   <Input
@@ -462,7 +462,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   />
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Duration
                   </label>
                   <Input
@@ -477,7 +477,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               </div>
 
               <div className='flex flex-col gap-3'>
-                <label className='text-base font-medium text-[#1C1C1C]'>
+                <label className='text-base font-medium text-tertiary'>
                   Responsibilities
                 </label>
                 <Controller
@@ -523,7 +523,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             >
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Title{' '}
                     {from !== 'admin' && (
                       <span className='text-red-500'>*</span>
@@ -550,7 +550,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Name of Institute{' '}
                     {from !== 'admin' && (
                       <span className='text-red-500'>*</span>
@@ -587,7 +587,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               </div>
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Issue Date{' '}
                     {from !== 'admin' && (
                       <span className='text-red-500'>*</span>
@@ -623,7 +623,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Expire Date{' '}
                     {from !== 'admin' && (
                       <span className='text-red-500'>*</span>
@@ -661,7 +661,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               </div>
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Credential URL
                   </label>
                   <Input
@@ -678,7 +678,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                     )} */}
                 </div>
                 <div className='flex flex-col gap-3'>
-                  <label className='text-base font-medium text-[#1C1C1C]'>
+                  <label className='text-base font-medium text-tertiary'>
                     Credential ID{' '}
                     {from !== 'admin' && (
                       <span className='text-red-500'>*</span>
@@ -844,7 +844,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           <div className='flex gap-5'>
             <OnboardButton
               text={isEdit ? 'Cancel' : 'Previous'}
-              className='w-full bg-white text-[#1C1C1C] border border-gray-300 hover:text-white'
+              className='w-full bg-white text-tertiary border border-gray-300 hover:text-white'
               onClick={() => router.back()}
             />
             <OnboardButton

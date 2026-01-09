@@ -22,7 +22,7 @@ const OnboardButton: React.FC<OnboardButtonProps> = ({
   return (
     <Button
       className={cn(
-        'h-[48px] md:h-[75px] md:max-w-[247px] w-auto rounded-[12px] text-[15px] md:text-lg font-medium bg-primary disabled:bg-[#cdcdcd]',
+        'h-[48px] md:h-[60px] md:max-w-[247px] w-auto rounded-[12px] text-[15px] md:text-lg font-medium bg-primary disabled:bg-[#cdcdcd]',
         className
       )}
       disabled={disabled}

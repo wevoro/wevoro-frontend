@@ -164,11 +164,11 @@ const PartnerOffers = () => {
                   className='w-12 h-12 sm:size-[58px] rounded-full object-cover'
                 />
                 <div>
-                  <h2 className='text-base sm:text-lg text-[#1C1C1C] inline-flex items-center gap-2 sm:pb-1 font-semibold'>
+                  <h2 className='text-base sm:text-lg text-tertiary inline-flex items-center gap-2 sm:pb-1 font-semibold'>
                     {offer.pro.personalInfo.firstName}{' '}
                     {offer.pro.personalInfo.lastName}{' '}
                   </h2>
-                  <p className='text-[#6C6C6C] text-xs sm:text-sm flex items-center gap-1.5'>
+                  <p className='text-muted-foreground text-xs sm:text-sm flex items-center gap-1.5'>
                     <MapPin className='size-4' />{' '}
                     {offer.pro.personalInfo.address.city} ,{' '}
                     {offer.pro.personalInfo.address.state} ,{' '}
@@ -190,7 +190,7 @@ const PartnerOffers = () => {
 
             {offer.pro.personalInfo.bio && (
               <p
-                className='text-sm md:text-base text-[#6C6C6C] truncate'
+                className='text-sm md:text-base text-muted-foreground truncate'
                 dangerouslySetInnerHTML={{
                   __html: offer.pro.personalInfo.bio,
                 }}
@@ -203,14 +203,14 @@ const PartnerOffers = () => {
                 .map((skill: any, index: any) => (
                   <Button
                     key={index}
-                    className='bg-accent text-[#1C1C1C] text-xs md:text-sm h-7 md:h-9'
+                    className='bg-accent text-tertiary text-xs md:text-sm h-7 md:h-9'
                     variant='ghost'
                   >
                     {skill}
                   </Button>
                 ))}
               {offer.pro.professionalInfo.skills.length > 3 && (
-                <span className='text-xs md:text-sm text-[#1C1C1C]'>
+                <span className='text-xs md:text-sm text-tertiary'>
                   +{offer.pro.professionalInfo.skills.length - 3} more
                 </span>
               )}
@@ -218,14 +218,14 @@ const PartnerOffers = () => {
 
             <div className='grid grid-cols-1 sm:grid-cols-3 gap-2 w-auto'>
               <div className='flex flex-col gap-2'>
-                <p className='text-[#6C6C6C] text-sm'>Email address</p>
-                <p className='text-[#1C1C1C] font-medium text-sm md:text-base'>
+                <p className='text-muted-foreground text-sm'>Email address</p>
+                <p className='text-tertiary font-medium text-sm md:text-base'>
                   {offer.pro.email}
                 </p>
               </div>
               <div className='flex flex-col gap-2'>
-                <p className='text-[#6C6C6C] text-sm'>Phone number</p>
-                <p className='text-[#1C1C1C] font-medium text-sm md:text-base'>
+                <p className='text-muted-foreground text-sm'>Phone number</p>
+                <p className='text-tertiary font-medium text-sm md:text-base'>
                   {offer.pro.personalInfo.phone || 'N/A'}
                 </p>
               </div>
@@ -236,8 +236,8 @@ const PartnerOffers = () => {
               offer.notes) && (
               <div className='flex flex-col gap-3'>
                 <div className='flex gap-4 items-center text-base'>
-                  <p className=' text-[#1C1C1C] flex items-center gap-2'>
-                    <FileText className='w-6 h-6 text-[#6C6C6C]' />
+                  <p className=' text-tertiary flex items-center gap-2'>
+                    <FileText className='w-6 h-6 text-muted-foreground' />
                     Requirements:
                   </p>
                   {offer.notes && (
@@ -249,7 +249,7 @@ const PartnerOffers = () => {
                     />
                   )}
                 </div>
-                <ul className='flex flex-col gap-2 text-xs sm:text-sm text-[#1C1C1C] font-medium border border-[#DFE2E0] p-4 rounded-[12px] w-full'>
+                <ul className='flex flex-col gap-2 text-xs sm:text-sm text-tertiary font-medium border border-[#DFE2E0] p-4 rounded-[12px] w-full'>
                   <p className='flex items-center gap-2 text-xs'>
                     <LinkIcon className='text-gray-500 size-5' /> Job link
                   </p>

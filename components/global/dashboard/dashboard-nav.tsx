@@ -162,7 +162,7 @@ function NavItem({
     <Button
       href={href}
       className={cn(
-        'h-[45px] md:h-[50px] lg:h-[55px] 2xl:h-[65px] rounded-[12px] p-5 flex justify-start md:justify-center items-center gap-2 bg-accent text-[#6C6C6C] hover:text-white transition-colors duration-200 px-3 lg:px-4 text-base md:text-sm lg:text-lg font-medium',
+        'h-[45px] md:h-[50px] lg:h-[55px] 2xl:h-[65px] rounded-[12px] p-5 flex justify-start md:justify-center items-center gap-2 bg-accent text-muted-foreground hover:text-white transition-colors duration-200 px-3 lg:px-4 text-base md:text-sm lg:text-lg font-medium',
         pathName === href && 'text-primary',
         className
       )}

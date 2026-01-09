@@ -64,10 +64,10 @@ const Features = ({ titleLight, titleBold, horizzonFeatures }: any) => {
             <div className='flex items-center justify-center md:mb-4 bg-white rounded-full size-[92px]'>
               {item.icon}
             </div>
-            <h3 className='md:text-[22px] text-lg font-medium text-[#1C1C1C]'>
+            <h3 className='md:text-[22px] text-lg font-medium text-tertiary'>
               {item.title}
             </h3>
-            <p className='text-sm md:text-base text-[#1C1C1C]'>
+            <p className='text-sm md:text-base text-tertiary'>
               {item.description}
             </p>
           </div>

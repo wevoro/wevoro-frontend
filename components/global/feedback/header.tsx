@@ -37,7 +37,7 @@ const Header = ({
               <Button
                 variant='special'
                 size='icon'
-                className='h-6 w-6 text-[#6C6C6C]'
+                className='h-6 w-6 text-muted-foreground'
                 onClick={handleMinimize}
               >
                 <Minus className='h-6 w-6' />
@@ -52,7 +52,7 @@ const Header = ({
               <Button
                 variant='ghost'
                 size='icon'
-                className='h-6 w-6 text-[#6C6C6C]'
+                className='h-6 w-6 text-muted-foreground'
                 onClick={handleReset}
               >
                 <X className='h-6 w-6' />

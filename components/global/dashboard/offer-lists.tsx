@@ -177,7 +177,7 @@ const OfferLists = ({ offers, source }: any) => {
               <div>
                 <Link
                   href={`/pro/partner/${offer.partner._id}`}
-                  className='text-base sm:text-lg text-[#1C1C1C] inline-flex items-center gap-2 sm:pb-1 hover:underline'
+                  className='text-base sm:text-lg text-tertiary inline-flex items-center gap-2 sm:pb-1 hover:underline'
                 >
                   {offer.partner.personalInfo.firstName}{' '}
                   {offer.partner.personalInfo.lastName}{' '}
@@ -185,7 +185,7 @@ const OfferLists = ({ offers, source }: any) => {
                     New
                   </span>
                 </Link>
-                <p className='text-[#6C6C6C] text-xs sm:text-sm'>
+                <p className='text-muted-foreground text-xs sm:text-sm'>
                   {offer.partner.personalInfo.companyName}
                 </p>
               </div>
@@ -193,28 +193,32 @@ const OfferLists = ({ offers, source }: any) => {
 
             <div className='grid grid-cols-1 sm:grid-cols-4 gap-2 w-auto'>
               <div className='flex flex-col gap-1'>
-                <p className='text-[#6C6C6C] text-sm'>Company Industry:</p>
-                <p className='text-[#1C1C1C] font-medium text-sm'>
+                <p className='text-muted-foreground text-sm'>
+                  Company Industry:
+                </p>
+                <p className='text-tertiary font-medium text-sm'>
                   {offer.partner.personalInfo.industry}
                 </p>
               </div>
               <div className='flex flex-col gap-1'>
-                <p className='text-[#6C6C6C] text-sm'>Date Established:</p>
-                <p className='text-[#1C1C1C] font-medium text-sm'>
+                <p className='text-muted-foreground text-sm'>
+                  Date Established:
+                </p>
+                <p className='text-tertiary font-medium text-sm'>
                   {moment(offer.dateEstablished).format('DD MMM YYYY')}
                 </p>
               </div>
 
               <div className='flex flex-col gap-1'>
-                <p className='text-[#6C6C6C] text-sm'>Location:</p>
-                <p className='text-[#1C1C1C] font-medium text-sm'>
+                <p className='text-muted-foreground text-sm'>Location:</p>
+                <p className='text-tertiary font-medium text-sm'>
                   {offer.partner.personalInfo.address.city} ,{' '}
                   {offer.partner.personalInfo.address.state} ,{' '}
                   {offer.partner.personalInfo.address.country}
                 </p>
               </div>
               <div className='flex flex-col gap-1'>
-                <p className='text-[#6C6C6C] text-sm'>Job link:</p>
+                <p className='text-muted-foreground text-sm'>Job link:</p>
                 <div className='inline-flex items-center gap-2'>
                   <Link
                     href={offer.jobLink}
@@ -261,7 +265,7 @@ const OfferLists = ({ offers, source }: any) => {
                 <Button
                   className={cn(
                     'h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px] text-xs sm:text-base font-semibold',
-                    'bg-accent text-[#1C1C1C] hover:bg-accent/80'
+                    'bg-accent text-tertiary hover:bg-accent/80'
                   )}
                   onClick={() => handleReject(offer)}
                 >
@@ -289,8 +293,8 @@ const OfferLists = ({ offers, source }: any) => {
               </div>
             ) : (
               <div className='mt-3 flex flex-col gap-3'>
-                <div className='text-base text-[#1C1C1C] flex items-center gap-2'>
-                  <FileClock className='w-6 h-6 text-[#6C6C6C]' />
+                <div className='text-base text-tertiary flex items-center gap-2'>
+                  <FileClock className='w-6 h-6 text-muted-foreground' />
                   <div className='flex gap-4 items-center'>
                     <p>The client is requesting:</p>
                     {offer.notes && (

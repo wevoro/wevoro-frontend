@@ -402,7 +402,7 @@ export const feedbackColumns: ColumnDef<any>[] = [
             >
               {status}
             </div>
-            <p className='font-medium text-sm text-[#1C1C1C]'>{name}</p>
+            <p className='font-medium text-sm text-tertiary'>{name}</p>
           </div>
         </div>
       );
@@ -424,8 +424,8 @@ export const feedbackColumns: ColumnDef<any>[] = [
             className={cn(
               'text-base',
               !isViewed
-                ? 'font-semibold text-[#1C1C1C]'
-                : 'font-normal text-[#6C6C6C]'
+                ? 'font-semibold text-tertiary'
+                : 'font-normal text-muted-foreground'
             )}
           >
             {truncated || 'No message'}
@@ -435,14 +435,14 @@ export const feedbackColumns: ColumnDef<any>[] = [
               <div
                 key={i}
                 className={cn(
-                  'text-xs p-2 rounded-[30px] w-max bg-[#F9F9FA] text-[#6C6C6C]'
+                  'text-xs p-2 rounded-[30px] w-max bg-[#F9F9FA] text-muted-foreground'
                 )}
               >
                 {selection}
               </div>
             ))}
 
-            <div className='flex items-center gap-2 text-[#6C6C6C]'>
+            <div className='flex items-center gap-2 text-muted-foreground'>
               <Calendar className='size-4' />
               <p className=''>
                 {moment(row.original.createdAt).format('DD MMM,YYYY')} ({' '}

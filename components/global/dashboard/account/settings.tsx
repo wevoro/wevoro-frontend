@@ -39,7 +39,7 @@ const Settings = () => {
         >
           <div className='flex items-center gap-6'>
             {link.icon}
-            <span className='text-[#6C6C6C] text-sm'>{link.name}</span>
+            <span className='text-muted-foreground text-sm'>{link.name}</span>
           </div>
           <ChevronRight className='size-5' />
         </Link>

@@ -1,7 +1,7 @@
 import * as jose from 'jose';
 
 // CRITICAL: JWT_SECRET must NOT be prefixed with NEXT_PUBLIC_
-// to prevent exposure in browser bundle
+
 const jwtConfig = {
   secret: new TextEncoder().encode(process.env.JWT_SECRET),
 };

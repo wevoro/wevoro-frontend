@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CloudUpload, Lock, Loader2, Globe } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDocumentContext } from '@/lib/contexts/document-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MEDICAL_DOCUMENT_TYPES = [
   { value: 'tb_tests', label: 'TB Tests' },
@@ -59,13 +59,13 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   category,
   document, // Existing document for editing
 }) => {
-  const { refetchDocuments } = useDocumentContext();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     category: category || '',
     documentType: '',
     title: '',
-    isProtected: false,
+    isPublic: false,
     consent: false,
     file: null as File | null,
   });
@@ -82,7 +82,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         category: document.category || '',
         documentType: document.documentType || '',
         title: document.title || '',
-        isProtected: document.privacy === 'protected',
+        isPublic: document.privacy === 'public',
         consent: document.consent || false,
         file: null,
       });
@@ -127,8 +127,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
       // Validate file size (2MB max)
-      if (droppedFile.size > 2 * 1024 * 1024) {
-        toast.error('File size must be less than 2MB');
+      if (droppedFile.size > 3 * 1024 * 1024) {
+        toast.error('File size must be less than 3MB');
         return;
       }
       setFormData((prev) => ({ ...prev, file: droppedFile }));
@@ -139,8 +139,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file size (2MB max)
-      if (selectedFile.size > 2 * 1024 * 1024) {
-        toast.error('File size must be less than 2MB');
+      if (selectedFile.size > 3 * 1024 * 1024) {
+        toast.error('File size must be less than 3MB');
         return;
       }
       setFormData((prev) => ({ ...prev, file: selectedFile }));
@@ -156,7 +156,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
       category: category || '',
       documentType: '',
       title: '',
-      isProtected: false,
+      isPublic: false,
       consent: false,
       file: null,
     });
@@ -176,7 +176,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
       data.append('category', formData.category);
       data.append('documentType', formData.documentType);
       data.append('title', formData.title);
-      data.append('isProtected', String(formData.isProtected));
+      data.append('isPublic', String(formData.isPublic));
       data.append('consent', String(formData.consent));
 
       // Add documentId if editing
@@ -200,9 +200,12 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         toast.success(
           isEditMode
             ? 'Document updated successfully!'
-            : 'Document uploaded successfully!'
+            : 'Document uploaded successfully!',
         );
-        refetchDocuments();
+
+        // Invalidate documents query to trigger refetch
+        queryClient.invalidateQueries({ queryKey: ['documents'] });
+
         resetForm();
         setOpen(false);
       } else {
@@ -348,7 +351,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                     Upload from your computer
                   </p>
                   <p className='text-xs md:text-sm text-muted-foreground'>
-                    jpeg, png, pdf formats, up to 2MB.
+                    jpeg, png, pdf formats, up to 3MB.
                   </p>
                 </div>
               )}
@@ -360,18 +363,18 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
             <div className='flex items-start justify-between'>
               <div className='flex items-start flex-col gap-2'>
                 <div className='flex gap-2 items-center'>
-                  {formData.isProtected ? (
+                  {formData.isPublic ? (
                     <Globe className='w-5 h-5 text-tertiary' />
                   ) : (
                     <Lock className='w-5 h-5 text-tertiary' />
                   )}
                   <p className='text-base font-medium text-tertiary'>
-                    {formData.isProtected ? 'Protected' : 'Private'}
+                    {formData.isPublic ? 'Public' : 'Private'}
                   </p>
                 </div>
 
                 <p className='text-xs text-muted-foreground'>
-                  {formData.isProtected
+                  {formData.isPublic
                     ? 'Visible to registered and logged-in verified agencies on the platform.'
                     : 'Only visible to expressly authorized, verified agencies, and only after your consent.'}
                 </p>
@@ -382,18 +385,18 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                 onClick={() =>
                   setFormData((prev) => ({
                     ...prev,
-                    isProtected: !prev.isProtected,
+                    isPublic: !prev.isPublic,
                   }))
                 }
                 className={`
                   relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                  ${formData.isProtected ? 'bg-primary' : 'bg-gray-200'}
+                  ${formData.isPublic ? 'bg-primary' : 'bg-gray-200'}
                 `}
               >
                 <span
                   className={`
                     inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform
-                    ${formData.isProtected ? 'translate-x-5' : 'translate-x-0.5'}
+                    ${formData.isPublic ? 'translate-x-5' : 'translate-x-0.5'}
                   `}
                 />
               </button>

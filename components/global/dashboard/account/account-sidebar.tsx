@@ -15,6 +15,7 @@ const AccountSidebar = () => {
       ? `${user?.personalInfo?.firstName} ${user?.personalInfo?.lastName}`
       : 'N/A';
   const status = user?.status;
+  const role = user?.role;
 
   if (isUserLoading) {
     return (
@@ -42,7 +43,7 @@ const AccountSidebar = () => {
         <div className='flex flex-col gap-4'>
           <ProfileImage userProfileImage={user?.personalInfo?.image} />
           <div className='flex flex-col gap-1 sm:gap-3 w-full'>
-            <ProfileName name={name} status={status} />
+            <ProfileName name={name} status={status} role={role} />
             <div className='flex justify-between flex-col gap-12'>
               {user?.role === 'pro' && <ProAccountInfo />}
               {user?.role === 'partner' && <PartnerAccountInfo />}

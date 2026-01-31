@@ -67,7 +67,7 @@ export default function PartnersPage() {
               .toLowerCase()
               .includes(globalFilter.toLowerCase())
           : false) ||
-        partner?.email?.toLowerCase().includes(globalFilter.toLowerCase()))
+        partner?.email?.toLowerCase().includes(globalFilter.toLowerCase())),
   );
 
   const sortedPartners =
@@ -95,11 +95,11 @@ export default function PartnersPage() {
 
             <SelectContent>
               <SelectItem value='all'>All</SelectItem>
-              <SelectItem value='Assisted Living'>Assisted Living</SelectItem>
-              <SelectItem value='Home care'>Home care</SelectItem>
-              <SelectItem value='Home Health'>Home Health</SelectItem>
-              <SelectItem value='Hospitals'>Hospitals</SelectItem>
-              <SelectItem value='Nursing Homes'>Nursing Homes</SelectItem>
+              <SelectItem value='pending'>Pending</SelectItem>
+              <SelectItem value='in-review'>In Review</SelectItem>
+              <SelectItem value='approved'>Approved</SelectItem>
+              <SelectItem value='rejected'>Rejected</SelectItem>
+              <SelectItem value='blocked'>Blocked</SelectItem>
             </SelectContent>
           </Select>
           <Select

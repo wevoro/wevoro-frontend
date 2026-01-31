@@ -10,15 +10,13 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useAppContext } from '@/lib/context';
-import { useNotificationsContext } from '@/lib/contexts';
+
 import { useState } from 'react';
 
 export function MessageModal({ children, data }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const { sendNotification } = useNotificationsContext();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -29,17 +27,29 @@ export function MessageModal({ children, data }: any) {
       message: `<p><span style="font-weight: 600; color: #008000;">You have a new message from Admin</span> <br> ${message}</p>`,
       user: data._id,
     };
-    await sendNotification(
-      notificationPayload.message,
-      notificationPayload.user
-    );
-    toast({
-      variant: 'success',
-      title: 'Message sent successfully',
-    });
 
-    setIsLoading(false);
-    setIsOpen(false);
+    try {
+      await fetch('/api/user/notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notificationPayload),
+      });
+
+      toast({
+        variant: 'success',
+        title: 'Message sent successfully',
+      });
+
+      setIsLoading(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to send message',
+      });
+      setIsLoading(false);
+    }
   };
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

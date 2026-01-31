@@ -10,12 +10,6 @@ export { AuthProvider, useAuthContext } from './auth-context';
 // UI Context - Modal states and UI toggles
 export { UIProvider, useUIContext } from './ui-context';
 
-// Offers Context - Offers, pending offers, and job offers
-export { OffersProvider, useOffersContext } from './offers-context';
-
-// Notifications Context - Notifications data and send notification
-export { NotificationsProvider, useNotificationsContext } from './notifications-context';
-
 // Admin Context - Admin-only data (users, pros, partners, feedbacks)
 export { AdminProvider, useAdminContext } from './admin-context';
 
@@ -30,4 +24,3 @@ export {
   CookiesProvider,
   useCookiesContext,
 } from './cookies-context';
-

@@ -7,11 +7,11 @@ import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import Back from '../back';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { PartnerRequestModal } from './partner-request-modal';
-import { useAppContext } from '@/lib/context';
+
 import { useQuery } from '@tanstack/react-query';
 import { getUserById } from '@/app/actions';
 import { useUIContext, useUserContext } from '@/lib/contexts';
+import { OfferRequestModal } from './offer-request-modal';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -78,7 +78,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       className={cn(
         'flex flex-col gap-6 max-w-screen-xl mx-auto pt-[70px] md:pt-[150px] pb-8 md:pb-16 px-0 md:px-8 2xl:px-0',
         (isProProfileFromPartner || isPublicProPage) &&
-          'pt-[90px] md:pt-[120px] lg:pt-[150px]'
+          'pt-[90px] md:pt-[120px] lg:pt-[150px]',
       )}
     >
       {(isProProfileFromPartner || isPublicProPage) && (
@@ -91,13 +91,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
           <div className='flex items-center gap-4'>
             {user?.role === 'partner' && (
-              <Button
-                className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-12'
-                onClick={openPartner}
-                disabled={isPublicProPage}
-              >
-                Send Offer
-              </Button>
+              <OfferRequestModal proUser={userById}>
+                <Button
+                  className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-12'
+                  // onClick={openPartner}
+                  disabled={isPublicProPage}
+                >
+                  Send Offer
+                </Button>
+              </OfferRequestModal>
             )}
           </div>
         </div>
@@ -113,8 +115,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       />
       {!isProProfileFromPartner && !isPublicProPage && <Tabs />}
       <div>{children}</div>
-
-      <PartnerRequestModal proUser={userById} />
     </div>
   );
 };

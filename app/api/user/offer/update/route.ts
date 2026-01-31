@@ -5,7 +5,7 @@ export async function PATCH(req: Request) {
   try {
     const { id, ...body } = await req.json();
 
-    const response = await api.patch(`/user/offer/update/${id}`, body);
+    const response = await api.patch(`/offer/update/${id}`, body);
 
     if (response.status === 200) {
       const res = NextResponse.json({

@@ -28,7 +28,7 @@ export default function AdminLayout({
           {children}
         </main>
       </SidebarInset>
-      <AdminEditUserModal />
+      {/* <AdminEditUserModal /> */}
     </SidebarProvider>
   );
 }

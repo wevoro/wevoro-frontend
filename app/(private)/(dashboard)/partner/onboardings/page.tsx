@@ -11,11 +11,14 @@ import {
   RotateCw,
   X,
   Clock,
+  FileSearch2,
+  FileSearch,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
 
 import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OfferDropdown } from '@/components/global/dashboard/offer-dropdown';
@@ -26,25 +29,18 @@ import { toast } from 'sonner';
 import NotesPopup from '@/components/global/note-popup';
 import Link from 'next/link';
 import { statusColors, statusIcons, statusTexts } from '@/utils/status';
-import {
-  useNotificationsContext,
-  useOffersContext,
-  useUIContext,
-  useUserContext,
-} from '@/lib/contexts';
+import { useUIContext, useUserContext } from '@/lib/contexts';
+import { useOffers } from '@/app/apiHooks/useOffers';
+import DocumentViewer from '@/components/global/dashboard/document-viewer';
+import { OfferRequestModal } from '@/components/global/dashboard/offer-request-modal';
 
 const PartnerOffers = () => {
-  // const {
-  //   openPartner,
-  //   offers,
-  //   isOffersLoading,
-  //   refetchOffers,
-  //   sendNotification,
-  //   // user,
-  // } = useAppContext();
-
-  const { offers, isOffersLoading, refetchOffers } = useOffersContext();
-  const { sendNotification } = useNotificationsContext();
+  const {
+    data: offers = [],
+    isLoading: isOffersLoading,
+    refetch: refetchOffers,
+  } = useOffers();
+  console.log('🚀 ~ PartnerOffers ~ offers:', offers);
   const { user } = useUserContext();
   const { openPartner } = useUIContext();
 
@@ -72,33 +68,59 @@ const PartnerOffers = () => {
 
   const handleDownloadAll = async (id: string) => {
     const offer = offers.find((offer: any) => offer._id === id);
-    const documentsNeeded = offer?.documentsNeeded;
-    const urls = documentsNeeded
-      .map((document: any) => document.url)
-      .filter(Boolean);
+    const documentsNeeded = offer?.documentsNeeded || [];
+    const documents = documentsNeeded.filter((doc: any) => doc.url);
 
-    if (urls.length === 0) {
-      alert('No downloadable files available.');
+    if (documents.length === 0) {
+      toast.error('No downloadable files available.');
       return;
     }
 
-    if (urls.length === 1) {
-      const item = urls[0];
+    toast.loading('Preparing download...', { id: 'download' });
 
-      const response = await fetch(item);
-      const blob = await response.blob();
+    try {
+      const zip = new JSZip();
 
-      saveAs(blob, 'document');
-    } else {
-      for (const item of urls) {
-        try {
-          const response = await fetch(item);
-          const blob = await response.blob();
-          saveAs(blob, 'document');
-        } catch (error) {
-          console.error(`Failed to download file:`, error);
-        }
-      }
+      // Fetch all files through proxy and add to zip
+      await Promise.all(
+        documents.map(async (doc: any, index: number) => {
+          try {
+            // Use proxy to avoid CORS issues
+            const response = await fetch('/api/proxy-download', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: doc.url }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to fetch');
+            }
+
+            const blob = await response.blob();
+
+            // Get filename from URL or use title
+            const urlPath = new URL(doc.url).pathname;
+            const extension = urlPath.split('.').pop() || 'pdf';
+            const filename = doc.title
+              ? `${doc.title.replace(/[^a-zA-Z0-9]/g, '_')}.${extension}`
+              : `document_${index + 1}.${extension}`;
+
+            zip.file(filename, blob);
+          } catch (error) {
+            console.error(`Failed to fetch ${doc.title}:`, error);
+          }
+        }),
+      );
+
+      // Generate and download zip
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const proName = offer?.pro?.personalInfo?.firstName || 'documents';
+      saveAs(zipBlob, `${proName}_documents.zip`);
+
+      toast.success('Download complete!', { id: 'download' });
+    } catch (error) {
+      console.error('Failed to create zip:', error);
+      toast.error('Failed to download documents', { id: 'download' });
     }
   };
 
@@ -108,7 +130,7 @@ const PartnerOffers = () => {
       method: 'PATCH',
       body: JSON.stringify({
         id: offer._id,
-        status: 'accepted',
+        status: 'onboarded',
       }),
     });
     const responseData: any = await response.json();
@@ -117,10 +139,7 @@ const PartnerOffers = () => {
       refetchOffers();
       toast.success('Offer confirmed successfully!');
       setIsLoading(false);
-      await sendNotification(
-        `<p>Your response has been confirmed by <span style="font-weight: 600; color: #008000;">${user?.personalInfo?.companyName}</span></p>`,
-        offer.pro._id
-      );
+      // Notification is now sent from the backend
     } else {
       setIsLoading(false);
       toast.error('Failed to confirm offer');
@@ -136,7 +155,7 @@ const PartnerOffers = () => {
               <div className='flex flex-col gap-4'>
                 <span
                   className={cn(
-                    'text-[#6C6C6C80] text-sm flex items-center gap-2 uppercase'
+                    'text-[#6C6C6C80] text-sm flex items-center gap-2 uppercase',
                     // statusColors[offer.status as keyof typeof statusColors]
                   )}
                   style={{
@@ -180,7 +199,7 @@ const PartnerOffers = () => {
                 <Button
                   href={`/partner/pros/${offer.pro._id}`}
                   variant='outline'
-                  className='h-10 md:h-12 rounded-[12px] w-fit text-xs md:text-base'
+                  className='h-10 md:h-12 rounded-xl w-fit text-xs md:text-base'
                 >
                   View Profile
                   <MoveUpRight className='size-4 ml-2' />
@@ -190,7 +209,7 @@ const PartnerOffers = () => {
 
             {offer.pro.personalInfo.bio && (
               <p
-                className='text-sm md:text-base text-muted-foreground truncate'
+                className='text-sm md:text-base text-muted-foreground'
                 dangerouslySetInnerHTML={{
                   __html: offer.pro.personalInfo.bio,
                 }}
@@ -249,7 +268,7 @@ const PartnerOffers = () => {
                     />
                   )}
                 </div>
-                <ul className='flex flex-col gap-2 text-xs sm:text-sm text-tertiary font-medium border border-[#DFE2E0] p-4 rounded-[12px] w-full'>
+                <ul className='flex flex-col gap-2 text-xs sm:text-sm text-tertiary font-medium border border-[#DFE2E0] p-4 rounded-xl w-full'>
                   <p className='flex items-center gap-2 text-xs'>
                     <LinkIcon className='text-gray-500 size-5' /> Job link
                   </p>
@@ -257,7 +276,7 @@ const PartnerOffers = () => {
                     href={offer.jobLink}
                     target='_blank'
                     variant='special'
-                    className='bg-[#F9F9FA] p-3 rounded-[12px] text-[#33B55B] text-xs'
+                    className='bg-[#F9F9FA] p-3 rounded-xl text-[#33B55B] text-xs truncate'
                   >
                     <span>{offer.jobLink}</span>
                   </Button>
@@ -266,60 +285,71 @@ const PartnerOffers = () => {
                       key={idx}
                       className='flex items-center gap-2 list-disc list-inside'
                     >
-                      <Check
-                        className={cn(
-                          'size-4 text-[#DFE2E0]',
-                          requirement?.status === 'uploaded' && 'text-primary'
-                        )}
-                      />
-                      {requirement.title}
-                      {requirement.url && (
-                        <Link
-                          href={requirement.url || ''}
-                          target='_blank'
-                          className='text-primary'
-                        >
-                          <Link2 className='size-4' />
-                        </Link>
+                      {requirement?.status !== 'denied' ? (
+                        <Check
+                          className={cn(
+                            'size-4 text-[#DFE2E0]',
+                            requirement?.status === 'granted' && 'text-primary',
+                          )}
+                        />
+                      ) : (
+                        <X className={cn('size-4 text-red-500')} />
                       )}
+                      {requirement.title}
                     </li>
                   ))}
                   {offer.documentsNeeded.length > 0 && (
-                    <div className='flex gap-2 max-w-[500px] w-full'>
+                    <div className='flex gap-2 max-w-[500px] w-full sm:flex-row flex-col'>
                       {offer.status !== 'rejected' &&
-                        offer.status !== 'accepted' && (
-                          <Button
-                            onClick={() => openPartner(offer)}
-                            variant='outline'
-                            className='border border-primary py-2 px-4 rounded-[12px] w-full h-9'
+                        offer.status !== 'onboarded' && (
+                          <OfferRequestModal
+                            offerData={offer}
+                            proUser={offer.pro}
                           >
-                            <RotateCw className='size-3 md:size-4 mr-1' />
-                            Update Requirements
-                          </Button>
+                            <Button
+                              variant='outline'
+                              className='border border-primary py-2 rounded-xl w-max h-10'
+                            >
+                              <RotateCw className='size-4 md:size-5 mr-1' />
+                              Update Requirements
+                            </Button>
+                          </OfferRequestModal>
                         )}
-                      {Object.keys(offer.documentsNeeded).some(
-                        (key) =>
-                          offer.documentsNeeded[key].status === 'uploaded'
-                      ) && (
+                      {offer.status === 'onboarded' && (
                         <Button
                           onClick={() => handleDownloadAll(offer._id)}
                           variant='outline'
-                          className='border border-primary py-2 px-4 rounded-[12px] w-full h-9'
+                          className='border border-primary py-2 rounded-xl w-max h-10'
                         >
-                          <Download className='size-3 md:size-4 mr-1' />
+                          <Download className='size-4 md:size-5 mr-1' />
                           Download All
                         </Button>
                       )}
-                      {offer.status !== 'rejected' &&
+                      {offer.status !== 'onboarded' && (
+                        <DocumentViewer
+                          documents={offer.documentsNeeded.filter(
+                            (doc: any) => doc.status === 'granted',
+                          )}
+                          title='View documents'
+                          onConfirm={() => handleConfirm(offer)}
+                          showFooter={true}
+                        >
+                          <Button className='py-2 px-4 rounded-xl w-max h-10'>
+                            <FileSearch className='size-4 md:size-5 mr-1' />
+                            View Documents
+                          </Button>
+                        </DocumentViewer>
+                      )}
+                      {/* {offer.status !== 'rejected' &&
                         offer.status !== 'accepted' && (
                           <Button
                             onClick={() => handleConfirm(offer)}
-                            className='py-2 px-4 rounded-[12px] w-full h-9'
+                            className='py-2 px-4 rounded-xl w-max h-9'
                             disabled={isLoading}
                           >
                             {isLoading ? 'Confirming...' : 'Confirm'}
                           </Button>
-                        )}
+                        )} */}
                     </div>
                   )}
                 </ul>

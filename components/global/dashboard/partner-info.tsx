@@ -1,7 +1,6 @@
 import React from 'react';
 import ProfileName from './profile-name';
 import { CircleHelp, Star } from 'lucide-react';
-import { useAppContext } from '@/lib/context';
 
 const PartnerInfo = ({
   user,
@@ -11,7 +10,8 @@ const PartnerInfo = ({
   isPartnerFromPro: boolean;
 }) => {
   const personalInfo = user?.personalInfo;
-
+  const status = user?.status;
+  const role = user?.role;
   const name =
     personalInfo?.firstName && personalInfo?.lastName
       ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
@@ -21,7 +21,7 @@ const PartnerInfo = ({
     <div className='flex flex-col gap-2 sm:gap-3 w-full'>
       <div className='flex justify-between lg:flex-row flex-col sm:gap-6 gap-3'>
         <div className='flex flex-col gap-2'>
-          <ProfileName name={name} />
+          <ProfileName name={name} status={status} role={role} />
           <p className='text-base sm:text-xl text-[#3A4742] font-medium'>
             {companyName}
           </p>

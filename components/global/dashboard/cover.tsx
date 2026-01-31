@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAppContext } from '@/lib/context';
+
 import { useUserContext } from '@/lib/contexts';
 
 const Cover = ({
@@ -24,7 +24,7 @@ const Cover = ({
   }, [userCoverImage]);
 
   const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     try {
       const file = event.target.files?.[0];

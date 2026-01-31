@@ -6,8 +6,10 @@ import ProfileName from './profile-name';
 import { proLinkGenerator } from '@/utils/proLinkGenerator';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
+  console.log('🚀 ~ ProInfo ~ user:', user);
   const personalInfo = user?.personalInfo;
   const status = user?.status;
+  const role = user?.role;
   const name =
     personalInfo?.firstName && personalInfo?.lastName
       ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
@@ -16,7 +18,9 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
     <div className='flex flex-col gap-1 sm:gap-3 w-full'>
       <ProfileName
         name={name}
+        role={role}
         status={status}
+        isRecentlyActive={user?.isRecentlyActive}
         fromSpecialPage={isProProfileFromPartner || isPublicProPage}
       />
       <div className='flex justify-between lg:flex-row flex-col sm:gap-6 gap-3'>
@@ -61,7 +65,7 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
                 className='absolute right-2 bg-primary h-9 text-white sm:px-4 px-2 rounded-[7px] flex items-center text-sm font-medium'
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    proLinkGenerator(user?.personalInfo?.firstName, user?._id)
+                    proLinkGenerator(user?.personalInfo?.firstName, user?._id),
                   );
                   toast.success('Link copied to clipboard!', {
                     position: 'top-center',

@@ -1,7 +1,8 @@
 'use client';
 
+import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { useUserContext } from '@/lib/contexts';
-import { useDocumentContext } from '@/lib/contexts/document-context';
+
 import { cn } from '@/lib/utils';
 import { IdCard, User, FileText, Check } from 'lucide-react';
 import moment from 'moment';
@@ -19,14 +20,14 @@ const Steps = ({
 
   const { user, isPersonalInfoCompleted, isProfessionalInfoCompleted } =
     useUserContext();
-  const { documents } = useDocumentContext();
+  const { data: documents } = useDocuments();
   const isDocumentUploadCompleted = documents?.length! > 0;
 
   // console.log({ user });
 
   const isEditPersonalInfo = pathname.includes('edit/personal-information');
   const isEditProfessionalInfo = pathname.includes(
-    'edit/professional-information'
+    'edit/professional-information',
   );
 
   const updatedAt = isEditPersonalInfo
@@ -87,7 +88,7 @@ const Steps = ({
             <div className={cn('flex items-center')}>
               <div
                 className={cn(
-                  'h-10 w-10 mr-3 rounded-full border flex items-center justify-center border-[#33B55B] text-[#33B55B]'
+                  'h-10 w-10 mr-3 rounded-full border flex items-center justify-center border-[#33B55B] text-[#33B55B]',
                 )}
               >
                 <User className='h-[18px] w-[18px]' />
@@ -118,7 +119,7 @@ const Steps = ({
                   className={cn(
                     'flex items-center',
                     isActive ? 'text-tertiary' : 'text-[#8d8d8d]',
-                    step.disabled && 'cursor-not-allowed'
+                    step.disabled && 'cursor-not-allowed',
                   )}
                   onClick={(e) => {
                     if (step.disabled) {
@@ -133,7 +134,7 @@ const Steps = ({
                       isActive
                         ? 'border-[#33B55B] text-[#33B55B]'
                         : 'border-[#8e8e8e] text-[#8e8e8e]',
-                      step.completed && 'bg-[#33B55B] text-white'
+                      step.completed && 'bg-[#33B55B] text-white',
                     )}
                   >
                     {step.completed ? (
@@ -146,7 +147,7 @@ const Steps = ({
                     <span
                       className={cn(
                         'text-sm font-medium',
-                        isActive ? 'text-muted-foreground' : 'text-[#b6b6b6]'
+                        isActive ? 'text-muted-foreground' : 'text-[#b6b6b6]',
                       )}
                     >
                       Step - {step.id}

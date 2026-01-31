@@ -17,25 +17,28 @@ export async function POST(req: Request) {
     const category = bodyData.get('category');
     const documentType = bodyData.get('documentType');
     const title = bodyData.get('title');
-    const isProtected = bodyData.get('isProtected');
+    const isPublic = bodyData.get('isPublic');
     const consent = bodyData.get('consent');
     const file = bodyData.get('file');
-
-    if (!file) {
-      return NextResponse.json(
-        { status: 400, message: 'File is required' },
-        { status: 400 }
-      );
-    }
+    const documentId = bodyData.get('documentId'); // For updates
 
     // Create new FormData to send to backend
     const formData = new FormData();
     formData.append('category', category as string);
     formData.append('documentType', documentType as string);
     formData.append('title', title as string);
-    formData.append('isProtected', isProtected as string);
+    formData.append('isPublic', isPublic as string);
     formData.append('consent', consent as string);
-    formData.append('file', file as File);
+
+    // Only append file if one was provided
+    if (file && file instanceof File && file.size > 0) {
+      formData.append('file', file);
+    }
+
+    // Append documentId if updating existing document
+    if (documentId) {
+      formData.append('documentId', documentId as string);
+    }
 
     // Use QA API URL if env is qa, otherwise use default
     const apiUrl =
@@ -62,14 +65,14 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error(
       'Document upload failed:',
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     return NextResponse.json(
       {
         status: error.response?.status || 500,
         message: error.response?.data?.message || 'Document upload failed',
       },
-      { status: error.response?.status || 500 }
+      { status: error.response?.status || 500 },
     );
   }
 }

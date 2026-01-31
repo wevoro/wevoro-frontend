@@ -1,10 +1,16 @@
 'use client';
+import { useOffers } from '@/app/apiHooks/useOffers';
 import OfferLists from '@/components/global/dashboard/offer-lists';
 
-import { useOffersContext } from '@/lib/contexts';
+import { useMemo } from 'react';
 
 export default function Offers() {
-  const { pendingOffers } = useOffersContext();
+  const { data: offers = [], isLoading, refetch } = useOffers();
+  const pendingOffers = useMemo(
+    () => offers?.filter((offer: any) => offer.status === 'pending') || [],
+    [offers]
+  );
+
   return (
     <div>
       <OfferLists offers={pendingOffers} source='offers' />

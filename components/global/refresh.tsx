@@ -12,12 +12,12 @@ const RefreshToken = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debug log on every render
-  console.log(
-    '[RefreshToken] Render - isAuthenticated:',
-    isAuthenticated,
-    'expiresAt:',
-    expiresAt
-  );
+  // console.log(
+  //   '[RefreshToken] Render - isAuthenticated:',
+  //   isAuthenticated,
+  //   'expiresAt:',
+  //   expiresAt
+  // );
 
   const refreshTokens = useCallback(async () => {
     if (isRefreshingRef.current) return;
@@ -74,21 +74,21 @@ const RefreshToken = () => {
     const timeUntilExpiry = expiresAt - now;
     const timeUntilRefresh = timeUntilExpiry - REFRESH_BUFFER_MS;
 
-    console.log(
-      '[RefreshToken] Time until expiry:',
-      Math.round(timeUntilExpiry / 1000),
-      'seconds'
-    );
-    console.log(
-      '[RefreshToken] Time until refresh:',
-      Math.round(timeUntilRefresh / 1000),
-      'seconds'
-    );
+    // console.log(
+    //   '[RefreshToken] Time until expiry:',
+    //   Math.round(timeUntilExpiry / 1000),
+    //   'seconds'
+    // );
+    // console.log(
+    //   '[RefreshToken] Time until refresh:',
+    //   Math.round(timeUntilRefresh / 1000),
+    //   'seconds'
+    // );
 
     if (timeUntilRefresh <= 0) {
-      console.log(
-        '[RefreshToken] Token expired or expiring soon, refreshing immediately'
-      );
+      // console.log(
+      //   '[RefreshToken] Token expired or expiring soon, refreshing immediately'
+      // );
       refreshTokens();
     } else {
       console.log(

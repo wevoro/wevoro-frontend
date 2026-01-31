@@ -7,8 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { PartnerRequestModal } from './partner-request-modal';
-import { useAppContext } from '@/lib/context';
+
 import { cn } from '@/lib/utils';
 import { useUIContext } from '@/lib/contexts';
 
@@ -42,8 +41,6 @@ export function AlertModal() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className='flex flex-row gap-4 w-full'>
-          {/* <PartnerRequestModal /> */}
-
           <Button
             variant={actionData?.type === 'reject' ? 'outline' : 'default'}
             type='button'

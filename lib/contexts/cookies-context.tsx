@@ -52,7 +52,7 @@ export function AuthStatusProvider({ children }: AuthStatusProviderProps) {
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000, // Consider auth status fresh for 5 minutes
   });
-  console.log('🚀 ~ AuthStatusProvider ~ authStatus:', authStatus);
+  // console.log('🚀 ~ AuthStatusProvider ~ authStatus:', authStatus);
 
   // Trigger refetch when isRefreshed becomes true
   useEffect(() => {

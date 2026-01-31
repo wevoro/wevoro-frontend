@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -16,13 +17,18 @@ import OnboardProfessionalInfo from '../onboard-professional-info';
 import OnboardDocumentUpload from '../onboard-document-upload';
 import { useOnboardContext, useUIContext } from '@/lib/contexts';
 
-export function AdminEditUserModal() {
+export function AdminEditUserModal({
+  children,
+  data,
+}: {
+  children: React.ReactNode;
+  data: any;
+}) {
   const { handleSavePersonalInfo } = useOnboardContext();
-  const { closeEditModal, isOpenEditModal, adminEditData } = useUIContext();
-  // console.log({ data });
 
   return (
-    <Dialog open={isOpenEditModal} onOpenChange={closeEditModal}>
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='max-w-full sm:max-w-[852px] p-4 sm:p-8'>
         <DialogHeader className='py-3'>
           <DialogTitle className='text-start text-xl font-semibold'>
@@ -36,10 +42,7 @@ export function AdminEditUserModal() {
                 <div className='flex gap-3 items-center'>
                   <Image
                     unoptimized
-                    src={
-                      adminEditData?.data?.personalInfo?.image ||
-                      '/dummy-profile-pic.jpg'
-                    }
+                    src={data?.personalInfo?.image || '/dummy-profile-pic.jpg'}
                     alt='Profile picture'
                     width={108}
                     height={108}
@@ -47,8 +50,8 @@ export function AdminEditUserModal() {
                   />
                   <div className='flex flex-col gap-3'>
                     <div className='font-semibold text-xl'>
-                      {adminEditData?.data?.personalInfo?.firstName}{' '}
-                      {adminEditData?.data?.personalInfo?.lastName}
+                      {data?.personalInfo?.firstName}{' '}
+                      {data?.personalInfo?.lastName}
                     </div>
 
                     {/* <div className='text-muted-foreground'>
@@ -61,20 +64,16 @@ export function AdminEditUserModal() {
                   <Button
                     variant='default'
                     className='rounded-lg'
-                    onClick={() =>
-                      handleSavePersonalInfo(adminEditData?.source!)
-                    }
+                    onClick={() => handleSavePersonalInfo(data?.role)}
                   >
                     Save
                   </Button>
 
-                  <Button
-                    variant='outline'
-                    className=' rounded-lg'
-                    onClick={closeEditModal}
-                  >
-                    Cancel
-                  </Button>
+                  <DialogClose>
+                    <Button variant='outline' className=' rounded-lg'>
+                      Cancel
+                    </Button>
+                  </DialogClose>
                 </div>
               </div>
 
@@ -82,21 +81,21 @@ export function AdminEditUserModal() {
                 <OnboardPersonalInfo
                   // @ts-ignore
                   from='admin'
-                  userFromAdmin={adminEditData?.data}
-                  source={adminEditData?.source}
+                  userFromAdmin={data}
+                  source={data?.role}
                 />
-                {adminEditData?.source === 'pro' && (
+                {data?.role === 'pro' && (
                   <>
                     <OnboardProfessionalInfo
                       // @ts-ignore
 
                       from='admin'
-                      userFromAdmin={adminEditData?.data}
+                      userFromAdmin={data}
                     />
                     <OnboardDocumentUpload
                       // @ts-ignore
                       from='admin'
-                      userFromAdmin={adminEditData?.data}
+                      userFromAdmin={data}
                       // @ts-ignore
                       // onClose={() => setOpenEditModal(false)}
                     />

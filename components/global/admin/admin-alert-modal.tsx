@@ -14,7 +14,7 @@ import { useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { adminStatusMap } from '@/utils/status';
-import { useAdminContext, useNotificationsContext } from '@/lib/contexts';
+import { useAdminContext } from '@/lib/contexts';
 
 export default function AdminAlertModal({
   children,
@@ -30,7 +30,7 @@ export default function AdminAlertModal({
   children?: React.ReactNode;
 }) {
   const { refetchUsers, refetchQaUsers } = useAdminContext();
-  const { sendNotification } = useNotificationsContext();
+
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -77,6 +77,9 @@ export default function AdminAlertModal({
         body: JSON.stringify({
           status: adminStatusMap[alertType as keyof typeof adminStatusMap],
           id: data._id,
+          note,
+          email: data?.email,
+          alertType, // Passing alertType as well to help helper function generate message
         }),
       });
 
@@ -95,26 +98,6 @@ export default function AdminAlertModal({
         setIsOpen(false);
         setOpen && setOpen(false);
 
-        const messageMap = {
-          block: note
-            ? `<p style="font-size: 16px; color: red;">You have been <strong>blocked</strong> from the platform. <br/> <br/> <strong>Note:</strong> ${note}</p>`
-            : `<p style="font-size: 16px; color: red;">You have been <strong>blocked</strong> from the platform.</p>`,
-          remove: note
-            ? `<p style="font-size: 16px; color: red;">You have been <strong>removed</strong> from the platform. <br/> <br/> <strong>Note:</strong> ${note}</p>`
-            : `<p style="font-size: 16px; color: red;">You have been <strong>removed</strong> from the platform.</p>`,
-          approve: note
-            ? `<p style="font-size: 16px; color: green;">Your application has been <strong>approved</strong>. <br/> <br/> <strong>Note:</strong> ${note}</p>`
-            : `<p style="font-size: 16px; color: green;">Your application has been <strong>approved</strong>.</p>`,
-          reject: note
-            ? `<p style="font-size: 16px; color: red;">Your application has been <strong>rejected</strong>. <br/> <br/> <strong>Note:</strong> ${note}</p>`
-            : `<p style="font-size: 16px; color: red;">Your application has been <strong>rejected</strong>.</p>`,
-        };
-
-        await sendNotification(
-          messageMap[alertType as keyof typeof messageMap],
-          data._id,
-          data.email
-        );
         setNote('');
       } else {
         setIsLoading(false);
@@ -164,7 +147,7 @@ export default function AdminAlertModal({
             onClick={handleSubmit}
             className={cn(
               'flex-1 h-[50px] sm:h-[75px] rounded-lg sm:rounded-xl hover:text-black text-lg',
-              alertType === 'approve' && 'bg-primary text-white'
+              alertType === 'approve' && 'bg-primary text-white',
             )}
             disabled={isLoading}
           >
@@ -176,7 +159,7 @@ export default function AdminAlertModal({
               className={cn(
                 'flex-1 h-[50px] sm:h-[75px] rounded-lg sm:rounded-xl text-lg',
                 alertType !== 'approve' &&
-                  'bg-red-600 hover:bg-red-600/90 text-white'
+                  'bg-red-600 hover:bg-red-600/90 text-white',
               )}
               disabled={isLoading}
             >

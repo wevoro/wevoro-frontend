@@ -10,11 +10,11 @@ import { useRouter } from 'next/navigation';
 import Documents from './dashboard/documents';
 import { Button } from '../ui/button';
 import UploadDocumentModal from './dashboard/upload-document-modal';
-import { useDocumentContext } from '@/lib/contexts/document-context';
+import { useDocuments } from '@/app/apiHooks/useDocuments';
 
 const OnboardDocumentUpload = forwardRef(() => {
   const router = useRouter();
-  const { documents } = useDocumentContext();
+  const { data: documents } = useDocuments();
 
   return (
     <div>
@@ -32,7 +32,7 @@ const OnboardDocumentUpload = forwardRef(() => {
           <div className='flex flex-col'>
             <div
               className={cn(
-                'flex sm:flex-row flex-col gap-4 sm:items-center justify-between px-7 py-5 bg-white rounded-2xl'
+                'flex sm:flex-row flex-col gap-4 sm:items-center justify-between px-7 py-5 bg-white rounded-2xl',
               )}
             >
               <div className='flex items-center gap-3'>

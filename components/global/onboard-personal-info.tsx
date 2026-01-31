@@ -44,7 +44,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
   const { setOpenAutoFillModal } = useUIContext();
 
   const extractedPersonalInfo = extractedData?.personalInformation;
-  console.log('🚀 ~ OnboardPersonalInfo ~ extractedData:', extractedData);
+  // console.log('🚀 ~ OnboardPersonalInfo ~ extractedData:', extractedData);
 
   const userData = extractedPersonalInfo
     ? extractedPersonalInfo
@@ -177,7 +177,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           toast.success(
             isEdit
               ? 'Personal information updated successfully!'
-              : 'Personal information submitted successfully!'
+              : 'Personal information submitted successfully!',
           );
           if (isEdit) {
             router.back();
@@ -209,7 +209,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
       <div className='flex items-center justify-between mb-8'>
         <Title text='Personal Information' className='mb-0' />
-        <AutoFillAlert source='personal-info' />
+        {from !== 'admin' && <AutoFillAlert source='personal-info' />}
       </div>
 
       <div className='flex flex-col gap-8'>
@@ -395,7 +395,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           <div
             className={cn(
               'flex flex-col gap-3',
-              source === 'pro' && 'col-span-2'
+              source === 'pro' && 'col-span-2',
             )}
           >
             <label className='text-base font-medium leading-[22.4px] text-tertiary'>

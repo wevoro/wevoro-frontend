@@ -1,19 +1,28 @@
 'use client';
+import { useNotifications } from '@/app/apiHooks/useNotifications';
+import type { Notification } from '@/app/types/types';
 import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/lib/context';
-import { useNotificationsContext } from '@/lib/contexts';
 import { X } from 'lucide-react';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 const Notifications = () => {
+  // const {
+  //   notifications,
+  //   refetchNotifications,
+  //   isNotificationsLoading,
+  //   isUnreadNotification,
+  // } = useNotificationsContext();
   const {
-    notifications,
-    refetchNotifications,
-    isNotificationsLoading,
-    isUnreadNotification,
-  } = useNotificationsContext();
+    data: notifications,
+    refetch: refetchNotifications,
+    isLoading: isNotificationsLoading,
+  } = useNotifications();
+  const isUnreadNotification = useMemo(
+    () => notifications?.filter((noti: Notification) => !noti.isRead) || [],
+    [notifications],
+  );
 
   const [isLoading, setIsLoading] = useState(false);
 

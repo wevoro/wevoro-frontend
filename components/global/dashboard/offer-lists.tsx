@@ -9,12 +9,13 @@ import {
   Link2,
   MoreHorizontal,
   RotateCw,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 import { ProRequestModal } from './pro-request-modal';
 import { AlertModal } from './alert-modal';
-import { useAppContext } from '@/lib/context';
+
 import moment from 'moment';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -23,17 +24,12 @@ import { OfferDropdown } from './offer-dropdown';
 import OfferActionModal from './offer-action-modal';
 import { statusIcons, statusTexts } from '@/utils/status';
 import { statusColors } from '@/utils/status';
-import {
-  useNotificationsContext,
-  useOffersContext,
-  useUIContext,
-  useUserContext,
-} from '@/lib/contexts';
+import { useUIContext, useUserContext } from '@/lib/contexts';
+import OfferListSkeleton from './offer-list-skeleton';
+import { useQueryClient } from '@tanstack/react-query';
 
-const OfferLists = ({ offers, source }: any) => {
-  const { user } = useUserContext();
-  const { sendNotification } = useNotificationsContext();
-  const { refetchOffers, isOffersLoading } = useOffersContext();
+const OfferLists = ({ offers, source, isLoading }: any) => {
+  const queryClient = useQueryClient();
   const { setActionData, openAlert } = useUIContext();
   const handleRespond = (offer: any) => {
     setActionData({
@@ -64,73 +60,17 @@ const OfferLists = ({ offers, source }: any) => {
     toast.promise(response, {
       loading: 'Removing offer...',
       success: async (data: any) => {
-        refetchOffers();
+        queryClient.invalidateQueries({ queryKey: ['offers'] });
         await data.json();
-        await sendNotification(
-          `<p>Your offer has been rejected by <span style="font-weight: 600; color: #008000;">${user?.personalInfo?.firstName} ${user?.personalInfo?.lastName}</span></p>`,
-          partnerId
-        );
+        // Notification is now sent from the backend
         return 'Offer removed successfully!';
       },
       error: 'Failed to remove offer',
     });
   };
 
-  if (isOffersLoading) {
-    return (
-      <div className='flex flex-col gap-8'>
-        {[...Array(3)].map((_, index) => (
-          <div
-            key={index}
-            className='px-4 p-6 md:p-8 bg-white md:rounded-[16px] animate-pulse'
-          >
-            <div className='flex flex-col gap-2 w-full'>
-              <div className='flex justify-between items-center'>
-                <span className='bg-gray-200 h-4 w-24 rounded'></span>
-                <MoreHorizontal className='w-6 h-6 text-gray-300' />
-              </div>
-
-              <div className='flex items-center gap-3'>
-                <div className='bg-gray-200 w-12 h-12 sm:size-[58px] rounded-full'></div>
-                <div>
-                  <div className='bg-gray-200 h-4 w-32 rounded mb-1'></div>
-                  <div className='bg-gray-200 h-4 w-24 rounded'></div>
-                </div>
-              </div>
-
-              <div className='grid grid-cols-1 sm:grid-cols-4 gap-2 w-auto xl:w-max'>
-                <div className='flex flex-col gap-1'>
-                  <div className='bg-gray-200 h-4 w-24 rounded'></div>
-                  <div className='bg-gray-200 h-4 w-32 rounded'></div>
-                </div>
-                <div className='flex flex-col gap-1'>
-                  <div className='bg-gray-200 h-4 w-24 rounded'></div>
-                  <div className='bg-gray-200 h-4 w-32 rounded'></div>
-                </div>
-                <div className='flex flex-col gap-1'>
-                  <div className='bg-gray-200 h-4 w-24 rounded'></div>
-                  <div className='bg-gray-200 h-4 w-32 rounded'></div>
-                </div>
-                <div className='flex flex-col gap-1'>
-                  <div className='bg-gray-200 h-4 w-24 rounded'></div>
-                  <div className='bg-gray-200 h-4 w-32 rounded'></div>
-                </div>
-              </div>
-
-              <div className='flex justify-between mt-4 gap-3'>
-                <div className='bg-gray-200 h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px]'></div>
-                <div className='bg-gray-200 h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px]'></div>
-              </div>
-
-              <div className='mt-3 flex items-center gap-2'>
-                <FileCheck className='w-6 h-6 text-gray-300' />
-                <div className='bg-gray-200 h-4 w-48 rounded'></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+  if (isLoading) {
+    return <OfferListSkeleton />;
   }
 
   return (
@@ -145,7 +85,7 @@ const OfferLists = ({ offers, source }: any) => {
               >
                 <span
                   className={cn(
-                    'text-[#6C6C6C80] text-sm flex items-center gap-2 uppercase'
+                    'text-[#6C6C6C80] text-sm flex items-center gap-2 uppercase',
                   )}
                   style={{
                     color:
@@ -191,7 +131,7 @@ const OfferLists = ({ offers, source }: any) => {
               </div>
             </div>
 
-            <div className='grid grid-cols-1 sm:grid-cols-4 gap-2 w-auto'>
+            <div className='flex sm:flex-row flex-col flex-wrap sm:items-center justify-between gap-2 w-auto'>
               <div className='flex flex-col gap-1'>
                 <p className='text-muted-foreground text-sm'>
                   Company Industry:
@@ -244,17 +184,17 @@ const OfferLists = ({ offers, source }: any) => {
                 {offer.documentsNeeded.length === 0 ? (
                   <Button
                     className={cn(
-                      'h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px] text-xs sm:text-base font-semibold'
+                      'h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px] text-xs sm:text-base font-semibold',
                     )}
                     onClick={() => handleRespond(offer)}
                   >
                     Accept
                   </Button>
                 ) : (
-                  <ProRequestModal offer={offer} refetchOffers={refetchOffers}>
+                  <ProRequestModal offer={offer}>
                     <Button
                       className={cn(
-                        'h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px] text-xs sm:text-base font-semibold'
+                        'h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px] text-xs sm:text-base font-semibold',
                       )}
                       // onClick={handleRespond}
                     >
@@ -265,7 +205,7 @@ const OfferLists = ({ offers, source }: any) => {
                 <Button
                   className={cn(
                     'h-[40px] sm:h-[50px] 2xl:h-[71px] w-full rounded-[12px] text-xs sm:text-base font-semibold',
-                    'bg-accent text-tertiary hover:bg-accent/80'
+                    'bg-accent text-tertiary hover:bg-accent/80',
                   )}
                   onClick={() => handleReject(offer)}
                 >
@@ -313,12 +253,16 @@ const OfferLists = ({ offers, source }: any) => {
                     key={idx}
                     className='flex items-center gap-2 list-disc list-inside'
                   >
-                    <Check
-                      className={cn(
-                        'size-4 text-[#DFE2E0]',
-                        document?.status === 'uploaded' && 'text-primary'
-                      )}
-                    />
+                    {document?.status !== 'denied' ? (
+                      <Check
+                        className={cn(
+                          'size-4 text-[#DFE2E0]',
+                          document?.status === 'granted' && 'text-primary',
+                        )}
+                      />
+                    ) : (
+                      <X className={cn('size-4 text-red-500')} />
+                    )}
                     <span className='inline-flex items-center gap-2'>
                       {document.title}
                       {document.url && (
@@ -335,16 +279,13 @@ const OfferLists = ({ offers, source }: any) => {
                 ))}
                 {source === 'jobs' &&
                   offer.status !== 'rejected' &&
-                  offer.status !== 'accepted' && (
-                    <ProRequestModal
-                      offer={offer}
-                      refetchOffers={refetchOffers}
-                    >
+                  offer.status !== 'onboarded' && (
+                    <ProRequestModal offer={offer}>
                       <Button
                         variant='outline'
-                        className='border border-primary py-2 px-4 rounded-[12px] h-9 w-max'
+                        className='border border-primary py-2 rounded-xl w-max h-10'
                       >
-                        <RotateCw className='size-3 md:size-4 mr-1' />
+                        <RotateCw className='size-4 md:size-5 mr-1' />
                         Update Requirements
                       </Button>
                     </ProRequestModal>

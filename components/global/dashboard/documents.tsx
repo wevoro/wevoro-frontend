@@ -12,7 +12,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
-import { useDocumentContext } from '@/lib/contexts/document-context';
+import DocumentViewer from './document-viewer';
+
 import { fileIcons, getFileType } from '@/utils/file';
 import {
   DropdownMenu,
@@ -32,17 +33,33 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { getUserDocuments } from '@/app/actions';
+import { useDocuments } from '@/app/apiHooks/useDocuments';
+
+interface Document {
+  _id: string;
+  title: string;
+  url: string;
+  createdAt: string;
+  updatedAt: string;
+  privacy: string;
+  consent: boolean;
+  category: string;
+  documentType: string;
+}
 
 const Documents: React.FC<{ proUser?: any; from?: string }> = ({
   proUser,
   from,
 }) => {
-  const { documents, refetchDocuments } = useDocumentContext();
+  const { data: documents, refetch: refetchDocuments } = useDocuments();
+
   const medicalDocuments = documents?.filter(
-    (document) => document.category === 'medical'
+    (document: Document) => document.category === 'medical',
   );
   const nonMedicalDocuments = documents?.filter(
-    (document) => document.category === 'non_medical'
+    (document: Document) => document.category === 'non_medical',
   );
 
   return (
@@ -50,7 +67,7 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
       <div
         className={cn(
           'bg-white md:rounded-2xl',
-          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
         )}
       >
         <Title
@@ -59,12 +76,12 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
             'border-b pb-4',
             from === 'onboard'
               ? '!text-lg md:!text-xl'
-              : '!text-lg md:!text-2xl'
+              : '!text-lg md:!text-2xl',
           )}
         />
 
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
-          {nonMedicalDocuments?.map((document, index) => (
+          {nonMedicalDocuments?.map((document: any, index: number) => (
             <EachDocument
               document={document}
               key={index}
@@ -82,7 +99,7 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
       <div
         className={cn(
           'bg-white md:rounded-2xl',
-          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
         )}
       >
         <Title
@@ -91,12 +108,12 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
             'border-b pb-4',
             from === 'onboard'
               ? '!text-lg md:!text-xl'
-              : '!text-lg md:!text-2xl'
+              : '!text-lg md:!text-2xl',
           )}
         />
 
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
-          {medicalDocuments?.map((document, index) => (
+          {medicalDocuments?.map((document: any, index: number) => (
             <div key={index}>
               <EachDocument
                 document={document}
@@ -126,42 +143,47 @@ const EachDocument = ({
   refetchDocuments: () => void;
 }) => {
   return (
-    <div className='flex flex-col gap-6 justify-between p-4 md:p-6 border rounded-[24px] w-full cursor-pointer'>
-      <div className='flex justify-between gap-2'>
-        <img
-          src={fileIcons[getFileType(document.url)]}
-          alt={document.title}
-          className='size-[30px] md:size-[40px] lg:size-[60px]'
-        />
-
-        <div className='flex items-center'>
-          <Button
-            size='icon'
-            variant='ghost'
-            className='size-6 md:size-8 lg:size-10 cursor-pointer bg-accent hover:bg-gray-100 md:rounded-xl'
-          >
-            {document.privacy === 'protected' ? (
-              <Globe className='size-3 md:size-5' />
-            ) : (
-              <LockKeyhole className='size-3 md:size-5' />
-            )}
-          </Button>
-          <MoreDropdown
-            document={document}
-            refetchDocuments={refetchDocuments}
+    <DocumentViewer documents={document} title='View Document'>
+      <div className='flex flex-col gap-6 justify-between p-4 md:p-6 border rounded-[24px] w-full cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all'>
+        <div className='flex justify-between gap-2'>
+          <img
+            src={fileIcons[getFileType(document.url)]}
+            alt={document.title}
+            className='size-[30px] md:size-[40px] lg:size-[60px]'
           />
+
+          <div
+            className='flex items-center'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              size='icon'
+              variant='ghost'
+              className='size-6 md:size-8 lg:size-10 cursor-pointer bg-accent hover:bg-gray-100 md:rounded-xl'
+            >
+              {document.privacy === 'public' ? (
+                <Globe className='size-3 md:size-5' />
+              ) : (
+                <LockKeyhole className='size-3 md:size-5' />
+              )}
+            </Button>
+            <MoreDropdown
+              document={document}
+              refetchDocuments={refetchDocuments}
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
+            {document.title}
+          </p>
+          <p className='text-xs sm:text-sm md:text-base font-medium text-muted-foreground uppercase'>
+            {document.documentType}
+          </p>
         </div>
       </div>
-
-      <div>
-        <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
-          {document.title}
-        </p>
-        <p className='text-xs sm:text-sm md:text-base font-medium text-muted-foreground uppercase'>
-          {document.documentType}
-        </p>
-      </div>
-    </div>
+    </DocumentViewer>
   );
 };
 
@@ -172,14 +194,14 @@ const UploadDocumentButton = ({
   category: string;
   hasDocumets: boolean;
 }) => {
-  console.log('🚀 ~ UploadDocumentButton ~ hasDocumets:', hasDocumets);
+  // console.log('🚀 ~ UploadDocumentButton ~ hasDocumets:', hasDocumets);
   return (
     <UploadDocumentModal category={category}>
       <Button
         variant='special'
         className={cn(
           'flex flex-col items-center justify-center p-4 md:p-8 border border-[#BBF8DC] rounded-3xl w-full cursor-pointer',
-          hasDocumets ? 'h-full' : 'h-[186px]'
+          hasDocumets ? 'h-full' : 'h-[186px]',
         )}
       >
         <p className='md:size-10 size-8 rounded-full bg-green-600 flex items-center justify-center hover:bg-green-700 transition-colors'>
@@ -207,7 +229,7 @@ export function MoreDropdown({
         `/api/user/document-delete?documentId=${document._id}`,
         {
           method: 'DELETE',
-        }
+        },
       );
 
       const result = await response.json();

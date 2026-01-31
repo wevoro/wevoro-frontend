@@ -9,11 +9,6 @@ import {
   ReactNode,
 } from 'react';
 
-interface AdminEditData {
-  data: any;
-  source: string | null;
-}
-
 interface UIContextValue {
   // Alert Modal
   isOpenAlert: boolean;
@@ -33,13 +28,6 @@ interface UIContextValue {
   openOfferAction: () => void;
   closeOfferAction: () => void;
   setActionData: React.Dispatch<React.SetStateAction<any>>;
-
-  // Edit Modal (Admin)
-  isOpenEditModal: boolean;
-  adminEditData: AdminEditData;
-  openEditModal: (data: any, source: string) => void;
-  closeEditModal: () => void;
-  setAdminEditData: React.Dispatch<React.SetStateAction<AdminEditData>>;
 
   // Feedback Modal
   openFeedbackModal: boolean;
@@ -80,10 +68,6 @@ export function UIProvider({ children }: UIProviderProps) {
 
   // Edit Modal (Admin)
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
-  const [adminEditData, setAdminEditData] = useState<AdminEditData>({
-    data: null,
-    source: null,
-  });
 
   // Feedback Modal
   const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
@@ -120,12 +104,6 @@ export function UIProvider({ children }: UIProviderProps) {
     setIsOpenOfferAction(false);
   }, []);
 
-  // Edit Modal handlers
-  const openEditModal = useCallback((data: any, source: string) => {
-    setAdminEditData({ data, source });
-    setIsOpenEditModal(true);
-  }, []);
-
   const closeEditModal = useCallback(() => {
     setIsOpenEditModal(false);
   }, []);
@@ -153,10 +131,8 @@ export function UIProvider({ children }: UIProviderProps) {
 
       // Edit Modal
       isOpenEditModal,
-      adminEditData,
-      openEditModal,
+
       closeEditModal,
-      setAdminEditData,
 
       // Feedback Modal
       openFeedbackModal,
@@ -181,14 +157,12 @@ export function UIProvider({ children }: UIProviderProps) {
       openOfferAction,
       closeOfferAction,
       isOpenEditModal,
-      adminEditData,
-      openEditModal,
       closeEditModal,
       openFeedbackModal,
       openAutoFillModal,
       autoFillClicked,
       setAutoFillClicked,
-    ]
+    ],
   );
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

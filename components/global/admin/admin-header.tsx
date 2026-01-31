@@ -1,16 +1,22 @@
 'use client';
 
+import { useNotifications } from '@/app/apiHooks/useNotifications';
+import { Notification } from '@/app/types/types';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useNotificationsContext } from '@/lib/contexts';
 import { cn } from '@/lib/utils';
 import { Bell, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const AdminHeader = () => {
-  const { isUnreadNotification } = useNotificationsContext();
+  // const { isUnreadNotification } = useNotificationsContext();
+  const { data: notifications } = useNotifications();
+  const isUnreadNotification = useMemo(
+    () => notifications?.filter((noti: Notification) => !noti.isRead) || [],
+    [notifications],
+  );
   const pathName = usePathname();
 
   const items = [
@@ -92,7 +98,7 @@ function NavItem({
       className={cn(
         'h-[45px] md:h-[50px] lg:h-[55px] 2xl:h-[65px] rounded-[12px] p-5 flex justify-start md:justify-center items-center gap-2 bg-accent text-muted-foreground hover:text-white transition-colors duration-200 px-3 lg:px-4 text-xs xs:text-sm lg:text-lg font-medium',
         pathName === href && 'text-primary',
-        className
+        className,
       )}
     >
       {icon}

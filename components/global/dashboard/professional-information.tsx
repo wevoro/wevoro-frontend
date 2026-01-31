@@ -2,7 +2,7 @@
 import EditBtn from '@/components/global/dashboard/edit-btn';
 import Title from '@/components/global/title';
 import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/lib/context';
+
 import { cn } from '@/lib/utils';
 import {
   BriefcaseBusiness,
@@ -36,7 +36,7 @@ export default function ProfessionalInformation({
     <div
       className={cn(
         'bg-white md:rounded-[16px]',
-        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
       )}
     >
       <div className='flex items-center justify-between border-b pb-4 mb-8'>

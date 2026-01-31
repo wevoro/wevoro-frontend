@@ -3,7 +3,7 @@ import React from 'react';
 import EditBtn from './edit-btn';
 import Title from '../title';
 import { MoreHorizontal } from 'lucide-react';
-import { useAppContext } from '@/lib/context';
+
 import NoData from '../no-data';
 import { cn } from '@/lib/utils';
 import { useUserContext } from '@/lib/contexts';
@@ -65,7 +65,7 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
     <div
       className={cn(
         'bg-white md:rounded-[16px]',
-        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
       )}
     >
       <div className='flex items-center justify-between border-b pb-4 mb-8'>

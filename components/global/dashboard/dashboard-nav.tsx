@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import { Bell, FileText, Settings, Menu, Rocket } from 'lucide-react';
+import { Bell, Settings, Menu } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -14,12 +13,18 @@ import {
 } from '@/components/ui/sheet';
 import Logo from '../logo';
 import { useParams, usePathname } from 'next/navigation';
-import { useNotificationsContext, useUserContext } from '@/lib/contexts';
+import { useUserContext } from '@/lib/contexts';
+import { useNotifications } from '@/app/apiHooks/useNotifications';
+import { Notification } from '@/app/types/types';
 
 export default function DashboardNav() {
   const { id } = useParams();
   const { user } = useUserContext();
-  const { isUnreadNotification } = useNotificationsContext();
+  const { data: notifications } = useNotifications();
+  const isUnreadNotification = React.useMemo(
+    () => notifications?.filter((noti: Notification) => !noti.isRead) || [],
+    [notifications],
+  );
   const [isOpen, setIsOpen] = React.useState(false);
   const path = user?.role === 'pro' ? '/pro' : '/partner';
   const pathName = usePathname();
@@ -164,7 +169,7 @@ function NavItem({
       className={cn(
         'h-[45px] md:h-[50px] lg:h-[55px] 2xl:h-[65px] rounded-[12px] p-5 flex justify-start md:justify-center items-center gap-2 bg-accent text-muted-foreground hover:text-white transition-colors duration-200 px-3 lg:px-4 text-base md:text-sm lg:text-lg font-medium',
         pathName === href && 'text-primary',
-        className
+        className,
       )}
     >
       {icon}

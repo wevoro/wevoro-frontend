@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    const response = await api.post(`/user/offer`, data);
+    const response = await api.post(`/offer`, data);
 
     if (response.status === 200) {
       const res = NextResponse.json({

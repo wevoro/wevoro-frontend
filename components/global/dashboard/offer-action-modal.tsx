@@ -9,21 +9,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useAppContext } from '@/lib/context';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  useNotificationsContext,
-  useOffersContext,
-  useUIContext,
-  useUserContext,
-} from '@/lib/contexts';
+import { useUIContext, useUserContext } from '@/lib/contexts';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function OfferActionModal() {
-  const { user } = useUserContext();
-  const { sendNotification } = useNotificationsContext();
-  const { refetchOffers } = useOffersContext();
+  const queryClient = useQueryClient();
   const { actionData, isOpenOfferAction, closeOfferAction } = useUIContext();
   const router = useRouter();
 
@@ -51,15 +44,11 @@ export default function OfferActionModal() {
 
     const responseData = await response.json();
     if (responseData.status === 200) {
-      refetchOffers();
+      queryClient.invalidateQueries({ queryKey: ['offers'] });
       closeOfferAction();
       router.push(`/pro/jobs`);
       toast.success(`Offer ${status} successfully!`);
-
-      await sendNotification(
-        `<p>Your offer has been <strong>${status}</strong> by <span style="font-weight: 600; color: #008000;">${user?.personalInfo?.firstName} ${user?.personalInfo?.lastName}</span>.</p><p><strong>Pro's note:</strong> ${notes}</p>`,
-        actionData?.partnerId
-      );
+      // Notification is now sent from the backend
     } else {
       toast.error(`Failed to ${status} offer`);
     }
@@ -87,7 +76,7 @@ export default function OfferActionModal() {
           <Button
             onClick={() =>
               handleAction(
-                actionData?.type === 'accept' ? 'accepted' : 'rejected'
+                actionData?.type === 'accept' ? 'accepted' : 'rejected',
               )
             }
             className='w-full bg-primary text-white font-medium py-6 rounded-[12px] h-[50px]'

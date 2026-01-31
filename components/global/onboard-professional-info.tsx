@@ -37,11 +37,11 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { professionalInfoRef, extractedData, setExtractedData } =
     useOnboardContext();
   const { user, refetchUser, isUserLoading } = useUserContext();
-  console.log('🚀 ~ user:', Boolean({}));
+  // console.log('🚀 ~ user:', Boolean({}));
   const { refetchUsers, refetchQaUsers } = useAdminContext();
   const { setOpenAutoFillModal } = useUIContext();
   const extractedProfessionalInfo = extractedData?.professionalInformation;
-  console.log('🚀 ~ extractedProfessionalInfo:', extractedProfessionalInfo);
+  // console.log('🚀 ~ extractedProfessionalInfo:', extractedProfessionalInfo);
 
   const userData = extractedProfessionalInfo
     ? extractedProfessionalInfo
@@ -203,7 +203,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               ? { certificateFile }
               : {}),
           };
-        }
+        },
       );
 
       // Prepare final data payload
@@ -236,7 +236,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           toast.success(
             isEdit
               ? 'Professional information updated successfully!'
-              : 'Professional information submitted successfully!'
+              : 'Professional information submitted successfully!',
           );
           if (isEdit) {
             router.back();
@@ -264,7 +264,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   const getArrayFieldError = (
     fieldErrors: any,
     index: number,
-    fieldName: string
+    fieldName: string,
   ) => {
     return fieldErrors?.[index]?.[fieldName];
   };
@@ -326,7 +326,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   {getArrayFieldError(errors.education, index, 'degree') &&
                     renderError(
                       getArrayFieldError(errors.education, index, 'degree')
-                        .message!
+                        .message!,
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -347,14 +347,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.education,
                         index,
-                        'institution'
+                        'institution',
                       )
                     }
                   />
                   {getArrayFieldError(errors.education, index, 'institution') &&
                     renderError(
                       getArrayFieldError(errors.education, index, 'institution')
-                        .message!
+                        .message!,
                     )}
                 </div>
               </div>
@@ -441,7 +441,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   {getArrayFieldError(errors.experience, index, 'jobTitle') &&
                     renderError(
                       getArrayFieldError(errors.experience, index, 'jobTitle')
-                        .message!
+                        .message!,
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -456,7 +456,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.experience,
                         index,
-                        'companyName'
+                        'companyName',
                       )
                     }
                   />
@@ -539,14 +539,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.certifications,
                         index,
-                        'title'
+                        'title',
                       )
                     }
                   />
                   {getArrayFieldError(errors.certifications, index, 'title') &&
                     renderError(
                       getArrayFieldError(errors.certifications, index, 'title')
-                        .message!
+                        .message!,
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -567,21 +567,21 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.certifications,
                         index,
-                        'institution'
+                        'institution',
                       )
                     }
                   />
                   {getArrayFieldError(
                     errors.certifications,
                     index,
-                    'institution'
+                    'institution',
                   ) &&
                     renderError(
                       getArrayFieldError(
                         errors.certifications,
                         index,
-                        'institution'
-                      ).message!
+                        'institution',
+                      ).message!,
                     )}
                 </div>
               </div>
@@ -604,7 +604,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.certifications,
                         index,
-                        'issueDate'
+                        'issueDate',
                       )
                     }
                     max={new Date().toISOString().split('T')[0]}
@@ -612,14 +612,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   {getArrayFieldError(
                     errors.certifications,
                     index,
-                    'issueDate'
+                    'issueDate',
                   ) &&
                     renderError(
                       getArrayFieldError(
                         errors.certifications,
                         index,
-                        'issueDate'
-                      ).message!
+                        'issueDate',
+                      ).message!,
                     )}
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -640,7 +640,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.certifications,
                         index,
-                        'expireDate'
+                        'expireDate',
                       )
                     }
                     min={getIssueDate(index)}
@@ -648,14 +648,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   {getArrayFieldError(
                     errors.certifications,
                     index,
-                    'expireDate'
+                    'expireDate',
                   ) &&
                     renderError(
                       getArrayFieldError(
                         errors.certifications,
                         index,
-                        'expireDate'
-                      ).message!
+                        'expireDate',
+                      ).message!,
                     )}
                 </div>
               </div>
@@ -694,21 +694,21 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       !!getArrayFieldError(
                         errors.certifications,
                         index,
-                        'credentialId'
+                        'credentialId',
                       )
                     }
                   />
                   {getArrayFieldError(
                     errors.certifications,
                     index,
-                    'credentialId'
+                    'credentialId',
                   ) &&
                     renderError(
                       getArrayFieldError(
                         errors.certifications,
                         index,
-                        'credentialId'
-                      ).message!
+                        'credentialId',
+                      ).message!,
                     )}
                 </div>
               </div>
@@ -755,14 +755,14 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   {getArrayFieldError(
                     errors.certifications,
                     index,
-                    'certificateFile'
+                    'certificateFile',
                   ) &&
                     renderError(
                       getArrayFieldError(
                         errors.certifications,
                         index,
-                        'certificateFile'
-                      ).message!
+                        'certificateFile',
+                      ).message!,
                     )}
                   {watchCertificationFileData[index]?.certificateFile &&
                     watchCertificationFileData[index]?.certificateFile?.[0]

@@ -1,18 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import {
-  Check,
-  X,
-  Mail,
-  Pencil,
-  ArrowUpDown,
-  Eye,
-  EllipsisVertical,
-  Calendar,
-  MoveUpRight,
-  ArrowUpRight,
-} from 'lucide-react';
+import { Check, X, Mail, ArrowUpDown, Eye, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import Image from 'next/image';
@@ -22,15 +11,9 @@ import AdminAlertModal from './admin-alert-modal';
 import { MessageModal } from './message-modal';
 
 import moment from 'moment';
-import {
-  adminStatusColors,
-  adminStatusTexts,
-  statusColors,
-} from '@/utils/status';
+import { adminStatusColors, adminStatusTexts } from '@/utils/status';
 import EditAction from './edit-action';
 
-import { FeedbackModal } from './feedback-modal';
-import FeedbackDropdown from './feedback-dropdown';
 import { cn } from '@/lib/utils';
 import FeedbackColumn from './feedback-column';
 
@@ -177,7 +160,7 @@ export const proColumns: ColumnDef<any>[] = [
                 <X className='size-5' />
               </Button>
             </AdminAlertModal>
-            <ReviewApplicationModal status={status} data={row.original}>
+            <ReviewApplicationModal data={row.original}>
               <Button
                 variant='ghost'
                 size='icon'
@@ -193,7 +176,7 @@ export const proColumns: ColumnDef<any>[] = [
 
       return (
         <div className='flex items-center gap-2'>
-          <EditAction data={row.original} source='pro' />
+          <EditAction data={row.original} />
           <MessageModal data={row.original}>
             <Button
               variant='ghost'
@@ -203,7 +186,7 @@ export const proColumns: ColumnDef<any>[] = [
               <Mail className='size-5' />
             </Button>
           </MessageModal>
-          <ReviewApplicationModal status={status} data={row.original}>
+          <ReviewApplicationModal data={row.original}>
             <Button
               variant='ghost'
               size='icon'
@@ -328,12 +311,76 @@ export const partnerColumns: ColumnDef<any>[] = [
     },
   },
   {
+    accessorKey: 'status',
+
+    header: ({ column }) => {
+      return (
+        <Button
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Status
+          <ArrowUpDown className='ml-2 h-4 w-4' />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const status = row.getValue('status') as string;
+      return (
+        <span
+          style={{
+            color: adminStatusColors[status as keyof typeof adminStatusColors],
+          }}
+        >
+          {adminStatusTexts[status as keyof typeof adminStatusTexts]}
+        </span>
+      );
+    },
+  },
+  {
     header: 'Actions',
     id: 'actions',
     cell: ({ row }) => {
+      const status = row.original.status as string;
+
+      if (status === 'pending' || status === 'in-review') {
+        return (
+          <div className='flex items-center gap-2'>
+            <AdminAlertModal alertType='approve' data={row.original}>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='text-green-500 hover:text-primary bg-green-50'
+              >
+                <Check className='size-5' />
+              </Button>
+            </AdminAlertModal>
+            <AdminAlertModal alertType='reject' data={row.original}>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='text-red-500 hover:text-red-600 bg-red-50'
+              >
+                <X className='size-5' />
+              </Button>
+            </AdminAlertModal>
+            <ReviewApplicationModal from='partner' data={row.original}>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='text-gray-500 hover:text-gray-600 bg-gray-50'
+              >
+                <Eye className='size-5' />
+              </Button>
+            </ReviewApplicationModal>
+            <TableDropdown data={row.original} />
+          </div>
+        );
+      }
+
       return (
         <div className='flex items-center gap-2'>
-          <EditAction data={row.original} source='partner' />
+          <EditAction data={row.original} />
           <MessageModal data={row.original}>
             <Button
               variant='ghost'
@@ -425,7 +472,7 @@ export const feedbackColumns: ColumnDef<any>[] = [
               'text-base',
               !isViewed
                 ? 'font-semibold text-tertiary'
-                : 'font-normal text-muted-foreground'
+                : 'font-normal text-muted-foreground',
             )}
           >
             {truncated || 'No message'}
@@ -435,7 +482,7 @@ export const feedbackColumns: ColumnDef<any>[] = [
               <div
                 key={i}
                 className={cn(
-                  'text-xs p-2 rounded-[30px] w-max bg-[#F9F9FA] text-muted-foreground'
+                  'text-xs p-2 rounded-[30px] w-max bg-[#F9F9FA] text-muted-foreground',
                 )}
               >
                 {selection}

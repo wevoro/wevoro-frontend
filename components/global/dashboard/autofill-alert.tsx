@@ -41,8 +41,6 @@ export function AutoFillAlert({ source }: { source: string }) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className='flex flex-row gap-4 w-full'>
-          {/* <PartnerRequestModal /> */}
-
           <Button
             variant='default'
             type='button'

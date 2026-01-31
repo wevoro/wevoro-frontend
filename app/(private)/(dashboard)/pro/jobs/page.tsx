@@ -1,13 +1,18 @@
 'use client';
+import { useOffers } from '@/app/apiHooks/useOffers';
 import OfferLists from '@/components/global/dashboard/offer-lists';
-import { useOffersContext } from '@/lib/contexts';
+import { useMemo } from 'react';
 
 const Jobs = () => {
-  const { jobOffers } = useOffersContext();
+  const { data: offers = [], isLoading } = useOffers();
 
+  const jobOffers = useMemo(
+    () => offers?.filter((offer: any) => offer.status !== 'pending') || [],
+    [offers]
+  );
   return (
     <div>
-      <OfferLists offers={jobOffers} source='jobs' />
+      <OfferLists offers={jobOffers} source='jobs' isLoading={isLoading} />
     </div>
   );
 };

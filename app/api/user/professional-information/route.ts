@@ -1,13 +1,13 @@
-import api from "@/lib/axiosInterceptor";
-import { NextResponse } from "next/server";
+import api from '@/lib/axiosInterceptor';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const referer = req.headers.get("referer");
-    let env = "prod";
+    const referer = req.headers.get('referer');
+    let env = 'prod';
     if (referer) {
       const parsedUrl = new URL(referer);
-      env = parsedUrl.searchParams.get("env") || "prod";
+      env = parsedUrl.searchParams.get('env') || 'prod';
     }
 
     const bodyData = await req.formData();
@@ -21,23 +21,23 @@ export async function POST(req: Request) {
     // This allows the backend to match files to certifications by index
     for (const [key, file] of Object.entries(certificationFiles)) {
       if (file instanceof File) {
-        formData.append("certifications", file, key);
+        formData.append('certifications', file, key);
       }
     }
 
-    formData.append("data", data as string);
+    formData.append('data', data as string);
 
-    const queryId = id ? `?id=${id}` : "";
+    const queryId = id ? `?id=${id}` : '';
 
-    // console.log("🚀 ~ POST ~ queryId data:", data, queryId);
+    console.log('🚀 ~ POST ~ queryId data:', formData);
 
     const apiUrl =
-      env === "qa"
+      env === 'qa'
         ? `${process.env.NEXT_PUBLIC_QA_API_URL}/user/professional-information${queryId}`
         : `/user/professional-information${queryId}`;
 
     const response = await api.patch(apiUrl, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     // console.log(
     //   "🚀 ~ POST ~ response professional-information:",
@@ -47,13 +47,16 @@ export async function POST(req: Request) {
     if (response.status === 200) {
       const res = NextResponse.json({
         status: 200,
-        message: "Personal information updated successfully",
+        message: 'Personal information updated successfully',
         data: response.data,
       });
       return res;
     }
   } catch (error: any) {
-    console.error("Professional information update failed:", error.response.data);
+    console.error(
+      'Professional information update failed:',
+      error.response.data,
+    );
     return NextResponse.json({
       status: 500,
       message: error.response.data.message,

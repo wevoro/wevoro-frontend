@@ -3,7 +3,7 @@ import React from 'react';
 import Title from '../title';
 import EditBtn from './edit-btn';
 import { cn } from '@/lib/utils';
-import { useAppContext } from '@/lib/context';
+
 import moment from 'moment';
 import NoData from '../no-data';
 import SectionDescription from '../section-description';
@@ -36,7 +36,7 @@ const PartnerPersonalInformation = ({
     <div
       className={cn(
         'bg-white md:rounded-[16px]',
-        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 '
+        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
       )}
     >
       <div className='flex items-center justify-between border-b pb-4 mb-8'>
@@ -168,7 +168,7 @@ const SectionTitle = ({
     <h3
       className={cn(
         'text-sm md:text-base font-medium text-muted-foreground',
-        className
+        className,
       )}
     >
       {text}

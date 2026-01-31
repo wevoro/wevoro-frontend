@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import Cover from './cover';
 import ProfileImage from './profile-image';
-import { useAppContext } from '@/lib/context';
+
 import ProInfo from './pro-info';
 import PartnerInfo from './partner-info';
 

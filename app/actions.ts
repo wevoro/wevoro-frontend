@@ -14,9 +14,11 @@ export async function getUser() {
     return null;
   }
 }
-export async function getUserDocuments() {
+export async function getUserDocuments(userId?: string) {
   try {
-    const response = await api.get(`/document`);
+    const response = await api.get(`/document`, {
+      params: userId ? { userId } : undefined,
+    });
 
     return response.data.data;
   } catch (error) {
@@ -57,7 +59,8 @@ export async function getUserById(id: string) {
 }
 export async function getOffers() {
   try {
-    const response = await api.get(`/user/offer`);
+    console.log('caledddddddddd');
+    const response = await api.get(`/offer`);
     return response.data.data;
   } catch (error) {
     return null;

@@ -20,15 +20,13 @@ const AddMore = ({
     >
       <div
         className={cn(
-          'rounded-full w-8 h-8 text-white flex items-center justify-center',
-          iconBgColor
+          'rounded-full w-6 h-6 text-white flex items-center justify-center',
+          iconBgColor,
         )}
       >
         <Plus className='w-4 h-4 text-white' />
       </div>
-      <span className={cn('text-lg leading-[25.2px]', textColor)}>
-        Add more
-      </span>
+      <span className={cn('leading-[25.2px]', textColor)}>Add more</span>
     </div>
   );
 };

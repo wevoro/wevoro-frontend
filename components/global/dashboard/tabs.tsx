@@ -2,12 +2,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useOffersContext, useUserContext } from '@/lib/contexts';
+import { useUserContext } from '@/lib/contexts';
+import { useOffers } from '@/app/apiHooks/useOffers';
 
 const Tabs: React.FC = () => {
   const pathname = usePathname();
   const { user } = useUserContext();
-  const { offers, pendingOffers, jobOffers } = useOffersContext();
+  const { data: offers } = useOffers();
+
+  const pendingOffers = offers?.filter(
+    (offer: any) => offer.status === 'pending',
+  );
+
+  const jobOffers = offers?.filter((offer: any) => offer.status !== 'pending');
 
   const tabItemsPro = [
     { label: 'Profile', href: '/pro/profile' },
@@ -18,7 +25,10 @@ const Tabs: React.FC = () => {
   const tabItemsPartner = [
     { label: 'Profile', href: '/partner/profile' },
     { label: 'Pros', href: '/partner/pros' },
-    { label: `Hires (${offers?.length || 0})`, href: '/partner/hires' },
+    {
+      label: `Onboardings (${offers?.length || 0})`,
+      href: '/partner/onboardings',
+    },
   ];
   const tabItems = user?.role === 'pro' ? tabItemsPro : tabItemsPartner;
   return (

@@ -22,12 +22,12 @@ import {
 import PersonalInformation from '../dashboard/personal-information';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageModal } from './message-modal';
-import { useAppContext } from '@/lib/context';
+
 import ProfessionalInformation from '../dashboard/professional-information';
 import Documents from '../dashboard/documents';
 import AdminAlertModal from './admin-alert-modal';
 import PartnerPersonalInformation from '../dashboard/partner-personal-information';
-import { useUIContext } from '@/lib/contexts';
+import { AdminEditUserModal } from './admin-edit-user-modal';
 
 export function ReviewApplicationModal({
   open,
@@ -37,7 +37,8 @@ export function ReviewApplicationModal({
   data,
   from,
 }: any) {
-  const { openEditModal, setAdminEditData } = useUIContext();
+  console.log('🚀 ~ ReviewApplicationModal ~ from:', from);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -72,7 +73,8 @@ export function ReviewApplicationModal({
                   </div>
                 </div>
                 <div className='flex flex-wrap flex-row sm:flex-col gap-2 sm:gap-4 mt-4 sm:mt-0'>
-                  {status === 'pending' && (
+                  {(data?.status === 'pending' ||
+                    data?.status === 'in-review') && (
                     <div className='flex flex-row items-center gap-2 sm:gap-4'>
                       <AdminAlertModal alertType='approve' data={data}>
                         <Button
@@ -106,41 +108,37 @@ export function ReviewApplicationModal({
                 </div>
               </div>
 
-              {status === 'approved' && (
-                <div className='flex flex-row items-center gap-2 sm:gap-4'>
+              <div className='flex flex-row items-center gap-2 sm:gap-4'>
+                <AdminEditUserModal data={data}>
                   <Button
                     variant='outline'
                     className='w-full rounded-lg inline-flex items-center gap-2'
-                    onClick={() => {
-                      setAdminEditData({ data, source: 'pro' });
-                      openEditModal(data, 'pro');
-                    }}
                   >
                     <Pencil className='size-4' />
                     Edit
                   </Button>
+                </AdminEditUserModal>
 
-                  <AdminAlertModal alertType='block' data={data}>
-                    <Button
-                      variant='outline'
-                      className='w-full rounded-lg inline-flex items-center gap-2'
-                      disabled={status === 'blocked'}
-                    >
-                      <UserX className='size-4' />
-                      Block
-                    </Button>
-                  </AdminAlertModal>
-                  <AdminAlertModal alertType='remove' data={data}>
-                    <Button
-                      variant='outline'
-                      className='w-full rounded-lg text-red-600 inline-flex items-center gap-2'
-                    >
-                      <Trash2 className='size-4' />
-                      Remove
-                    </Button>
-                  </AdminAlertModal>
-                </div>
-              )}
+                <AdminAlertModal alertType='block' data={data}>
+                  <Button
+                    variant='outline'
+                    className='w-full rounded-lg inline-flex items-center gap-2'
+                    disabled={data?.status === 'blocked'}
+                  >
+                    <UserX className='size-4' />
+                    Block
+                  </Button>
+                </AdminAlertModal>
+                <AdminAlertModal alertType='remove' data={data}>
+                  <Button
+                    variant='outline'
+                    className='w-full rounded-lg text-red-600 inline-flex items-center gap-2'
+                  >
+                    <Trash2 className='size-4' />
+                    Remove
+                  </Button>
+                </AdminAlertModal>
+              </div>
 
               <div className='flex flex-col gap-4 sm:gap-8 py-10'>
                 {from === 'partner' ? (

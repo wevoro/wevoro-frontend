@@ -1,4 +1,3 @@
-import { useAppContext } from '@/lib/context';
 import { useUserContext } from '@/lib/contexts';
 import { Camera } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
@@ -18,7 +17,7 @@ const ProfileImage = ({
   const { refetchUser } = useUserContext();
 
   const [profileImage, setProfileImage] = useState(
-    userProfileImage || '/dummy-profile-pic.jpg'
+    userProfileImage || '/dummy-profile-pic.jpg',
   );
 
   useEffect(() => {
@@ -26,7 +25,7 @@ const ProfileImage = ({
   }, [userProfileImage]);
 
   const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     try {
       const file = event.target.files?.[0];

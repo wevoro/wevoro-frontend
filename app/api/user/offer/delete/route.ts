@@ -5,7 +5,7 @@ export async function DELETE(req: Request) {
   try {
     const id = await req.json();
     console.log({ id });
-    const response = await api.delete(`/user/offer/${id}`);
+    const response = await api.delete(`/offer/${id}`);
 
     if (response.status === 200) {
       const res = NextResponse.json({

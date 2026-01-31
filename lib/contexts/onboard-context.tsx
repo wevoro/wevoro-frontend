@@ -9,7 +9,6 @@ import {
   ReactNode,
   useState,
 } from 'react';
-import { useUIContext } from './ui-context';
 
 interface FormRef extends HTMLFormElement {
   submitForm: () => Promise<void>;
@@ -39,7 +38,6 @@ interface OnboardProviderProps {
 }
 
 export function OnboardProvider({ children }: OnboardProviderProps) {
-  const { closeEditModal } = useUIContext();
   const [extractedData, setExtractedData] = useState<any>(null);
 
   // Form refs for onboarding
@@ -47,30 +45,25 @@ export function OnboardProvider({ children }: OnboardProviderProps) {
   const professionalInfoRef = useRef<FormRef>(null);
   const documentUploadRef = useRef<FormRef>(null);
 
-  const handleSavePersonalInfo = useCallback(
-    async (source: string) => {
-      try {
-        if (personalInfoRef.current) {
-          console.log('insidee', personalInfoRef.current);
-          await personalInfoRef.current.submitForm();
-        }
-
-        if (source === 'pro' && professionalInfoRef.current) {
-          await professionalInfoRef.current.submitForm();
-        }
-
-        if (source === 'pro' && documentUploadRef.current) {
-          console.log('documentUploadRef.current', documentUploadRef.current);
-          await documentUploadRef.current.submitForm();
-        }
-
-        closeEditModal();
-      } catch (error) {
-        console.error('Error submitting forms:', error);
+  const handleSavePersonalInfo = useCallback(async (source: string) => {
+    try {
+      if (personalInfoRef.current) {
+        console.log('insidee', personalInfoRef.current);
+        await personalInfoRef.current.submitForm();
       }
-    },
-    [closeEditModal]
-  );
+
+      if (source === 'pro' && professionalInfoRef.current) {
+        await professionalInfoRef.current.submitForm();
+      }
+
+      if (source === 'pro' && documentUploadRef.current) {
+        console.log('documentUploadRef.current', documentUploadRef.current);
+        await documentUploadRef.current.submitForm();
+      }
+    } catch (error) {
+      console.error('Error submitting forms:', error);
+    }
+  }, []);
 
   const value = useMemo<OnboardContextValue>(
     () => ({
@@ -81,7 +74,7 @@ export function OnboardProvider({ children }: OnboardProviderProps) {
       extractedData,
       setExtractedData,
     }),
-    [handleSavePersonalInfo, extractedData]
+    [handleSavePersonalInfo, extractedData],
   );
 
   return (

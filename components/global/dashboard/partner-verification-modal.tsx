@@ -102,6 +102,7 @@ const PartnerVerificationModal = ({
       });
 
       const result = await response.json();
+      console.log('🚀 ~ handleSubmit ~ result:', result);
 
       if (response.ok) {
         setOpen(false);

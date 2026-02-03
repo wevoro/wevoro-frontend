@@ -16,6 +16,7 @@ export async function POST(req: Request) {
       env === 'qa'
         ? `${process.env.NEXT_PUBLIC_QA_API_URL}/partner-verification/verify`
         : `/partner-verification/verify`;
+    console.log('🚀 ~ POST ~ apiUrl:', apiUrl);
 
     const response = await api.post(apiUrl, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -33,9 +34,13 @@ export async function POST(req: Request) {
       'Partner verification failed:',
       error?.response?.data || error,
     );
-    return NextResponse.json({
-      status: error?.response?.status || 500,
-      message: error?.response?.data?.message || 'Verification failed',
-    });
+    const statusCode = error?.response?.status || 500;
+    return NextResponse.json(
+      {
+        status: statusCode,
+        message: error?.response?.data?.message || 'Verification failed',
+      },
+      { status: statusCode },
+    );
   }
 }

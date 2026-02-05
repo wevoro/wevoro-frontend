@@ -15,8 +15,14 @@ import React from 'react';
 
 const PartnerVerificationModal = ({
   children,
+  existingData,
 }: {
   children: React.ReactNode;
+  existingData?: {
+    licenseNumber?: string;
+    ein?: string;
+    licenseFile?: string;
+  };
 }) => {
   const { refetchUser } = useUserContext();
   const [loading, setLoading] = React.useState(false);
@@ -27,6 +33,17 @@ const PartnerVerificationModal = ({
     file: null as File | null,
     confirmed: false,
   });
+
+  // Prefill form when modal opens if existingData is provided
+  React.useEffect(() => {
+    if (open && existingData) {
+      setFormData((prev) => ({
+        ...prev,
+        licenseNumber: existingData.licenseNumber || '',
+        ein: existingData.ein || '',
+      }));
+    }
+  }, [open, existingData]);
 
   const [errors, setErrors] = React.useState({
     licenseNumber: '',
@@ -69,7 +86,8 @@ const PartnerVerificationModal = ({
       newErrors.ein = 'EIN is required';
       isValid = false;
     }
-    if (!formData.file) {
+    // File is only required if no existing file
+    if (!formData.file && !existingData?.licenseFile) {
       newErrors.file = 'Proof of licensure is required';
       isValid = false;
     }
@@ -199,11 +217,18 @@ const PartnerVerificationModal = ({
               <p className='font-semibold text-base'>
                 {formData.file
                   ? formData.file.name
-                  : 'Upload Proof of Licensure'}
+                  : existingData?.licenseFile
+                    ? 'Upload New File (Optional)'
+                    : 'Upload Proof of Licensure'}
               </p>
               <p className='text-xs text-muted-foreground'>
                 jpeg, png, pdf formats, up to 3MB.
               </p>
+              {existingData?.licenseFile && !formData.file && (
+                <p className='text-xs text-green-600'>
+                  Current file will be kept if no new file is uploaded.
+                </p>
+              )}
               <input
                 type='file'
                 id='license-upload'

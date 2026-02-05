@@ -21,7 +21,12 @@ const PartnerInfo = ({
     <div className='flex flex-col gap-2 sm:gap-3 w-full'>
       <div className='flex justify-between lg:flex-row flex-col sm:gap-6 gap-3'>
         <div className='flex flex-col gap-2'>
-          <ProfileName name={name} status={status} role={role} />
+          <ProfileName
+            name={name}
+            status={status}
+            role={role}
+            partnerVerification={user?.partnerVerification}
+          />
           <p className='text-base sm:text-xl text-[#3A4742] font-medium'>
             {companyName}
           </p>

@@ -101,12 +101,18 @@ const ProfileName = ({
   fromSpecialPage,
   role,
   isRecentlyActive,
+  partnerVerification,
 }: {
   name?: string;
   status?: string;
   fromSpecialPage?: boolean;
   role?: string;
   isRecentlyActive?: boolean;
+  partnerVerification?: {
+    licenseNumber?: string;
+    ein?: string;
+    licenseFile?: string;
+  };
 }) => {
   console.log('🚀 ~ ProfileName ~ isRecentlyActive:', isRecentlyActive);
   // console.log('🚀 ~ ProfileName ~ status:', status);
@@ -196,7 +202,26 @@ const ProfileName = ({
             }
           />
         )}
-        {status === 'rejected' && !fromSpecialPage && (
+        {status === 'rejected' && role === 'partner' && !fromSpecialPage && (
+          <PartnerVerificationModal existingData={partnerVerification}>
+            <Button
+              variant='special'
+              size={'special'}
+              className='flex items-center gap-1'
+            >
+              <Info className='w-5 h-5 fill-[#FF5652] text-white' />
+              <span className='text-sm text-red-500 font-light underline'>
+                Resubmit Verification
+              </span>
+              <StatusTooltip
+                trigger={<QuestionMarkIcon />}
+                title='Rejected'
+                description='Your verification was rejected. Please update and resubmit your business information.'
+              />
+            </Button>
+          </PartnerVerificationModal>
+        )}
+        {status === 'rejected' && role !== 'partner' && !fromSpecialPage && (
           <StatusTooltip
             trigger={<Info className='w-5 h-5 fill-[#FF5652] text-white' />}
             title='Rejected'

@@ -141,6 +141,83 @@ export function ReviewApplicationModal({
               </div>
 
               <div className='flex flex-col gap-4 sm:gap-8 py-10'>
+                {from === 'partner' && data?.partnerVerification && (
+                  <div className='flex flex-col gap-4'>
+                    <h2 className='text-lg font-semibold'>
+                      Verification Information
+                    </h2>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                      <div className='flex flex-col gap-1'>
+                        <span className='text-sm text-muted-foreground'>
+                          State License / Certification Number *
+                        </span>
+                        <span className='font-medium'>
+                          {data.partnerVerification.licenseNumber || 'N/A'}
+                        </span>
+                      </div>
+                      <div className='flex flex-col gap-1'>
+                        <span className='text-sm text-muted-foreground'>
+                          EIN (Employer Identification Number) *
+                        </span>
+                        <span className='font-medium'>
+                          {data.partnerVerification.ein || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                    {data.partnerVerification.licenseFile && (
+                      <div className='flex items-center gap-3 p-4 border rounded-lg bg-gray-50'>
+                        <div className='flex items-center justify-center w-10 h-10 bg-red-100 rounded'>
+                          <svg
+                            width='24'
+                            height='24'
+                            viewBox='0 0 24 24'
+                            fill='none'
+                            xmlns='http://www.w3.org/2000/svg'
+                          >
+                            <path
+                              d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'
+                              stroke='#EF4444'
+                              strokeWidth='2'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                            />
+                            <polyline
+                              points='14,2 14,8 20,8'
+                              stroke='#EF4444'
+                              strokeWidth='2'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                            />
+                            <text
+                              x='12'
+                              y='16'
+                              textAnchor='middle'
+                              fill='#EF4444'
+                              fontSize='5'
+                              fontWeight='bold'
+                            >
+                              PDF
+                            </text>
+                          </svg>
+                        </div>
+                        <div className='flex-1'>
+                          <p className='text-sm font-medium'>
+                            License Document
+                          </p>
+                        </div>
+                        <a
+                          href={data.partnerVerification.licenseFile}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center gap-2 text-green-600 text-sm font-medium hover:underline'
+                        >
+                          <ArrowUpRight className='size-4' />
+                          Download
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {from === 'partner' ? (
                   <PartnerPersonalInformation from='admin' partnerUser={data} />
                 ) : (

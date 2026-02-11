@@ -90,7 +90,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           )}
 
           <div className='flex items-center gap-4'>
-            {user?.role === 'partner' && (
+            {user?.role === 'partner' && user?.status === 'approved' && (
               <OfferRequestModal proUser={userById}>
                 <Button
                   className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-12'

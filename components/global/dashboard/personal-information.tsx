@@ -18,11 +18,20 @@ const PersonalInformation = ({
   from?: string;
 }) => {
   const { user } = useUserContext();
+  console.log('🚀 ~ PersonalInformation ~ user:', user);
   const { id } = useParams();
   const pathname = usePathname();
   const isPublicProPage = pathname.includes('pro/') && id ? true : false;
+  const isFromPartnerPage =
+    pathname.includes('partner/pros') && id ? true : false;
 
   const userData = proUser ? proUser : user;
+  const isPartnerApproved = user?.status === 'approved';
+  console.log(
+    '🚀 ~ PersonalInformation ~ isPartnerApproved:',
+    isPartnerApproved,
+    isFromPartnerPage,
+  );
 
   const firstName = userData?.personalInfo?.firstName;
   const lastName = userData?.personalInfo?.lastName;
@@ -87,41 +96,45 @@ const PersonalInformation = ({
               </div>
             )}
           </div>
-          <div
-            className={cn(
-              'border-b pb-6 flex flex-col gap-5',
-              isPublicProPage && !user && 'blur-sm',
-            )}
-          >
-            <SectionTitle
-              text='Contact Details'
-              className='uppercase text-[#9E9E9E]'
-            />
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              {userData?.email && (
-                <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Email address' />
-                  <SectionDescription
-                    text={
-                      isPublicProPage && !user ? '**********' : userData?.email
-                    }
-                    from={from}
-                  />
-                </div>
+          {isFromPartnerPage && isPartnerApproved && (
+            <div
+              className={cn(
+                'border-b pb-6 flex flex-col gap-5',
+                isPublicProPage && !user && 'blur-sm',
               )}
-              {phone && (
-                <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Phone Number' />
-                  <SectionDescription
-                    text={
-                      isPublicProPage && !user ? '**********' : phone || 'N/A'
-                    }
-                    from={from}
-                  />
-                </div>
-              )}
+            >
+              <SectionTitle
+                text='Contact Details'
+                className='uppercase text-[#9E9E9E]'
+              />
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                {userData?.email && (
+                  <div className='flex flex-col gap-1.5 md:gap-2.5'>
+                    <SectionTitle text='Email address' />
+                    <SectionDescription
+                      text={
+                        isPublicProPage && !user
+                          ? '**********'
+                          : userData?.email
+                      }
+                      from={from}
+                    />
+                  </div>
+                )}
+                {phone && (
+                  <div className='flex flex-col gap-1.5 md:gap-2.5'>
+                    <SectionTitle text='Phone Number' />
+                    <SectionDescription
+                      text={
+                        isPublicProPage && !user ? '**********' : phone || 'N/A'
+                      }
+                      from={from}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           <div
             className={cn(
               'flex flex-col gap-5',

@@ -6,7 +6,7 @@ import ProfileName from './profile-name';
 import { proLinkGenerator } from '@/utils/proLinkGenerator';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
-  console.log('🚀 ~ ProInfo ~ user:', user);
+  // console.log('🚀 ~ ProInfo ~ user:', user);
   const personalInfo = user?.personalInfo;
   const status = user?.status;
   const role = user?.role;

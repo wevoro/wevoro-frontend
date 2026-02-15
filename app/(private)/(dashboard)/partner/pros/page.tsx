@@ -5,6 +5,7 @@ import React from 'react';
 
 const PartnerPros = async () => {
   const pros = await getPros();
+  console.log('🚀 ~ PartnerPros ~ pros:', pros);
 
   return (
     <div className='flex flex-col gap-8'>
@@ -113,7 +114,7 @@ const PartnerPros = async () => {
                       >
                         {requirement}
                       </li>
-                    )
+                    ),
                   )}
                 </ul>
               </div>

@@ -18,7 +18,7 @@ const PersonalInformation = ({
   from?: string;
 }) => {
   const { user } = useUserContext();
-  console.log('🚀 ~ PersonalInformation ~ user:', user);
+  // console.log('🚀 ~ PersonalInformation ~ user:', user);
   const { id } = useParams();
   const pathname = usePathname();
   const isPublicProPage = pathname.includes('pro/') && id ? true : false;
@@ -27,11 +27,6 @@ const PersonalInformation = ({
 
   const userData = proUser ? proUser : user;
   const isPartnerApproved = user?.status === 'approved';
-  console.log(
-    '🚀 ~ PersonalInformation ~ isPartnerApproved:',
-    isPartnerApproved,
-    isFromPartnerPage,
-  );
 
   const firstName = userData?.personalInfo?.firstName;
   const lastName = userData?.personalInfo?.lastName;

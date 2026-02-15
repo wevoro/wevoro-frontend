@@ -34,7 +34,6 @@ const NotesPopup = ({
   proId: string;
   partnerId: string;
 }) => {
-  console.log('🚀 ~ NotesPopup ~ notes:', notes);
   const { user } = useUserContext();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);

@@ -76,7 +76,6 @@ export function ProRequestModal({
   const companyName = offer?.partner?.personalInfo?.companyName;
   const companyIndustry = offer?.partner?.personalInfo?.industry;
   const createdAt = offer?.createdAt;
-  console.log('🚀 ~ ProRequestModal ~ offer:', offer);
 
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [accessStatuses, setAccessStatuses] = useState<AccessStatus[]>([]);

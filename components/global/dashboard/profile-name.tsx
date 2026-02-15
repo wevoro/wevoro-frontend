@@ -114,7 +114,7 @@ const ProfileName = ({
     licenseFile?: string;
   };
 }) => {
-  console.log('🚀 ~ ProfileName ~ isRecentlyActive:', isRecentlyActive);
+  // console.log('🚀 ~ ProfileName ~ isRecentlyActive:', isRecentlyActive);
   // console.log('🚀 ~ ProfileName ~ status:', status);
   return (
     <>

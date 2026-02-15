@@ -230,6 +230,7 @@ export function OfferRequestModal({
     });
 
     const responseData: any = await response.json();
+    console.log('🚀 ~ onSubmit ~ responseData:', responseData);
 
     if (responseData.status === 200) {
       reset();

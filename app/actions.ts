@@ -39,7 +39,7 @@ export async function getUsers() {
 export async function getQaUsers() {
   try {
     const response = await api.get(
-      `${process.env.NEXT_PUBLIC_QA_API_URL}/user/all`
+      `${process.env.NEXT_PUBLIC_QA_API_URL}/user/all`,
     );
     // console.log('response', response.data);
     return response.data.data;
@@ -65,7 +65,7 @@ export async function getOffers() {
   } catch (error) {
     return null;
   }
-}
+} //
 export async function getPros() {
   try {
     const response = await api.get(`/user/pros`);
@@ -98,7 +98,7 @@ export async function getFeedbacks() {
 export async function getQaFeedbacks() {
   try {
     const response = await api.get(
-      `${process.env.NEXT_PUBLIC_QA_API_URL}/feedback`
+      `${process.env.NEXT_PUBLIC_QA_API_URL}/feedback`,
     );
     // console.log('response', response.data);
     return response.data.data;
@@ -152,7 +152,7 @@ export async function getEnvironment() {
   const response = await client.fetch(
     `*[_type == "environment"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-environment'] } }
+    { next: { tags: ['sanity', 'sanity-environment'] } },
   );
   return response;
 }
@@ -161,7 +161,7 @@ export async function getHomeData() {
   const response = await client.fetch(
     `*[_type == "home"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-home'] } }
+    { next: { tags: ['sanity', 'sanity-home'] } },
   );
   return response;
 }
@@ -170,7 +170,7 @@ export async function getProData() {
   const response = await client.fetch(
     `*[_type == "pro"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-pro'] } }
+    { next: { tags: ['sanity', 'sanity-pro'] } },
   );
   return response;
 }
@@ -179,7 +179,7 @@ export async function getPartnerData() {
   const response = await client.fetch(
     `*[_type == "partner"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-partner'] } }
+    { next: { tags: ['sanity', 'sanity-partner'] } },
   );
   return response;
 }
@@ -188,7 +188,7 @@ export async function getProLoginData() {
   const response = await client.fetch(
     `*[_type == "proLogin"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-proLogin'] } }
+    { next: { tags: ['sanity', 'sanity-proLogin'] } },
   );
   return response;
 }
@@ -197,7 +197,7 @@ export async function getProSignupData() {
   const response = await client.fetch(
     `*[_type == "proRegister"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-proRegister'] } }
+    { next: { tags: ['sanity', 'sanity-proRegister'] } },
   );
   return response;
 }
@@ -206,7 +206,7 @@ export async function getPartnerLoginData() {
   const response = await client.fetch(
     `*[_type == "partnerLogin"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-partnerLogin'] } }
+    { next: { tags: ['sanity', 'sanity-partnerLogin'] } },
   );
   return response;
 }
@@ -215,7 +215,7 @@ export async function getPartnerSignupData() {
   const response = await client.fetch(
     `*[_type == "partnerRegister"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-partnerRegister'] } }
+    { next: { tags: ['sanity', 'sanity-partnerRegister'] } },
   );
   return response;
 }
@@ -224,7 +224,7 @@ export async function getResourcePagesData() {
   const response = await client.fetch(
     `*[_type == "resourcePages"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-resourcePages'] } }
+    { next: { tags: ['sanity', 'sanity-resourcePages'] } },
   );
   return response;
 }
@@ -233,7 +233,7 @@ export async function getFooterData() {
   const response = await client.fetch(
     `*[_type == "footer"][0]`,
     {},
-    { next: { tags: ['sanity', 'sanity-footer'] } }
+    { next: { tags: ['sanity', 'sanity-footer'] } },
   );
   return response;
 }

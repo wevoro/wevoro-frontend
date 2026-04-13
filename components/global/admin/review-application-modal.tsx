@@ -106,7 +106,7 @@ export function ReviewApplicationModal({
                 </div>
               </div>
 
-              {status === 'approved' && (
+              {status === 'approved' && from !== 'partner' && (
                 <div className='flex flex-row items-center gap-2 sm:gap-4'>
                   <Button
                     variant='outline'
@@ -114,6 +114,42 @@ export function ReviewApplicationModal({
                     onClick={() => {
                       setAdminEditData({ data, source: 'pro' });
                       openEditModal(data, 'pro');
+                    }}
+                  >
+                    <Pencil className='size-4' />
+                    Edit
+                  </Button>
+
+                  <AdminAlertModal alertType='block' data={data}>
+                    <Button
+                      variant='outline'
+                      className='w-full rounded-lg inline-flex items-center gap-2'
+                      disabled={status === 'blocked'}
+                    >
+                      <UserX className='size-4' />
+                      Block
+                    </Button>
+                  </AdminAlertModal>
+                  <AdminAlertModal alertType='remove' data={data}>
+                    <Button
+                      variant='outline'
+                      className='w-full rounded-lg text-red-600 inline-flex items-center gap-2'
+                    >
+                      <Trash2 className='size-4' />
+                      Remove
+                    </Button>
+                  </AdminAlertModal>
+                </div>
+              )}
+
+              {status === 'approved' && from === 'partner' && (
+                <div className='flex flex-row items-center gap-2 sm:gap-4'>
+                  <Button
+                    variant='outline'
+                    className='w-full rounded-lg inline-flex items-center gap-2'
+                    onClick={() => {
+                      setAdminEditData({ data, source: 'partner' });
+                      openEditModal(data, 'partner');
                     }}
                   >
                     <Pencil className='size-4' />

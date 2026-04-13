@@ -1,6 +1,7 @@
 import { getPros } from '@/app/actions';
 import { Button } from '@/components/ui/button';
-import { FileText, Heart, MapPin, MoveUpRight, X } from 'lucide-react';
+import { FileText, Heart, MapPin, MoveUpRight, Send, X } from 'lucide-react';
+import Link from 'next/link';
 import React from 'react';
 
 const PartnerPros = async () => {
@@ -39,6 +40,15 @@ const PartnerPros = async () => {
                 </div>
               </div>
               <div className='flex items-start gap-3'>
+                <Link href={`/partner/pros/${pro._id}`}>
+                  <Button
+                    variant='default'
+                    className='h-10 md:h-12 rounded-[12px] w-fit text-xs md:text-base'
+                  >
+                    <Send className='size-4 mr-2' />
+                    Send Offer
+                  </Button>
+                </Link>
                 <Button
                   href={`/partner/pros/${pro._id}`}
                   variant='outline'

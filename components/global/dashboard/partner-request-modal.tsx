@@ -143,12 +143,32 @@ export function PartnerRequestModal({ proUser }: { proUser: any }) {
     <Dialog open={isPartnerOpen} onOpenChange={closePartner}>
       <DialogContent className='sm:max-w-[800px] bg-accent gap-6 overflow-y-auto max-h-[80vh]'>
         <DialogHeader className='font-semibold text-base md:text-lg text-start'>
-          The below requirements will be requested from the candidatecandidate
+          The below requirements will be requested from the candidate
         </DialogHeader>
         <form
           onSubmit={handleSubmit(onSubmit)}
           className='flex flex-col gap-8 h-full '
         >
+          {proUser?.documents && (
+            <div className='flex flex-col gap-2 bg-white py-3 px-4 rounded-sm'>
+              <p className='text-base font-medium'>Candidate&apos;s Uploaded Documents</p>
+              <div className='flex flex-wrap gap-2'>
+                {proUser.documents.certificate && (
+                  <span className='text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full'>Certificate</span>
+                )}
+                {proUser.documents.resume && (
+                  <span className='text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full'>Resume/CV</span>
+                )}
+                {proUser.documents.governmentId && (
+                  <span className='text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full'>Government ID</span>
+                )}
+                {!proUser.documents.certificate && !proUser.documents.resume && !proUser.documents.governmentId && (
+                  <span className='text-xs text-[#6C6C6C] italic'>No documents uploaded yet.</span>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className='flex flex-col gap-4 bg-white py-3 px-4 rounded-sm'>
             <p className='text-base font-medium'>Job link</p>
             <div className='rounded-[16px] border border-[#DFE2E0] py-5 px-4'>
@@ -191,6 +211,11 @@ export function PartnerRequestModal({ proUser }: { proUser: any }) {
                 !isDocumentsChecked ? 'opacity-50 pointer-events-none' : ''
               )}
             >
+              {!isDocumentsChecked && (
+                <p className='text-sm text-[#6C6C6C] italic'>
+                  No additional documents will be required from the candidate.
+                </p>
+              )}
               {fields.map((item, index) => (
                 <div
                   key={item.id}

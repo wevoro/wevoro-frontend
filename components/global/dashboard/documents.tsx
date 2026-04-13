@@ -2,11 +2,18 @@
 import React from 'react';
 import EditBtn from './edit-btn';
 import Title from '../title';
-import { MoreHorizontal } from 'lucide-react';
+import { Download, Eye, MoreHorizontal } from 'lucide-react';
 import { useAppContext } from '@/lib/context';
 import NoData from '../no-data';
 import { cn } from '@/lib/utils';
 import { useUserContext } from '@/lib/contexts';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const isImageFile = (file: string) => {
   const extension = file?.split('.').pop()?.toLowerCase() || '';
@@ -29,6 +36,27 @@ const getFileType = (file: string) => {
 
 const getFileIcon = (file: string) => {
   return isImageFile(file) ? '/image.svg' : '/file.svg';
+};
+
+const handleDownload = async (url: string, name: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `${name}.${url.split('.').pop()?.split('?')[0] || 'file'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
+    toast.success('Download started!');
+  } catch (error) {
+    console.error('Download failed:', error);
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+    toast.error('Could not download directly. Opened in new tab.');
+  }
 };
 
 const Documents: React.FC<{ proUser?: any; from?: string }> = ({
@@ -75,13 +103,10 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
 
       {!noData ? (
         <div className='flex flex-wrap md:flex-nowrap gap-6'>
-          {availableDocuments.map((document, index) => (
+          {availableDocuments.map((document: any, index) => (
             <div
-              onClick={() => {
-                window.open(document.url, '_blank');
-              }}
               key={index}
-              className='flex flex-col justify-between p-4 md:p-8 border rounded-[24px] w-full h-32 md:h-48 cursor-pointer'
+              className='flex flex-col justify-between p-4 md:p-8 border rounded-[24px] w-full h-32 md:h-48 cursor-pointer hover:border-primary/30 transition-colors'
             >
               <div className='flex justify-between'>
                 {isImageFile(document.url) ? (
@@ -98,7 +123,29 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
                   />
                 )}
 
-                <MoreHorizontal className='size-4 md:size-8 cursor-pointer' />
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <MoreHorizontal className='size-4 md:size-8 cursor-pointer hover:text-primary transition-colors' />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end'>
+                    <DropdownMenuItem
+                      className='cursor-pointer'
+                      onClick={() => window.open(document.url, '_blank')}
+                    >
+                      <Eye className='size-4 mr-2' />
+                      View
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className='cursor-pointer'
+                      onClick={() =>
+                        handleDownload(document.url, document.name)
+                      }
+                    >
+                      <Download className='size-4 mr-2' />
+                      Download
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               <p className='text-sm md:text-lg font-medium text-[#1C1C1C]'>

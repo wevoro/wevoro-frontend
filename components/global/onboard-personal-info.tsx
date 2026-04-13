@@ -109,7 +109,12 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       extractedPersonalInfo &&
       Object.keys(extractedPersonalInfo).length > 0
     ) {
-      reset(extractedPersonalInfo);
+      // Preserve existing profile image since AI parsing can't extract photos from PDFs
+      const currentImage = watch('image');
+      reset({
+        ...extractedPersonalInfo,
+        image: extractedPersonalInfo.image || currentImage || image || '',
+      });
     }
   }, [extractedPersonalInfo]);
 
@@ -177,7 +182,9 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           toast.success(
             isEdit
               ? 'Personal information updated successfully!'
-              : 'Personal information submitted successfully!'
+              : source === 'partner'
+                ? 'Your application has been submitted successfully! It is now under review.'
+                : 'Personal information submitted successfully!'
           );
           if (isEdit) {
             router.back();
@@ -209,12 +216,24 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
       <div className='flex items-center justify-between mb-8'>
         <Title text='Personal Information' className='mb-0' />
-        <AutoFillAlert source='personal-info' />
+        <div className='flex items-center gap-3'>
+          {isDirty && (
+            <Button
+              type='button'
+              variant='outline'
+              className='text-sm h-9 rounded-lg text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600'
+              onClick={() => reset()}
+            >
+              Clear All
+            </Button>
+          )}
+          {source === 'pro' && <AutoFillAlert source='personal-info' />}
+        </div>
       </div>
 
       <div className='flex flex-col gap-8'>
         <div className='text-center flex flex-col gap-3'>
-          <Upload register={register} image={image} imageFile={imageFile} />
+          <Upload register={register} image={image} imageFile={imageFile} setValue={setValue} />
         </div>
 
         <div className='flex flex-col gap-3'>
@@ -281,7 +300,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                   {...register('dateOfBirth', {
                     required: from !== 'admin' && 'Date of birth is required',
                   })}
-                  className='rounded-[12px] h-14 bg-[#f9f9f9] uppercase'
+                  className={cn('rounded-[12px] h-14 bg-[#f9f9f9] uppercase', !watch('dateOfBirth') && 'text-[#9CA3AF]')}
                   type='date'
                   placeholder='DD/MM/YYYY'
                   name='dateOfBirth'

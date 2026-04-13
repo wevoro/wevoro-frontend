@@ -81,21 +81,73 @@ const OnboardDocumentUpload = forwardRef((props: any) => {
     };
   }, [files]);
 
+  const ALLOWED_FILE_TYPES = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/jpg',
+    'image/svg+xml',
+  ];
+
+  const validateFile = (file: File): string | null => {
+    if (!file || file.size === 0) {
+      return 'The selected file appears to be empty or invalid.';
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      return 'File size should not exceed 3MB.';
+    }
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return 'Invalid file type. Only PDF, JPG, PNG, and SVG files are allowed.';
+    }
+    return null;
+  };
+
+  const processFile = (file: File, type: keyof FileState) => {
+    const error = validateFile(file);
+    if (error) {
+      toast.error(error, { position: 'top-center' });
+      return;
+    }
+    setFiles(prev => ({ ...prev, [type]: file }));
+    simulateDynamicUpload(type, file);
+  };
+
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     type: keyof FileState
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    processFile(file, type);
+    // Reset input so same file can be re-selected
+    event.target.value = '';
+  };
 
-    if (file.size > 3 * 1024 * 1024) {
-      return toast.error('File size should not exceed 3MB', {
-        position: 'top-center',
-      });
+  const [dragOver, setDragOver] = useState<keyof FileState | null>(null);
+
+  const handleDragOver = (e: React.DragEvent, type: keyof FileState) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(type);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, type: keyof FileState) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(null);
+    if (e.dataTransfer.files?.length > 1) {
+      toast.error('Please drop only one file at a time.', { position: 'top-center' });
+      return;
     }
-
-    setFiles({ ...files, [type]: file });
-    simulateDynamicUpload(type, file);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    processFile(file, type);
   };
 
   const simulateDynamicUpload = (type: keyof FileState, file: File) => {
@@ -123,8 +175,8 @@ const OnboardDocumentUpload = forwardRef((props: any) => {
   };
 
   const handleCancel = (type: keyof FileState) => {
-    setFiles({ ...files, [type]: null });
-    setUploadProgress({ ...uploadProgress, [type]: 0 });
+    setFiles(prev => ({ ...prev, [type]: null }));
+    setUploadProgress(prev => ({ ...prev, [type]: 0 }));
   };
 
   const isNoFile = !files.certificate && !files.resume && !files.governmentId;
@@ -205,9 +257,13 @@ const OnboardDocumentUpload = forwardRef((props: any) => {
               <div key={index} className='flex flex-col'>
                 <div
                   className={cn(
-                    'flex sm:flex-row flex-col gap-4 sm:items-center justify-between p-5 bg-white rounded-[12px]',
-                    isFileUploaded(type) ? 'rounded-b-none' : ''
+                    'flex sm:flex-row flex-col gap-4 sm:items-center justify-between p-5 bg-white rounded-[12px] transition-colors',
+                    isFileUploaded(type) ? 'rounded-b-none' : '',
+                    dragOver === type ? 'border-2 border-dashed border-primary bg-green-50/30' : ''
                   )}
+                  onDragOver={(e) => handleDragOver(e, type)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, type)}
                 >
                   <div className='flex items-center gap-3'>
                     <div
@@ -242,7 +298,7 @@ const OnboardDocumentUpload = forwardRef((props: any) => {
                   </div>
                   <label className='cursor-pointer text-[#455468] font-medium text-sm border border-[#AFBACA] h-10 flex items-center justify-center gap-2 rounded-lg px-4'>
                     <input
-                      accept='application/pdf, image/*'
+                      accept='application/pdf, image/jpeg, image/png, image/jpg, image/svg+xml'
                       type='file'
                       className='hidden'
                       onChange={(e) => handleFileChange(e, type)}

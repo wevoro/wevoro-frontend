@@ -37,7 +37,7 @@ const Onboard = ({ source }: { source: 'partner' | 'pro' }) => {
           <Steps source={source} isEdit={isEdit} />
         </div>
       </aside>
-      {(autofill || openAutoFillModal) && <AutoFillModal />}
+      {source === 'pro' && (autofill || openAutoFillModal) && <AutoFillModal />}
     </>
   );
 };

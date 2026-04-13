@@ -74,6 +74,7 @@ const PartnerOffers = () => {
     const offer = offers.find((offer: any) => offer._id === id);
     const documentsNeeded = offer?.documentsNeeded;
     const urls = documentsNeeded
+      .filter((document: any) => document.status === 'uploaded')
       .map((document: any) => document.url)
       .filter(Boolean);
 

@@ -11,44 +11,64 @@ const ProfileName = ({
   name,
   status,
   fromSpecialPage,
+  hasPersonalInfo,
 }: {
   name?: string;
   status?: string;
   fromSpecialPage?: boolean;
+  hasPersonalInfo?: boolean;
 }) => {
+  const getPendingLabel = () => {
+    if (hasPersonalInfo) return 'Pending Review';
+    return 'Unverified';
+  };
+
   return (
     <h1 className='text-xl sm:text-2xl font-semibold flex items-center gap-2'>
       {name || 'N/A'}
       {(status === 'pending' || status === 'rejected') && (
         <span className='flex items-center gap-1'>
           <BadgeCheck className='w-7 h-7 fill-[#e0e2e1] text-white' />
-          <i className='text-xs text-muted-foreground font-light'>Pending</i>
+          <i className='text-xs text-muted-foreground font-light'>
+            {status === 'pending' ? getPendingLabel() : 'Rejected'}
+          </i>
         </span>
       )}
       {status === 'approved' && (
-        <svg
-          width='28'
-          height='28'
-          viewBox='0 0 24 24'
-          xmlns='http://www.w3.org/2000/svg'
-        >
-          <defs>
-            <linearGradient
-              id='greenGradient'
-              x1='0%'
-              y1='100%'
-              x2='0%'
-              y2='0%'
-            >
-              <stop offset='0%' stopColor='#008000' />
-              <stop offset='99.4%' stopColor='#33B55B' />
-            </linearGradient>
-          </defs>
-          <BadgeCheck
-            className='w-7 h-7 text-white'
-            fill='url(#greenGradient)'
-          />
-        </svg>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <svg
+                width='28'
+                height='28'
+                viewBox='0 0 24 24'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <defs>
+                  <linearGradient
+                    id='greenGradient'
+                    x1='0%'
+                    y1='100%'
+                    x2='0%'
+                    y2='0%'
+                  >
+                    <stop offset='0%' stopColor='#008000' />
+                    <stop offset='99.4%' stopColor='#33B55B' />
+                  </linearGradient>
+                </defs>
+                <BadgeCheck
+                  className='w-7 h-7 text-white'
+                  fill='url(#greenGradient)'
+                />
+              </svg>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className='max-w-[200px] text-xs font-extralight'>
+                Verified Account
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
       {status === 'rejected' && !fromSpecialPage && (
         <TooltipProvider>

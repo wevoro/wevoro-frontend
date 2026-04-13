@@ -288,7 +288,19 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     <form ref={professionalInfoRef} onSubmit={handleSubmit(onSubmit)}>
       <div className='flex items-center justify-between mb-8'>
         <Title text='Professional Info' className='mb-0' />
-        <AutoFillAlert source='professional-info' />
+        <div className='flex items-center gap-3'>
+          {isDirty && (
+            <Button
+              type='button'
+              variant='outline'
+              className='text-sm h-9 rounded-lg text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600'
+              onClick={() => reset()}
+            >
+              Clear All
+            </Button>
+          )}
+          {from !== 'admin' && <AutoFillAlert source='professional-info' />}
+        </div>
       </div>
 
       {isLoading && <LoadingOverlay />}

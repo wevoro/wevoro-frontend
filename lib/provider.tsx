@@ -44,7 +44,7 @@ export default function Provider({ children }: any) {
                     <OffersProvider>
                       {children}
 
-                      <Toaster />
+                      <Toaster position="top-center" richColors toastOptions={{ style: { zIndex: 9999 } }} />
                       <Toaster2 />
                       <FloatingFeedback />
                     </OffersProvider>

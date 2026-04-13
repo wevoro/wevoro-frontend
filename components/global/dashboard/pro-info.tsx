@@ -1,13 +1,20 @@
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Activity, Copy } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import ProfileName from './profile-name';
 import { proLinkGenerator } from '@/utils/proLinkGenerator';
 
+const isRecentlyActive = (lastLoginAt: string | undefined) => {
+  if (!lastLoginAt) return false;
+  const diff = Date.now() - new Date(lastLoginAt).getTime();
+  return diff < 7 * 24 * 60 * 60 * 1000; // within last 7 days
+};
+
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
   const personalInfo = user?.personalInfo;
   const status = user?.status;
+  const recentlyActive = isRecentlyActive(user?.lastLoginAt);
   const name =
     personalInfo?.firstName && personalInfo?.lastName
       ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
@@ -18,7 +25,14 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
         name={name}
         status={status}
         fromSpecialPage={isProProfileFromPartner || isPublicProPage}
+        hasPersonalInfo={!!personalInfo?.firstName}
       />
+      {recentlyActive && (
+        <span className='inline-flex items-center gap-1.5 w-fit text-xs font-medium text-green-700 bg-green-100 px-2.5 py-1 rounded-full'>
+          <Activity className='size-3' />
+          Recently Active
+        </span>
+      )}
       <div className='flex justify-between lg:flex-row flex-col sm:gap-6 gap-3'>
         <div className='flex-1 flex flex-col sm:gap-3 gap-1'>
           <p className='text-base sm:text-xl text-[#3A4742] font-medium'>

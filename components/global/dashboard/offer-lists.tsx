@@ -54,7 +54,7 @@ const OfferLists = ({ offers, source }: any) => {
     openAlert();
   };
 
-  console.log({ offers });
+
 
   const handleRemove = async (id: string, partnerId: string) => {
     const response = fetch(`/api/user/offer/update`, {
@@ -156,7 +156,7 @@ const OfferLists = ({ offers, source }: any) => {
                   {statusTexts[offer.status as keyof typeof statusTexts]}
                 </span>
 
-                <OfferDropdown offer={offer} handleRemove={handleRemove} />
+                <OfferDropdown offer={offer} handleRemove={handleRemove} handleUpdate={(offer) => handleRespond(offer)} />
               </div>
               <span className='text-[#6C6C6C80] text-sm'>
                 {moment(offer.createdAt).format('DD MMM YYYY - hh:mm A')}

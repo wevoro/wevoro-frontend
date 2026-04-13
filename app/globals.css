@@ -208,3 +208,12 @@
 .custom-quill .ql-editor::before {
   @apply text-gray-400 text-[16px]; /* Set placeholder font size */
 }
+
+/* SCRUM-27: Date input placeholder styling to match text inputs */
+input[type='date']:not(:valid)::-webkit-datetime-edit {
+  color: #9CA3AF;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+}

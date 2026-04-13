@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import Provider from '@/lib/provider';
-import { Toaster } from 'sonner';
+
 import Refresh from '@/components/global/refresh';
 import Script from 'next/script';
 
@@ -61,7 +61,7 @@ export default async function RootLayout({
         <Provider>
           <Refresh />
           <main>{children}</main>
-          <Toaster />
+
         </Provider>
       </body>
     </html>

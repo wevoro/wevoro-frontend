@@ -208,3 +208,16 @@
 .custom-quill .ql-editor::before {
   @apply text-gray-400 text-[16px]; /* Set placeholder font size */
 }
+
+/* Date input placeholder styling - shows muted text when no date is selected */
+input[type='date']:not(:valid),
+input[type='date'][value=''] {
+  color: #64748b;
+}
+
+input[type='date']::-webkit-datetime-edit-text,
+input[type='date']::-webkit-datetime-edit-month-field,
+input[type='date']::-webkit-datetime-edit-day-field,
+input[type='date']::-webkit-datetime-edit-year-field {
+  color: inherit;
+}

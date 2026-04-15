@@ -1,6 +1,12 @@
 import React from 'react';
 import ProfileName from './profile-name';
 import { CircleHelp, Star } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 
 const PartnerInfo = ({
   user,
@@ -86,7 +92,24 @@ const Tracks = ({
       </div>
       <div className='flex flex-col gap-1'>
         <p className='text-muted-foreground text-sm md:text-base flex items-center gap-2'>
-          Jobs Conversion <CircleHelp className='size-5' />
+          Jobs Conversion{' '}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type='button' className='focus:outline-none'>
+                  <CircleHelp className='size-5' />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side='bottom'
+                className='bg-[#161616] border-none text-white p-4 rounded-2xl max-w-[260px]'
+              >
+                <p className='text-sm font-light leading-snug'>
+                  Percentage of sent offers that resulted in successful job placements or onboarded professionals.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </p>
         <p className='text-tertiary font-medium text-lg md:text-2xl'>
           {jobConversionPercentage}%

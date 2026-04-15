@@ -209,7 +209,46 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
       <div className='flex items-center justify-between mb-8'>
         <Title text='Personal Information' className='mb-0' />
-        {from !== 'admin' && <AutoFillAlert source='personal-info' />}
+        <div className='flex items-center gap-3'>
+          {from !== 'admin' && (
+            <Button
+              type='button'
+              variant='outline'
+              className='text-sm h-9 px-4 rounded-lg border-gray-300 text-muted-foreground hover:text-red-500 hover:border-red-300'
+              onClick={() => {
+                reset(
+                  source === 'partner'
+                    ? {
+                        image: '',
+                        firstName: '',
+                        lastName: '',
+                        companyName: '',
+                        industry: '',
+                        bio: '',
+                        dateEstablished: '',
+                        phone: '',
+                        address: { street: '', city: '', state: '', zipCode: '', country: '' },
+                      }
+                    : {
+                        image: '',
+                        bio: '',
+                        firstName: '',
+                        lastName: '',
+                        dateOfBirth: '',
+                        gender: '',
+                        phone: '',
+                        address: { street: '', city: '', state: '', zipCode: '', country: '' },
+                      },
+                );
+              }}
+            >
+              Clear All
+            </Button>
+          )}
+          {from !== 'admin' && source === 'pro' && (
+            <AutoFillAlert source='personal-info' />
+          )}
+        </div>
       </div>
 
       <div className='flex flex-col gap-8'>
@@ -308,8 +347,14 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <SelectTrigger className='rounded-[12px] h-14 bg-[#f9f9f9]'>
-                        <SelectValue placeholder='Gender' />
+                      <SelectTrigger
+                        className={cn(
+                          'rounded-[12px] h-14 bg-[#f9f9f9]',
+                          !field.value && 'text-muted-foreground',
+                        )}
+                        isError={!!errors.gender}
+                      >
+                        <SelectValue placeholder='Select gender' />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>

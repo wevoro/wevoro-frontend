@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { isValidFileType, isValidFileSize } from '@/utils/download';
 import {
   Dialog,
   DialogContent,
@@ -124,10 +125,20 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+
+    if (e.dataTransfer.files.length > 1) {
+      toast.warning('Please upload one file at a time. Only the first file will be used.');
+    }
+
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      // Validate file size (2MB max)
-      if (droppedFile.size > 3 * 1024 * 1024) {
+      // Validate file type
+      if (!isValidFileType(droppedFile)) {
+        toast.error('Invalid file type. Please upload a JPEG, PNG, or PDF file.');
+        return;
+      }
+      // Validate file size (3MB max)
+      if (!isValidFileSize(droppedFile)) {
         toast.error('File size must be less than 3MB');
         return;
       }
@@ -138,8 +149,13 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      // Validate file size (2MB max)
-      if (selectedFile.size > 3 * 1024 * 1024) {
+      // Validate file type
+      if (!isValidFileType(selectedFile)) {
+        toast.error('Invalid file type. Please upload a JPEG, PNG, or PDF file.');
+        return;
+      }
+      // Validate file size (3MB max)
+      if (!isValidFileSize(selectedFile)) {
         toast.error('File size must be less than 3MB');
         return;
       }

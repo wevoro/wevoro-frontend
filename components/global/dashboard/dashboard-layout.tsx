@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getUserById } from '@/app/actions';
 import { useUIContext, useUserContext } from '@/lib/contexts';
 import { OfferRequestModal } from './offer-request-modal';
+import PartnerVerificationModal from './partner-verification-modal';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -94,13 +95,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <OfferRequestModal proUser={userById}>
                 <Button
                   className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-12'
-                  // onClick={openPartner}
                   disabled={isPublicProPage}
                 >
                   Send Offer
                 </Button>
               </OfferRequestModal>
             )}
+            {user?.role === 'partner' &&
+              user?.status !== 'approved' &&
+              !isPublicProPage && (
+                <PartnerVerificationModal>
+                  <Button
+                    variant='outline'
+                    className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-8 border-primary text-primary hover:bg-primary/5'
+                  >
+                    Verify to Send Offers
+                  </Button>
+                </PartnerVerificationModal>
+              )}
           </div>
         </div>
       )}

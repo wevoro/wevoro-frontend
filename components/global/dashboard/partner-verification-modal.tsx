@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/lib/contexts';
 import { CloudUpload } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 const PartnerVerificationModal = ({
   children,
@@ -27,6 +28,7 @@ const PartnerVerificationModal = ({
   const { refetchUser } = useUserContext();
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [isDragging, setIsDragging] = React.useState(false);
   const [formData, setFormData] = React.useState({
     licenseNumber: '',
     ein: '',
@@ -55,16 +57,49 @@ const PartnerVerificationModal = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 3 * 1024 * 1024) {
-        setErrors({
-          ...errors,
-          file: 'File size must be less than 3MB',
-        });
-        return;
-      }
-      setFormData({ ...formData, file });
-      setErrors({ ...errors, file: '' });
+      processFile(e.target.files[0]);
+    }
+  };
+
+  const processFile = (file: File) => {
+    if (file.size > 3 * 1024 * 1024) {
+      setErrors({
+        ...errors,
+        file: 'File size must be less than 3MB',
+      });
+      return;
+    }
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      setErrors({
+        ...errors,
+        file: 'Please upload a JPEG, PNG, or PDF file',
+      });
+      return;
+    }
+    setFormData({ ...formData, file });
+    setErrors({ ...errors, file: '' });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      processFile(droppedFile);
     }
   };
 
@@ -123,6 +158,10 @@ const PartnerVerificationModal = ({
       console.log('🚀 ~ handleSubmit ~ result:', result);
 
       if (response.ok) {
+        toast.success(
+          'Verification submitted successfully! Your application is now under review.',
+          { position: 'top-center' },
+        );
         setOpen(false);
         // Reset form or show success message
         setFormData({
@@ -205,8 +244,15 @@ const PartnerVerificationModal = ({
           <div>
             <label
               htmlFor='license-upload'
-              className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center bg-green-50/5 gap-2 cursor-pointer hover:bg-green-50/10 transition-colors ${
-                errors.file ? 'border-red-500' : 'border-primary/40'
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center bg-green-50/5 gap-2 cursor-pointer transition-all ${
+                errors.file
+                  ? 'border-red-500'
+                  : isDragging
+                    ? 'border-green-600 bg-green-50/10 scale-[1.01]'
+                    : 'border-primary/40 hover:bg-green-50/10'
               }`}
             >
               <CloudUpload

@@ -5,9 +5,21 @@ import React, { useEffect, useState } from 'react';
 const Upload = ({ image, register, imageFile }: any) => {
   const [imagePreview, setImagePreview] = useState<string | null>(image);
 
+  // Update preview when image prop changes (e.g., from AI auto-fill or form reset)
+  useEffect(() => {
+    if (image && typeof image === 'string') {
+      setImagePreview(image);
+    } else if (!image) {
+      setImagePreview(null);
+    }
+  }, [image]);
+
+  // Update preview when a new file is selected
   useEffect(() => {
     if (typeof imageFile === 'object' && imageFile) {
-      setImagePreview(URL.createObjectURL(imageFile));
+      const objectUrl = URL.createObjectURL(imageFile);
+      setImagePreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
     }
   }, [imageFile]);
 
@@ -36,7 +48,6 @@ const Upload = ({ image, register, imageFile }: any) => {
           accept='image/*'
           className='hidden'
           {...register('image')}
-          // onChange={handleImageChange}
         />
       </label>
     </div>

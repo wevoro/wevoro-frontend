@@ -265,15 +265,16 @@ const OfferLists = ({ offers, source, isLoading }: any) => {
                     )}
                     <span className='inline-flex items-center gap-2'>
                       {document.title}
-                      {document.url && (
-                        <Link
-                          href={document.url || ''}
-                          target='_blank'
-                          className='text-primary'
-                        >
-                          <Link2 className='size-4' />
-                        </Link>
-                      )}
+                      {document.url &&
+                        document?.status !== 'denied' && (
+                          <Link
+                            href={document.url || ''}
+                            target='_blank'
+                            className='text-primary'
+                          >
+                            <Link2 className='size-4' />
+                          </Link>
+                        )}
                     </span>
                   </li>
                 ))}

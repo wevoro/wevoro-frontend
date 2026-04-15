@@ -108,37 +108,40 @@ export function ReviewApplicationModal({
                 </div>
               </div>
 
-              <div className='flex flex-row items-center gap-2 sm:gap-4'>
-                <AdminEditUserModal data={data}>
-                  <Button
-                    variant='outline'
-                    className='w-full rounded-lg inline-flex items-center gap-2'
-                  >
-                    <Pencil className='size-4' />
-                    Edit
-                  </Button>
-                </AdminEditUserModal>
+              {data?.status !== 'removed' && (
+                <div className='flex flex-row items-center gap-2 sm:gap-4'>
+                  <AdminEditUserModal data={data}>
+                    <Button
+                      variant='outline'
+                      className='w-full rounded-lg inline-flex items-center gap-2'
+                    >
+                      <Pencil className='size-4' />
+                      Edit
+                    </Button>
+                  </AdminEditUserModal>
 
-                <AdminAlertModal alertType='block' data={data}>
-                  <Button
-                    variant='outline'
-                    className='w-full rounded-lg inline-flex items-center gap-2'
-                    disabled={data?.status === 'blocked'}
-                  >
-                    <UserX className='size-4' />
-                    Block
-                  </Button>
-                </AdminAlertModal>
-                <AdminAlertModal alertType='remove' data={data}>
-                  <Button
-                    variant='outline'
-                    className='w-full rounded-lg text-red-600 inline-flex items-center gap-2'
-                  >
-                    <Trash2 className='size-4' />
-                    Remove
-                  </Button>
-                </AdminAlertModal>
-              </div>
+                  {data?.status !== 'blocked' && (
+                    <AdminAlertModal alertType='block' data={data}>
+                      <Button
+                        variant='outline'
+                        className='w-full rounded-lg inline-flex items-center gap-2'
+                      >
+                        <UserX className='size-4' />
+                        Block
+                      </Button>
+                    </AdminAlertModal>
+                  )}
+                  <AdminAlertModal alertType='remove' data={data}>
+                    <Button
+                      variant='outline'
+                      className='w-full rounded-lg text-red-600 inline-flex items-center gap-2'
+                    >
+                      <Trash2 className='size-4' />
+                      Remove
+                    </Button>
+                  </AdminAlertModal>
+                </div>
+              )}
 
               <div className='flex flex-col gap-4 sm:gap-8 py-10'>
                 {from === 'partner' && data?.partnerVerification && (

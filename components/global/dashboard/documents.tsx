@@ -8,11 +8,13 @@ import {
   Globe,
   Trash2,
   Pencil,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import DocumentViewer from './document-viewer';
+import { downloadFile } from '@/utils/download';
 
 import { fileIcons, getFileType } from '@/utils/file';
 import {
@@ -263,6 +265,18 @@ export function MoreDropdown({
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuGroup>
+            <DropdownMenuItem
+              className='cursor-pointer'
+              onSelect={() => {
+                downloadFile(
+                  document.url,
+                  document.title || 'document',
+                );
+              }}
+            >
+              <Download />
+              <span>Download</span>
+            </DropdownMenuItem>
             <UploadDocumentModal document={document}>
               <DropdownMenuItem
                 className='cursor-pointer'

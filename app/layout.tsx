@@ -61,7 +61,18 @@ export default async function RootLayout({
         <Provider>
           <Refresh />
           <main>{children}</main>
-          <Toaster />
+          <Toaster
+            position='top-center'
+            toastOptions={{
+              style: {
+                zIndex: 9999,
+                marginTop: '70px',
+              },
+              className: 'sonner-toast',
+            }}
+            richColors
+            closeButton
+          />
         </Provider>
       </body>
     </html>

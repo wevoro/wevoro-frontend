@@ -118,7 +118,7 @@ const ProfileName = ({
   // console.log('🚀 ~ ProfileName ~ status:', status);
   return (
     <>
-      {role === 'pro' && status !== 'pending' && isRecentlyActive && (
+      {role === 'pro' && isRecentlyActive && (
         <StatusTooltip
           trigger={
             <div className='flex items-center text-xs font-medium text-[#33B55B] border-[#33B55B] border bg-[#33B55B]/5 rounded-full w-max pl-2 pr-4 h-[30px]'>
@@ -143,12 +143,12 @@ const ProfileName = ({
           <span className='flex items-center gap-1 text-[#FF9500]'>
             <BadgeCheck className='w-7 h-7 fill-[#e0e2e1] text-white' />
             <ReviewIcon />
-            <span className='text-sm font-light'>In Review</span>
+            <span className='text-sm font-light'>Pending Review</span>
 
             <StatusTooltip
               trigger={<QuestionMarkIcon />}
-              title='In Review'
-              description='Your provided information is currently being reviewed by the admin.'
+              title='Pending Review'
+              description='Your verification has been submitted and is currently being reviewed by the admin. You will be notified once a decision is made.'
             />
           </span>
         )}
@@ -161,12 +161,12 @@ const ProfileName = ({
             >
               <BadgeCheck className='w-7 h-7 fill-[#e0e2e1] text-white' />
               <span className='text-sm text-primary font-light underline'>
-                Verify Now{' '}
+                Not Verified — Verify Now
               </span>
               <StatusTooltip
                 trigger={<QuestionMarkIcon />}
                 title='Not Verified'
-                description='You need to verify your business information to be able to communicate with Pro&rsquo;s.'
+                description='Your business is not yet verified. Complete the verification to unlock all features and communicate with Pro&rsquo;s.'
               />
             </Button>
           </PartnerVerificationModal>
@@ -174,31 +174,33 @@ const ProfileName = ({
         {status === 'approved' && (
           <StatusTooltip
             title='Verified!'
-            description='You are verified.'
+            description='Your account has been verified by the admin. You have full access to all features.'
             trigger={
-              <svg
-                width='28'
-                height='28'
-                viewBox='0 0 24 24'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <defs>
-                  <linearGradient
-                    id='greenGradient'
-                    x1='0%'
-                    y1='100%'
-                    x2='0%'
-                    y2='0%'
-                  >
-                    <stop offset='0%' stopColor='#008000' />
-                    <stop offset='99.4%' stopColor='#33B55B' />
-                  </linearGradient>
-                </defs>
-                <BadgeCheck
-                  className='w-7 h-7 text-white'
-                  fill='url(#greenGradient)'
-                />
-              </svg>
+              <button type='button' className='focus:outline-none focus:ring-2 focus:ring-green-400 rounded-full' tabIndex={0}>
+                <svg
+                  width='28'
+                  height='28'
+                  viewBox='0 0 24 24'
+                  xmlns='http://www.w3.org/2000/svg'
+                >
+                  <defs>
+                    <linearGradient
+                      id='greenGradient'
+                      x1='0%'
+                      y1='100%'
+                      x2='0%'
+                      y2='0%'
+                    >
+                      <stop offset='0%' stopColor='#008000' />
+                      <stop offset='99.4%' stopColor='#33B55B' />
+                    </linearGradient>
+                  </defs>
+                  <BadgeCheck
+                    className='w-7 h-7 text-white'
+                    fill='url(#greenGradient)'
+                  />
+                </svg>
+              </button>
             }
           />
         )}

@@ -172,37 +172,38 @@ const ProfileName = ({
           </PartnerVerificationModal>
         )}
         {status === 'approved' && (
-          <StatusTooltip
-            title='Verified!'
-            description='Your account has been verified by the admin. You have full access to all features.'
-            trigger={
-              <button type='button' className='focus:outline-none focus:ring-2 focus:ring-green-400 rounded-full' tabIndex={0}>
-                <svg
-                  width='28'
-                  height='28'
-                  viewBox='0 0 24 24'
-                  xmlns='http://www.w3.org/2000/svg'
-                >
-                  <defs>
-                    <linearGradient
-                      id='greenGradient'
-                      x1='0%'
-                      y1='100%'
-                      x2='0%'
-                      y2='0%'
-                    >
-                      <stop offset='0%' stopColor='#008000' />
-                      <stop offset='99.4%' stopColor='#33B55B' />
-                    </linearGradient>
-                  </defs>
-                  <BadgeCheck
-                    className='w-7 h-7 text-white'
-                    fill='url(#greenGradient)'
-                  />
-                </svg>
-              </button>
-            }
-          />
+          <span className='flex items-center gap-1'>
+            <button type='button' className='focus:outline-none focus:ring-2 focus:ring-green-400 rounded-full cursor-default' tabIndex={-1}>
+              <svg
+                width='28'
+                height='28'
+                viewBox='0 0 24 24'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <defs>
+                  <linearGradient
+                    id='greenGradient'
+                    x1='0%'
+                    y1='100%'
+                    x2='0%'
+                    y2='0%'
+                  >
+                    <stop offset='0%' stopColor='#008000' />
+                    <stop offset='99.4%' stopColor='#33B55B' />
+                  </linearGradient>
+                </defs>
+                <BadgeCheck
+                  className='w-7 h-7 text-white'
+                  fill='url(#greenGradient)'
+                />
+              </svg>
+            </button>
+            <StatusTooltip
+              trigger={<QuestionMarkIcon />}
+              title='Verified!'
+              description='Your account has been verified by the admin. You have full access to all features.'
+            />
+          </span>
         )}
         {status === 'rejected' && role === 'partner' && !fromSpecialPage && (
           <PartnerVerificationModal existingData={partnerVerification}>

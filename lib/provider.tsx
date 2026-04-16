@@ -37,7 +37,18 @@ export default function Provider({ children }: any) {
               <OnboardProvider>
                 <CookiesProvider>
                   {children}
-                  <Toaster />
+                  <Toaster
+                    position='top-center'
+                    toastOptions={{
+                      style: {
+                        zIndex: 9999,
+                        marginTop: '70px',
+                      },
+                      className: 'sonner-toast',
+                    }}
+                    richColors
+                    closeButton
+                  />
                   <Toaster2 />
                   <FloatingFeedback />
                 </CookiesProvider>

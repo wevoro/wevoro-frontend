@@ -1,7 +1,9 @@
-const fileExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+const fileExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'];
 
 export const fileIcons: Record<string, string> = {
   pdf: '/file.svg',
+  doc: '/doc.svg',
+  docx: '/doc.svg',
   jpg: '/image.svg',
   jpeg: '/image.svg',
   png: '/image.svg',

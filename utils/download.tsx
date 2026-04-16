@@ -51,7 +51,11 @@ export const ACCEPTED_FILE_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.pdf'];
  * Validates a file's type against accepted document upload types.
  */
 export const isValidFileType = (file: File): boolean => {
-  return ACCEPTED_FILE_TYPES.includes(file.type);
+  const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const validExtensions = ['.jpeg', '.jpg', '.png', '.pdf'];
+  
+  // Strict matching on both MIME type or Extension (since Windows sometimes drops MIME)
+  return ACCEPTED_FILE_TYPES.includes(file.type) || validExtensions.includes(extension);
 };
 
 /**

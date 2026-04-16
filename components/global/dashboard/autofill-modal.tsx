@@ -133,6 +133,12 @@ export default function AutoFillModal() {
   };
 
   // Drag and drop handlers
+  const handleDragEnter = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
   const handleDragOver = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -218,6 +224,7 @@ export default function AutoFillModal() {
                 {/* Automatically Option — with drag & drop support */}
                 <button
                   onClick={handleAutoFill}
+                  onDragEnter={handleDragEnter}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -227,20 +234,20 @@ export default function AutoFillModal() {
                       : 'border-[#008000]'
                   }`}
                 >
-                  <div className='relative mb-3'>
+                  <div className='relative mb-3 pointer-events-none'>
                     <CloudUpload
                       className='h-10 w-10 text-[#008000]'
                       strokeWidth={1.5}
                     />
                     <Sparkles className='absolute -right-2 -top-1 h-4 w-4 text-[#008000]' />
                   </div>
-                  <h3 className='mb-2 text-base md:text-xl font-medium text-tertiary'>
+                  <h3 className='mb-2 text-base md:text-xl font-medium text-tertiary pointer-events-none'>
                     Automatically{' '}
                     <span className='italic font-normal'>
                       (AI-Auto Filling)
                     </span>
                   </h3>
-                  <p className='text-sm text-muted-foreground max-w-[460px]'>
+                  <p className='text-sm text-muted-foreground max-w-[460px] pointer-events-none'>
                     {isDragging
                       ? 'Drop your PDF resume here'
                       : 'Upload or drag & drop your up-to-date resume (PDF only, max 5MB) and the AI will fill the information automatically'}

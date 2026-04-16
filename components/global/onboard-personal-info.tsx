@@ -150,7 +150,11 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
 
       const { image, ...rest } = data;
 
-      typeof data.image === 'object' && formData.append('image', data.image[0]);
+      if (typeof data.image === 'object' && data.image?.length > 0) {
+        formData.append('image', data.image[0]);
+      } else if (typeof data.image === 'string' && data.image !== '') {
+        rest.image = data.image; // Retain the existing string URL
+      }
 
       formData.append('data', JSON.stringify(rest));
 
@@ -253,7 +257,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
 
       <div className='flex flex-col gap-8'>
         <div className='text-center flex flex-col gap-3'>
-          <Upload register={register} image={image} imageFile={imageFile} />
+          <Upload register={register} image={watch('image') === '' ? null : image} imageFile={imageFile} />
         </div>
 
         <div className='flex flex-col gap-3'>

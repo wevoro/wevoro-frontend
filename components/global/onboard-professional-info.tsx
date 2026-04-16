@@ -805,10 +805,9 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       </p>
                     )}
                 </div>
-
-                {processedCertifications?.[index]?.certificateFile && (
+                {typeof watchCertificationFileData?.[index]?.certificateFile === 'string' && watchCertificationFileData?.[index]?.certificateFile && (
                   <Link
-                    href={processedCertifications?.[index]?.certificateFile}
+                    href={watchCertificationFileData?.[index]?.certificateFile}
                     target='_blank'
                     className='text-blue-600 underline text-sm flex items-center gap-2 pt-2'
                   >

@@ -6,7 +6,7 @@ import CredentialsPanel from '@/components/global/dashboard/credentials-panel';
 
 export default function Profile() {
   return (
-    <div className='grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8 items-start'>
+    <>
       <div className='flex flex-col gap-8'>
         <PersonalInformation />
         <ProfessionalInformation />
@@ -14,6 +14,6 @@ export default function Profile() {
         <Documents />
       </div>
       <CredentialsPanel />
-    </div>
+    </>
   );
 }

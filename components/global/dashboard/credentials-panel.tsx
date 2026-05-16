@@ -62,7 +62,7 @@ const CredentialsPanel: React.FC = () => {
   );
 
   return (
-    <div className='fixed bottom-8 right-6 z-40 w-[320px] rounded-2xl border border-yellow-400 bg-white shadow-xl overflow-hidden'>
+    <div className='fixed bottom-8 right-[120px] z-40 w-[320px] rounded-2xl border border-yellow-400 bg-white shadow-xl overflow-hidden'>
       {/* Header */}
       <button
         onClick={() => setCollapsed((v) => !v)}

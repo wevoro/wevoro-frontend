@@ -138,7 +138,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           window.location.href = '/admin';
         } else {
           const proPath =
-            completionPercentage > 50
+            completionPercentage >= 50
               ? '/pro/profile'
               : '/pro/onboard/personal-info?autofill=true';
 

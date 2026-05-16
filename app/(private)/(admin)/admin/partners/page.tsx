@@ -132,7 +132,6 @@ export default function PartnersPage() {
       <DataTable
         columns={partnerColumns}
         data={sortedPartners}
-        hideHeader={true}
         pageIndex={page ? parseInt(page) - 1 : 0}
         pageSize={pageSize ? parseInt(pageSize) : 6}
         onPaginationChange={handlePaginationChange}

@@ -20,7 +20,7 @@ const TableDropdown = ({ data }: { data: any }) => {
           <Button
             variant='ghost'
             size='icon'
-            className='text-gray-500 hover:text-gray-600 bg-gray-50'
+            className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
           >
             <EllipsisVertical className='size-5' />
           </Button>

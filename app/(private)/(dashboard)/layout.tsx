@@ -2,8 +2,9 @@
 import Account from '@/components/global/dashboard/account/account';
 import DashboardNav from '@/components/global/dashboard/dashboard-nav';
 import DashboardLayout from '@/components/global/dashboard/dashboard-layout';
+import CompleteProfileModal from '@/components/global/dashboard/complete-profile-modal';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useUserContext } from '@/lib/contexts';
 
 interface DashboardProps {
@@ -16,6 +17,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const isPartnerOnboarded = useSearchParams().get('onboarded') === 'true';
   // console.log('🚀 ~ Dashboard ~ isPartnerOnboarded:', isPartnerOnboarded);
   const router = useRouter();
+  const [profileModalDismissed, setProfileModalDismissed] = useState(false);
 
   useEffect(() => {
     if (!user?.completionPercentage && user?.role === 'pro') {
@@ -32,6 +34,11 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const isAccountPage =
     pathname.includes('notifications') || pathname.includes('settings');
 
+  const showCompleteProfileModal =
+    user?.role === 'pro' &&
+    (user?.completionPercentage ?? 0) < 100 &&
+    !profileModalDismissed;
+
   return (
     <main className='bg-[#F9F9FA]'>
       <DashboardNav />
@@ -40,6 +47,10 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       ) : (
         <DashboardLayout>{children}</DashboardLayout>
       )}
+      <CompleteProfileModal
+        open={showCompleteProfileModal}
+        onClose={() => setProfileModalDismissed(true)}
+      />
     </main>
   );
 };

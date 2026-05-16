@@ -82,7 +82,7 @@ export default function ProsPage() {
 
   return (
     <div className='space-y-6'>
-      <Title className='mb-4 sm:mb-6' text="Pro's" />
+      <Title className='mb-4 sm:mb-6' text='Caregivers' />
 
       <div className='flex flex-col sm:flex-row gap-4'>
         <Input
@@ -138,7 +138,6 @@ export default function ProsPage() {
       <DataTable
         columns={proColumns}
         data={sortedPros}
-        hideHeader={true}
         pageIndex={page ? parseInt(page) - 1 : 0}
         pageSize={pageSize ? parseInt(pageSize) : 6}
         onPaginationChange={handlePaginationChange}

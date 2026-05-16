@@ -29,8 +29,8 @@ export const adminStatusMap = {
 };
 export const adminStatusTexts = {
   blocked: 'Blocked',
-  rejected: 'Rejected',
-  approved: 'Approved',
+  rejected: 'Unverified',
+  approved: 'Verified',
   removed: 'Removed',
   pending: 'Pending',
   'in-review': 'In Review',
@@ -38,7 +38,7 @@ export const adminStatusTexts = {
 
 export const adminStatusColors = {
   blocked: '#FF5652',
-  rejected: '#FF5652',
+  rejected: '#9CA3AF',
   approved: '#33B55B',
   removed: '#FF5652',
   pending: '#FF9500',

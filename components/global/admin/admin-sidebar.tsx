@@ -29,18 +29,23 @@ const items = [
     icon: LayoutDashboardIcon,
   },
   {
-    title: "Pro's",
+    title: 'Agencies',
+    url: '/admin/partners',
+    icon: Building2,
+  },
+  {
+    title: 'Caregivers',
     url: '/admin/pros',
     icon: FileBadge,
   },
   {
-    title: 'Partners',
-    url: '/admin/partners',
-    icon: Building2,
+    title: 'Schedules',
+    url: '/admin/schedules',
+    icon: Briefcase,
+    disabled: true,
   },
-
   {
-    title: 'User’s Feedback',
+    title: "User's Feedback",
     url: '/admin/feedbacks',
     icon: MessageCircleQuestion,
     disabled: false,

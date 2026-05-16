@@ -1,7 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Check, X, Mail, ArrowUpDown, Eye, Calendar } from 'lucide-react';
+import { Check, X, Mail, ArrowUpDown, ScanEye, Calendar, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import Image from 'next/image';
@@ -13,6 +13,7 @@ import { MessageModal } from './message-modal';
 import moment from 'moment';
 import { adminStatusColors, adminStatusTexts } from '@/utils/status';
 import EditAction from './edit-action';
+import { AdminEditUserModal } from './admin-edit-user-modal';
 
 import { cn } from '@/lib/utils';
 import FeedbackColumn from './feedback-column';
@@ -139,49 +140,47 @@ export const proColumns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
 
-      if (status === 'pending') {
-        return (
-          <div className='flex items-center gap-2'>
-            <AdminAlertModal alertType='approve' data={row.original}>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='text-green-500 hover:text-primary bg-green-50'
-              >
-                <Check className='size-5' />
-              </Button>
-            </AdminAlertModal>
-            <AdminAlertModal alertType='reject' data={row.original}>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='text-red-500 hover:text-red-600 bg-red-50'
-              >
-                <X className='size-5' />
-              </Button>
-            </AdminAlertModal>
-            <ReviewApplicationModal data={row.original}>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='text-gray-500 hover:text-gray-600 bg-gray-50'
-              >
-                <Eye className='size-5' />
-              </Button>
-            </ReviewApplicationModal>
-            <TableDropdown data={row.original} />
-          </div>
-        );
-      }
-
       return (
         <div className='flex items-center gap-2'>
-          <EditAction data={row.original} />
+          {/* Approve / Reject — only for pending */}
+          {status === 'pending' && (
+            <>
+              <AdminAlertModal alertType='approve' data={row.original}>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='text-green-500 hover:text-green-600 hover:bg-green-50 rounded-xl size-10'
+                >
+                  <Check className='size-5' strokeWidth={2.5} />
+                </Button>
+              </AdminAlertModal>
+              <AdminAlertModal alertType='reject' data={row.original}>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl size-10'
+                >
+                  <X className='size-5' strokeWidth={2.5} />
+                </Button>
+              </AdminAlertModal>
+            </>
+          )}
+
+          {/* Always-visible 4 action buttons */}
+          <AdminEditUserModal data={row.original}>
+            <Button
+              variant='ghost'
+              size='icon'
+              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
+            >
+              <Pencil className='size-4' />
+            </Button>
+          </AdminEditUserModal>
           <MessageModal data={row.original}>
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-500 hover:text-gray-600 bg-gray-50'
+              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
               <Mail className='size-5' />
             </Button>
@@ -190,9 +189,9 @@ export const proColumns: ColumnDef<any>[] = [
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-500 hover:text-gray-600 bg-gray-50'
+              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
-              <Eye className='size-5' />
+              <ScanEye className='size-5' />
             </Button>
           </ReviewApplicationModal>
           <TableDropdown data={row.original} />
@@ -345,47 +344,54 @@ export const partnerColumns: ColumnDef<any>[] = [
 
       if (status === 'pending' || status === 'in-review') {
         return (
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-3'>
             <AdminAlertModal alertType='approve' data={row.original}>
               <Button
                 variant='ghost'
                 size='icon'
-                className='text-green-500 hover:text-primary bg-green-50'
+                className='text-green-500 hover:text-green-600 hover:bg-green-50 rounded-xl size-10'
               >
-                <Check className='size-5' />
+                <Check className='size-5' strokeWidth={2.5} />
               </Button>
             </AdminAlertModal>
             <AdminAlertModal alertType='reject' data={row.original}>
               <Button
                 variant='ghost'
                 size='icon'
-                className='text-red-500 hover:text-red-600 bg-red-50'
+                className='text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl size-10'
               >
-                <X className='size-5' />
+                <X className='size-5' strokeWidth={2.5} />
               </Button>
             </AdminAlertModal>
             <ReviewApplicationModal from='partner' data={row.original}>
               <Button
                 variant='ghost'
                 size='icon'
-                className='text-gray-500 hover:text-gray-600 bg-gray-50'
+                className='text-primary border border-primary/30 hover:bg-green-50 rounded-xl size-10'
               >
-                <Eye className='size-5' />
+                <ScanEye className='size-5' />
               </Button>
             </ReviewApplicationModal>
-            <TableDropdown data={row.original} />
           </div>
         );
       }
 
       return (
         <div className='flex items-center gap-2'>
-          <EditAction data={row.original} />
+          <AdminEditUserModal data={row.original}>
+            <Button
+              variant='ghost'
+              size='icon'
+              className='text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
+            >
+              <Pencil className='size-4' />
+            </Button>
+          </AdminEditUserModal>
           <MessageModal data={row.original}>
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-500 hover:text-gray-600 bg-gray-50'
+              className='text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
               <Mail className='size-5' />
             </Button>
@@ -394,9 +400,9 @@ export const partnerColumns: ColumnDef<any>[] = [
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-500 hover:text-gray-600 bg-gray-50'
+              className='text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
-              <Eye className='size-5' />
+              <ScanEye className='size-5' />
             </Button>
           </ReviewApplicationModal>
           <TableDropdown data={row.original} />

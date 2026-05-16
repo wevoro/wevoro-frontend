@@ -52,20 +52,24 @@ interface UploadDocumentModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   category?: string;
+  documentType?: string;
+  defaultTitle?: string;
   document?: Document; // For edit mode
 }
 
 const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   children,
   category,
+  documentType: defaultDocumentType,
+  defaultTitle,
   document, // Existing document for editing
 }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     category: category || '',
-    documentType: '',
-    title: '',
+    documentType: defaultDocumentType || '',
+    title: defaultTitle || '',
     isPublic: false,
     consent: false,
     file: null as File | null,
@@ -170,8 +174,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   const resetForm = () => {
     setFormData({
       category: category || '',
-      documentType: '',
-      title: '',
+      documentType: defaultDocumentType || '',
+      title: defaultTitle || '',
       isPublic: false,
       consent: false,
       file: null,

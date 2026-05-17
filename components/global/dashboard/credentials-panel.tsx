@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronUp, ChevronDown, Check, CloudUpload, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle2, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -55,9 +55,6 @@ function formatDate(dateStr?: string) {
 
 const CredentialsPanel: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [closed, setClosed] = useState(false);
-
-  if (closed) return null;
   const { user } = useUserContext();
   const { data: documents } = useDocuments();
 
@@ -78,7 +75,6 @@ const CredentialsPanel: React.FC = () => {
       className='fixed bottom-8 right-[120px] z-40 bg-white flex flex-col'
       style={{
         width: 375,
-        height: 532,
         borderRadius: 16,
         padding: 24,
         gap: 20,
@@ -101,19 +97,11 @@ const CredentialsPanel: React.FC = () => {
           </div>
           <span className='font-bold text-gray-900 text-xl'>Credentials</span>
         </div>
-        <div className='flex items-center gap-2'>
-          {collapsed ? (
-            <ChevronDown className='w-5 h-5 text-gray-400' />
-          ) : (
-            <ChevronUp className='w-5 h-5 text-gray-400' />
-          )}
-          <button
-            onClick={(e) => { e.stopPropagation(); setClosed(true); }}
-            className='w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors'
-          >
-            <X className='w-4 h-4 text-gray-400' />
-          </button>
-        </div>
+        {collapsed ? (
+          <ChevronDown className='w-5 h-5 text-gray-400' />
+        ) : (
+          <ChevronUp className='w-5 h-5 text-gray-400' />
+        )}
       </button>
 
       {!collapsed && (
@@ -134,15 +122,8 @@ const CredentialsPanel: React.FC = () => {
 
           {/* Credential cards — scrollable */}
           <div
-            className='flex flex-col overflow-y-auto credentials-scroll'
-            style={{
-              gap: 20,
-              flex: 1,
-              paddingRight: 6,
-              paddingBottom: 4,
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#9CA3AF transparent',
-            }}
+            className='flex flex-col overflow-y-auto pr-1'
+            style={{ gap: 20, maxHeight: 480 }}
           >
             {REQUIRED_CREDENTIALS.map((cred) => {
               const doc = uploadedByType[cred.key];
@@ -151,8 +132,8 @@ const CredentialsPanel: React.FC = () => {
               return (
                 <div
                   key={cred.key}
-                  className='flex flex-col rounded-2xl'
-                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: 16 }}
+                  className='flex flex-col rounded-2xl overflow-hidden'
+                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 20px' }}
                 >
                   {doc ? (
                     /* Uploaded state */
@@ -165,15 +146,10 @@ const CredentialsPanel: React.FC = () => {
                         }}
                       >
                         <div className='flex items-center gap-2'>
-                          {isReviewed ? (
-                            <div className='w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0'>
-                              <Check className='w-3.5 h-3.5 text-white' strokeWidth={3} />
-                            </div>
-                          ) : (
-                            <div className='w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0'>
-                              <Check className='w-3.5 h-3.5 text-gray-300' strokeWidth={3} />
-                            </div>
-                          )}
+                          <CheckCircle2
+                            className='w-5 h-5 shrink-0'
+                            style={{ color: isReviewed ? '#1A7A3C' : '#9CA3AF' }}
+                          />
                           <span
                             className='text-sm font-medium'
                             style={{ color: isReviewed ? '#1A7A3C' : '#6B7280' }}
@@ -187,15 +163,15 @@ const CredentialsPanel: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <div className='pb-1'>
+                      <div>
                         <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
-                        <p className='text-xs text-gray-400'>{doc.title}</p>
+                        <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
                       </div>
                     </>
                   ) : (
                     /* Not uploaded state */
                     <>
-                      <div className='pb-1'>
+                      <div>
                         <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
                         <p className='text-xs text-gray-400'>{cred.hint}</p>
                       </div>
@@ -230,9 +206,7 @@ const CredentialsPanel: React.FC = () => {
                   style={{ backgroundColor: '#fff', border: '1px solid #E5E7EB' }}
                 >
                   <div className='flex items-center gap-2'>
-                    <div className='w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0'>
-                      <Check className='w-3.5 h-3.5 text-white' strokeWidth={3} />
-                    </div>
+                    <CheckCircle2 className='w-5 h-5 text-primary shrink-0' />
                     <span className='text-sm font-medium text-primary'>Reviewed</span>
                   </div>
                   {doc.reviewedAt && (
@@ -241,9 +215,9 @@ const CredentialsPanel: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div className='pb-1'>
+                <div>
                   <p className='font-bold text-gray-900 text-sm'>{doc.title}</p>
-                  <p className='text-xs text-gray-400'>{doc.title}</p>
+                  <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
                 </div>
               </div>
             ))}

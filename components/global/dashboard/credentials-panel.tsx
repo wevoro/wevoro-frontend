@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import { ChevronUp, ChevronDown, CheckCircle2, Upload } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronUp, ChevronDown, CheckCircle2, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -13,32 +13,38 @@ interface Document {
   url: string;
   createdAt: string;
   updatedAt: string;
+  reviewedAt?: string;
   category: string;
   documentType: string;
+  reviewStatus?: string;
 }
 
 const REQUIRED_CREDENTIALS = [
   {
-    key: 'certifications',
-    category: 'non_medical',
-    label: 'CNA Certificate',
-    hint: 'doc or pdf formats, up to 5mb.',
-  },
-  {
     key: 'driver_license',
     category: 'non_medical',
     label: "Driver's License",
+    defaultTitle: "Driver's License",
     hint: 'jpeg, png, pdf formats, up to 2MB.',
+  },
+  {
+    key: 'certifications',
+    category: 'non_medical',
+    label: 'CNA certificate',
+    defaultTitle: 'CNA Certificate',
+    hint: 'doc or pdf formats, up to 5mb.',
   },
   {
     key: 'tb_tests',
     category: 'medical',
     label: 'TB Test',
-    hint: 'doc or pdf formats, up to 5mb.',
+    defaultTitle: 'TB Test',
+    hint: 'jpeg, png, pdf formats, up to 2MB.',
   },
 ];
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr?: string) {
+  if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
@@ -58,27 +64,41 @@ const CredentialsPanel: React.FC = () => {
     uploadedByType[doc.documentType] = doc;
   });
 
-  // Build the display list:
-  // - Driver's License slot (uploaded or empty)
-  // - Any extra uploaded docs (not in the required list)
-  // - TB Test slot (uploaded or empty)
   const requiredKeys = REQUIRED_CREDENTIALS.map((c) => c.key);
   const extraDocs = (documents ?? []).filter(
     (doc: Document) => !requiredKeys.includes(doc.documentType),
   );
 
   return (
-    <div className='fixed bottom-8 right-[120px] z-40 w-[320px] rounded-2xl border border-yellow-400 bg-white shadow-xl overflow-hidden'>
+    <div
+      className='fixed bottom-8 right-[120px] z-40 bg-white flex flex-col'
+      style={{
+        width: 375,
+        borderRadius: 16,
+        padding: 24,
+        gap: 20,
+        boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.10)',
+      }}
+    >
       {/* Header */}
       <button
         onClick={() => setCollapsed((v) => !v)}
-        className='w-full flex items-center justify-between px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors'
+        className='flex items-center justify-between w-full'
       >
         <div className='flex items-center gap-3'>
-          <span className='w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base shrink-0'>
+          <span
+            className='flex items-center justify-center text-white font-bold text-base'
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              backgroundColor: '#1A7A3C',
+              flexShrink: 0,
+            }}
+          >
             W
           </span>
-          <span className='font-bold text-gray-900 text-lg'>Credentials</span>
+          <span className='font-bold text-gray-900 text-xl'>Credentials</span>
         </div>
         {collapsed ? (
           <ChevronDown className='w-5 h-5 text-gray-400' />
@@ -88,98 +108,124 @@ const CredentialsPanel: React.FC = () => {
       </button>
 
       {!collapsed && (
-        <div className='flex flex-col gap-0'>
-          {/* Profile Completion */}
-          <div className='px-5 py-4 border-b border-gray-100'>
-            <div className='flex items-center justify-between mb-2'>
-              <span className='text-sm text-gray-500'>Profile Completion</span>
-              <span className='text-sm font-semibold text-gray-800'>
-                {completion}%
-              </span>
-            </div>
-            <div className='w-full h-2 bg-gray-100 rounded-full overflow-hidden'>
+        <>
+          {/* Profile Completion — single row */}
+          <div className='flex items-center gap-3'>
+            <span className='text-sm text-gray-500 shrink-0'>Profile Completion</span>
+            <div className='flex-1 h-2 bg-gray-200 rounded-full overflow-hidden'>
               <div
                 className='h-2 bg-primary rounded-full transition-all duration-500'
                 style={{ width: `${completion}%` }}
               />
             </div>
+            <span className='text-sm font-bold text-gray-900 shrink-0'>
+              {completion}%
+            </span>
           </div>
 
-          {REQUIRED_CREDENTIALS.map((cred) => (
-            <CredentialRow
-              key={cred.key}
-              credential={cred}
-              uploaded={uploadedByType[cred.key]}
-            />
-          ))}
+          {/* Credential cards */}
+          <div className='flex flex-col' style={{ gap: 20 }}>
+            {REQUIRED_CREDENTIALS.map((cred) => {
+              const doc = uploadedByType[cred.key];
+              const isReviewed = doc?.reviewStatus === 'approved';
 
-          {/* Extra uploaded docs not in the required list */}
-          {extraDocs.map((doc: Document) => (
-            <UploadedDocRow key={doc._id} doc={doc} />
-          ))}
-        </div>
+              return (
+                <div
+                  key={cred.key}
+                  className='flex flex-col rounded-2xl overflow-hidden'
+                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: 16 }}
+                >
+                  {doc ? (
+                    /* Uploaded state */
+                    <>
+                      <div
+                        className='flex items-center justify-between rounded-xl px-4 py-3'
+                        style={{
+                          backgroundColor: isReviewed ? '#fff' : '#fff',
+                          border: '1px solid #E5E7EB',
+                        }}
+                      >
+                        <div className='flex items-center gap-2'>
+                          <CheckCircle2
+                            className='w-5 h-5 shrink-0'
+                            style={{ color: isReviewed ? '#1A7A3C' : '#9CA3AF' }}
+                          />
+                          <span
+                            className='text-sm font-medium'
+                            style={{ color: isReviewed ? '#1A7A3C' : '#6B7280' }}
+                          >
+                            {isReviewed ? 'Reviewed' : 'Pending review'}
+                          </span>
+                        </div>
+                        {isReviewed && doc.reviewedAt && (
+                          <span className='text-xs text-gray-400'>
+                            {formatDate(doc.reviewedAt)}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
+                        <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
+                      </div>
+                    </>
+                  ) : (
+                    /* Not uploaded state */
+                    <>
+                      <div>
+                        <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
+                        <p className='text-xs text-gray-400'>{cred.hint}</p>
+                      </div>
+                      <UploadDocumentModal
+                        category={cred.category}
+                        documentType={cred.key}
+                        defaultTitle={cred.defaultTitle}
+                      >
+                        <Button
+                          variant='outline'
+                          className='w-fit gap-2 rounded-xl border-gray-300 bg-white text-gray-800 hover:border-primary hover:text-primary text-sm h-10 px-4'
+                        >
+                          <CloudUpload className='w-4 h-4' />
+                          Upload
+                        </Button>
+                      </UploadDocumentModal>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Extra uploaded docs not in required list */}
+            {extraDocs.map((doc: Document) => (
+              <div
+                key={doc._id}
+                className='flex flex-col rounded-2xl overflow-hidden'
+                style={{ backgroundColor: '#F5F6F7', gap: 12, padding: 16 }}
+              >
+                <div
+                  className='flex items-center justify-between rounded-xl px-4 py-3'
+                  style={{ backgroundColor: '#fff', border: '1px solid #E5E7EB' }}
+                >
+                  <div className='flex items-center gap-2'>
+                    <CheckCircle2 className='w-5 h-5 text-primary shrink-0' />
+                    <span className='text-sm font-medium text-primary'>Reviewed</span>
+                  </div>
+                  {doc.reviewedAt && (
+                    <span className='text-xs text-gray-400'>
+                      {formatDate(doc.reviewedAt)}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className='font-bold text-gray-900 text-sm'>{doc.title}</p>
+                  <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
 };
-
-function CredentialRow({
-  credential,
-  uploaded,
-}: {
-  credential: (typeof REQUIRED_CREDENTIALS)[number];
-  uploaded?: Document;
-}) {
-  return (
-    <div className='px-5 py-4 border-b border-gray-100 last:border-b-0'>
-      {uploaded ? (
-        <UploadedDocRow doc={uploaded} label={credential.label} />
-      ) : (
-        <div className='flex flex-col gap-3'>
-          <div>
-            <p className='font-semibold text-gray-900 text-sm'>
-              {credential.label}
-            </p>
-            <p className='text-xs text-gray-400'>{credential.hint}</p>
-          </div>
-          <UploadDocumentModal category={credential.category}>
-            <Button
-              variant='outline'
-              size='sm'
-              className='w-fit border-gray-200 text-gray-700 rounded-xl gap-2 hover:border-primary hover:text-primary'
-            >
-              <Upload className='w-4 h-4' />
-              Upload
-            </Button>
-          </UploadDocumentModal>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function UploadedDocRow({
-  doc,
-  label,
-}: {
-  doc: Document;
-  label?: string;
-}) {
-  return (
-    <div className='px-5 py-4 border-b border-gray-100 last:border-b-0'>
-      <div className='flex items-center justify-between mb-2'>
-        <div className='flex items-center gap-2'>
-          <CheckCircle2 className='w-4 h-4 text-primary shrink-0' />
-          <span className='text-xs font-medium text-primary'>Reviewed</span>
-        </div>
-        <span className='text-xs text-gray-400'>{formatDate(doc.updatedAt)}</span>
-      </div>
-      <p className='font-semibold text-gray-900 text-sm'>
-        {label ?? doc.title}
-      </p>
-      <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
-    </div>
-  );
-}
 
 export default CredentialsPanel;

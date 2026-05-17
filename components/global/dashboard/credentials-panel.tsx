@@ -133,7 +133,7 @@ const CredentialsPanel: React.FC = () => {
                 <div
                   key={cred.key}
                   className='flex flex-col rounded-2xl overflow-hidden'
-                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 20px' }}
+                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 22px' }}
                 >
                   {doc ? (
                     /* Uploaded state */

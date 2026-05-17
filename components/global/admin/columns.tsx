@@ -149,7 +149,7 @@ export const proColumns: ColumnDef<any>[] = [
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='text-green-500 hover:text-green-600 hover:bg-green-50 rounded-xl size-10'
+                  className='text-green-500 hover:text-green-600 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
                 >
                   <Check className='size-5' strokeWidth={2.5} />
                 </Button>
@@ -158,7 +158,7 @@ export const proColumns: ColumnDef<any>[] = [
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl size-10'
+                  className='text-red-500 hover:text-red-600 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
                 >
                   <X className='size-5' strokeWidth={2.5} />
                 </Button>
@@ -344,12 +344,12 @@ export const partnerColumns: ColumnDef<any>[] = [
 
       if (status === 'pending' || status === 'in-review') {
         return (
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-2'>
             <AdminAlertModal alertType='approve' data={row.original}>
               <Button
                 variant='ghost'
                 size='icon'
-                className='text-green-500 hover:text-green-600 hover:bg-green-50 rounded-xl size-10'
+                className='text-green-500 hover:text-green-600 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
               >
                 <Check className='size-5' strokeWidth={2.5} />
               </Button>
@@ -358,7 +358,7 @@ export const partnerColumns: ColumnDef<any>[] = [
               <Button
                 variant='ghost'
                 size='icon'
-                className='text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl size-10'
+                className='text-red-500 hover:text-red-600 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
               >
                 <X className='size-5' strokeWidth={2.5} />
               </Button>
@@ -367,7 +367,7 @@ export const partnerColumns: ColumnDef<any>[] = [
               <Button
                 variant='ghost'
                 size='icon'
-                className='text-primary border border-primary/30 hover:bg-green-50 rounded-xl size-10'
+                className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
               >
                 <ScanEye className='size-5' />
               </Button>
@@ -382,7 +382,7 @@ export const partnerColumns: ColumnDef<any>[] = [
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
+              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
               <Pencil className='size-4' />
             </Button>
@@ -391,7 +391,7 @@ export const partnerColumns: ColumnDef<any>[] = [
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
+              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
               <Mail className='size-5' />
             </Button>
@@ -400,7 +400,7 @@ export const partnerColumns: ColumnDef<any>[] = [
             <Button
               variant='ghost'
               size='icon'
-              className='text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
+              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
               <ScanEye className='size-5' />
             </Button>

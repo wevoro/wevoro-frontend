@@ -138,6 +138,14 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({
           </div>
 
           <CredentialRow
+            label='CNA certificate'
+            hint='doc or pdf formats, up to 5mb.'
+            category='non_medical'
+            documentType='certifications'
+            defaultTitle='CNA Certificate'
+          />
+
+          <CredentialRow
             label="Driver's license"
             hint='jpeg, png, pdf formats, up to 2MB.'
             category='non_medical'

@@ -164,16 +164,16 @@ const CredentialsPanel: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
-                        <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
+                        <p className='font-bold text-gray-900 text-sm mb-1'>{cred.label}</p>
+                        <p className='text-xs text-gray-400 truncate mb-0.5'>{doc.title}</p>
                       </div>
                     </>
                   ) : (
                     /* Not uploaded state */
                     <>
                       <div>
-                        <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
-                        <p className='text-xs text-gray-400'>{cred.hint}</p>
+                        <p className='font-bold text-gray-900 text-sm mb-1'>{cred.label}</p>
+                        <p className='text-xs text-gray-400 mb-0.5'>{cred.hint}</p>
                       </div>
                       <UploadDocumentModal
                         category={cred.category}

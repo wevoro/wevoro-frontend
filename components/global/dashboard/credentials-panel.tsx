@@ -75,10 +75,10 @@ const CredentialsPanel: React.FC = () => {
       className='fixed bottom-8 right-[120px] z-40 bg-white flex flex-col'
       style={{
         width: 375,
+        height: 532,
         borderRadius: 16,
         padding: 24,
         gap: 20,
-        maxHeight: 'calc(100vh - 80px)',
         boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.10)',
       }}
     >

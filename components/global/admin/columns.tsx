@@ -1,7 +1,8 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Check, X, Mail, ArrowUpDown, ScanEye, Calendar, Pencil } from 'lucide-react';
+import { Check, X, Mail, ArrowUpDown, Calendar, Pencil } from 'lucide-react';
+import CredentialListIcon from './credential-list-icon';
 import { Button } from '@/components/ui/button';
 
 import Image from 'next/image';
@@ -369,7 +370,7 @@ export const partnerColumns: ColumnDef<any>[] = [
                 size='icon'
                 className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
               >
-                <ScanEye className='size-5' />
+                <CredentialListIcon />
               </Button>
             </ReviewApplicationModal>
           </div>

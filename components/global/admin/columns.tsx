@@ -192,7 +192,7 @@ export const proColumns: ColumnDef<any>[] = [
               size='icon'
               className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
-              <ScanEye className='size-5' />
+              <CredentialListIcon />
             </Button>
           </ReviewApplicationModal>
           <TableDropdown data={row.original} />
@@ -403,7 +403,7 @@ export const partnerColumns: ColumnDef<any>[] = [
               size='icon'
               className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
             >
-              <ScanEye className='size-5' />
+              <CredentialListIcon />
             </Button>
           </ReviewApplicationModal>
           <TableDropdown data={row.original} />

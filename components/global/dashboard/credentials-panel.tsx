@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronUp, ChevronDown, Check, CloudUpload } from 'lucide-react';
+import { ChevronUp, ChevronDown, Check, CloudUpload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -55,6 +55,9 @@ function formatDate(dateStr?: string) {
 
 const CredentialsPanel: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [closed, setClosed] = useState(false);
+
+  if (closed) return null;
   const { user } = useUserContext();
   const { data: documents } = useDocuments();
 
@@ -98,11 +101,19 @@ const CredentialsPanel: React.FC = () => {
           </div>
           <span className='font-bold text-gray-900 text-xl'>Credentials</span>
         </div>
-        {collapsed ? (
-          <ChevronDown className='w-5 h-5 text-gray-400' />
-        ) : (
-          <ChevronUp className='w-5 h-5 text-gray-400' />
-        )}
+        <div className='flex items-center gap-2'>
+          {collapsed ? (
+            <ChevronDown className='w-5 h-5 text-gray-400' />
+          ) : (
+            <ChevronUp className='w-5 h-5 text-gray-400' />
+          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); setClosed(true); }}
+            className='w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors'
+          >
+            <X className='w-4 h-4 text-gray-400' />
+          </button>
+        </div>
       </button>
 
       {!collapsed && (

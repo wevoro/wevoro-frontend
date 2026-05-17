@@ -132,8 +132,8 @@ const CredentialsPanel: React.FC = () => {
               return (
                 <div
                   key={cred.key}
-                  className='flex flex-col rounded-2xl overflow-hidden'
-                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 22px' }}
+                  className='flex flex-col rounded-2xl'
+                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 24px' }}
                 >
                   {doc ? (
                     /* Uploaded state */
@@ -198,8 +198,8 @@ const CredentialsPanel: React.FC = () => {
             {extraDocs.map((doc: Document) => (
               <div
                 key={doc._id}
-                className='flex flex-col rounded-2xl overflow-hidden'
-                style={{ backgroundColor: '#F5F6F7', gap: 12, padding: 16 }}
+                className='flex flex-col rounded-2xl'
+                style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 24px' }}
               >
                 <div
                   className='flex items-center justify-between rounded-xl px-4 py-3'

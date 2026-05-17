@@ -132,7 +132,7 @@ const CredentialsPanel: React.FC = () => {
               return (
                 <div
                   key={cred.key}
-                  className='flex flex-col rounded-2xl overflow-hidden'
+                  className='flex flex-col rounded-2xl'
                   style={{ backgroundColor: '#F5F6F7', gap: 12, padding: 16 }}
                 >
                   {doc ? (
@@ -168,15 +168,15 @@ const CredentialsPanel: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <div>
+                      <div className='pb-1'>
                         <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
-                        <p className='text-xs text-gray-400 truncate'>{doc.title}</p>
+                        <p className='text-xs text-gray-400'>{doc.title}</p>
                       </div>
                     </>
                   ) : (
                     /* Not uploaded state */
                     <>
-                      <div>
+                      <div className='pb-1'>
                         <p className='font-bold text-gray-900 text-sm'>{cred.label}</p>
                         <p className='text-xs text-gray-400'>{cred.hint}</p>
                       </div>
@@ -222,11 +222,9 @@ const CredentialsPanel: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div>
+                <div className='pb-1'>
                   <p className='font-bold text-gray-900 text-sm'>{doc.title}</p>
-                  <p className='text-xs text-gray-400 truncate'>
-                    {doc.url?.split('/').pop()?.split('?')[0] || doc.title}
-                  </p>
+                  <p className='text-xs text-gray-400'>{doc.title}</p>
                 </div>
               </div>
             ))}

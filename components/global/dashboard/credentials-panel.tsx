@@ -85,21 +85,7 @@ const CredentialsPanel: React.FC = () => {
         onClick={() => setCollapsed((v) => !v)}
         className='flex items-center justify-between w-full'
       >
-        <div className='flex items-center gap-3'>
-          <span
-            className='flex items-center justify-center text-white font-bold text-base'
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              backgroundColor: '#1A7A3C',
-              flexShrink: 0,
-            }}
-          >
-            W
-          </span>
-          <span className='font-bold text-gray-900 text-xl'>Credentials</span>
-        </div>
+        <span className='font-bold text-gray-900 text-xl'>Credentials</span>
         {collapsed ? (
           <ChevronDown className='w-5 h-5 text-gray-400' />
         ) : (

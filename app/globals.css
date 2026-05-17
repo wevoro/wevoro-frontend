@@ -2,21 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Thin scrollbar for credentials panel */
-.credentials-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.credentials-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.credentials-scroll::-webkit-scrollbar-thumb {
-  background: #9CA3AF;
-  border-radius: 999px;
-}
-.credentials-scroll::-webkit-scrollbar-thumb:hover {
-  background: #6B7280;
-}
-
 @layer base {
   ul,
   ol {
@@ -112,6 +97,17 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none !important; /* Chrome, Safari and Opera */
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #D1D5DB;
+  border-radius: 999px;
 }
 
 @supports (-webkit-touch-callout: none) and (max-width: 768px) {

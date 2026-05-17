@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { Toaster as Toaster2 } from '@/components/ui/toaster';
 import { useState } from 'react';
-import FloatingFeedback from '@/components/global/feedback/floating-feedback';
 import {
   AdminProvider,
   AuthProvider,
@@ -50,7 +49,6 @@ export default function Provider({ children }: any) {
                     closeButton
                   />
                   <Toaster2 />
-                  <FloatingFeedback />
                 </CookiesProvider>
               </OnboardProvider>
             </UIProvider>

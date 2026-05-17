@@ -78,6 +78,7 @@ const CredentialsPanel: React.FC = () => {
         borderRadius: 16,
         padding: 24,
         gap: 20,
+        maxHeight: 'calc(100vh - 80px)',
         boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.10)',
       }}
     >
@@ -122,8 +123,15 @@ const CredentialsPanel: React.FC = () => {
 
           {/* Credential cards — scrollable */}
           <div
-            className='flex flex-col overflow-y-auto pr-1'
-            style={{ gap: 20, maxHeight: 480 }}
+            className='flex flex-col overflow-y-auto credentials-scroll'
+            style={{
+              gap: 20,
+              flex: 1,
+              paddingRight: 6,
+              paddingBottom: 4,
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#9CA3AF transparent',
+            }}
           >
             {REQUIRED_CREDENTIALS.map((cred) => {
               const doc = uploadedByType[cred.key];

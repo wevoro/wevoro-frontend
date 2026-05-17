@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { ChevronUp, ChevronDown, CheckCircle2, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
@@ -85,7 +86,17 @@ const CredentialsPanel: React.FC = () => {
         onClick={() => setCollapsed((v) => !v)}
         className='flex items-center justify-between w-full'
       >
-        <span className='font-bold text-gray-900 text-xl'>Credentials</span>
+        <div className='flex items-center gap-3'>
+          <div className='relative w-9 h-9 shrink-0'>
+            <Image
+              src='/wevoro.png'
+              alt='Wevoro'
+              fill
+              className='object-contain rounded-full'
+            />
+          </div>
+          <span className='font-bold text-gray-900 text-xl'>Credentials</span>
+        </div>
         {collapsed ? (
           <ChevronDown className='w-5 h-5 text-gray-400' />
         ) : (
@@ -109,8 +120,11 @@ const CredentialsPanel: React.FC = () => {
             </span>
           </div>
 
-          {/* Credential cards */}
-          <div className='flex flex-col' style={{ gap: 20 }}>
+          {/* Credential cards — scrollable */}
+          <div
+            className='flex flex-col overflow-y-auto pr-1'
+            style={{ gap: 20, maxHeight: 480 }}
+          >
             {REQUIRED_CREDENTIALS.map((cred) => {
               const doc = uploadedByType[cred.key];
               const isReviewed = doc?.reviewStatus === 'approved';

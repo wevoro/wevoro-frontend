@@ -19,6 +19,12 @@ interface Document {
 
 const REQUIRED_CREDENTIALS = [
   {
+    key: 'certifications',
+    category: 'non_medical',
+    label: 'CNA Certificate',
+    hint: 'doc or pdf formats, up to 5mb.',
+  },
+  {
     key: 'driver_license',
     category: 'non_medical',
     label: "Driver's License",
@@ -28,7 +34,7 @@ const REQUIRED_CREDENTIALS = [
     key: 'tb_tests',
     category: 'medical',
     label: 'TB Test',
-    hint: 'jpeg, png, pdf formats, up to 2MB.',
+    hint: 'doc or pdf formats, up to 5mb.',
   },
 ];
 
@@ -99,22 +105,18 @@ const CredentialsPanel: React.FC = () => {
             </div>
           </div>
 
-          {/* Required credential: Driver's License */}
-          <CredentialRow
-            credential={REQUIRED_CREDENTIALS[0]}
-            uploaded={uploadedByType['driver_license']}
-          />
+          {REQUIRED_CREDENTIALS.map((cred) => (
+            <CredentialRow
+              key={cred.key}
+              credential={cred}
+              uploaded={uploadedByType[cred.key]}
+            />
+          ))}
 
-          {/* Extra uploaded docs */}
+          {/* Extra uploaded docs not in the required list */}
           {extraDocs.map((doc: Document) => (
             <UploadedDocRow key={doc._id} doc={doc} />
           ))}
-
-          {/* Required credential: TB Test */}
-          <CredentialRow
-            credential={REQUIRED_CREDENTIALS[1]}
-            uploaded={uploadedByType['tb_tests']}
-          />
         </div>
       )}
     </div>

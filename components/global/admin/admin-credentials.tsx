@@ -118,8 +118,8 @@ function CredentialRow({ label, doc, onReview, loading }: CredentialRowProps) {
                 {getFileExtension(doc!.url)}
               </span>
             </div>
-            <div className='flex-1 min-w-0'>
-              <p className='text-sm font-medium text-gray-900 truncate'>
+            <div className='min-w-0 w-0 flex-1'>
+              <p className='text-sm font-medium text-gray-900 truncate max-w-[160px]'>
                 {getFilename(doc!.url, doc!.title)}
               </p>
               {isRejected && (

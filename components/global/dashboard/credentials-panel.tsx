@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronUp, ChevronDown, CheckCircle2, CloudUpload } from 'lucide-react';
+import { ChevronUp, ChevronDown, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -146,10 +146,19 @@ const CredentialsPanel: React.FC = () => {
                         }}
                       >
                         <div className='flex items-center gap-2'>
-                          <CheckCircle2
-                            className='w-5 h-5 shrink-0'
-                            style={{ color: isReviewed ? '#1A7A3C' : '#9CA3AF' }}
-                          />
+                          {isReviewed ? (
+                            <span className='w-5 h-5 rounded-full bg-[#1A7A3C] flex items-center justify-center shrink-0'>
+                              <svg width='11' height='8' viewBox='0 0 11 8' fill='none'>
+                                <path d='M1 3.5L4 6.5L10 1' stroke='white' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'/>
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className='w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0'>
+                              <svg width='11' height='8' viewBox='0 0 11 8' fill='none'>
+                                <path d='M1 3.5L4 6.5L10 1' stroke='#9CA3AF' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'/>
+                              </svg>
+                            </span>
+                          )}
                           <span
                             className='text-sm font-medium'
                             style={{ color: isReviewed ? '#1A7A3C' : '#6B7280' }}
@@ -206,8 +215,12 @@ const CredentialsPanel: React.FC = () => {
                   style={{ backgroundColor: '#fff', border: '1px solid #E5E7EB' }}
                 >
                   <div className='flex items-center gap-2'>
-                    <CheckCircle2 className='w-5 h-5 text-primary shrink-0' />
-                    <span className='text-sm font-medium text-primary'>Reviewed</span>
+                    <span className='w-5 h-5 rounded-full bg-[#1A7A3C] flex items-center justify-center shrink-0'>
+                      <svg width='11' height='8' viewBox='0 0 11 8' fill='none'>
+                        <path d='M1 3.5L4 6.5L10 1' stroke='white' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'/>
+                      </svg>
+                    </span>
+                    <span className='text-sm font-medium text-[#1A7A3C]'>Reviewed</span>
                   </div>
                   {doc.reviewedAt && (
                     <span className='text-xs text-gray-400'>

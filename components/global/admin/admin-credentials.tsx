@@ -5,6 +5,7 @@ import { Check, X, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getUserDocuments } from '@/app/actions';
+import AdminVerifyModal from './admin-verify-modal';
 
 interface Document {
   _id: string;
@@ -16,15 +17,18 @@ interface Document {
   category: string;
   documentType: string;
   reviewStatus?: 'pending' | 'approved' | 'rejected';
+  credentialIdNumber?: string;
+  credentialIssueDate?: string;
+  credentialExpirationDate?: string;
+  issuingOrganization?: string;
 }
 
 const CREDENTIAL_SLOTS = [
-  { key: 'resume', label: 'Resume', category: 'non_medical' },
-  { key: 'driver_license', label: 'Driving License', category: 'non_medical' },
-  { key: 'certifications', label: 'CNA certificate', category: 'non_medical' },
+  { key: 'certifications', label: 'CNA Certificate', category: 'non_medical' },
+  { key: 'driver_license', label: "Driver's License", category: 'non_medical' },
+  { key: 'auto_insurance', label: 'Auto Insurance', category: 'non_medical' },
+  { key: 'cpr_test', label: 'CPR Test', category: 'medical' },
   { key: 'tb_tests', label: 'TB Test', category: 'medical' },
-  { key: 'vaccination', label: 'Vaccination', category: 'medical' },
-  { key: 'physical_results', label: 'Physical Results', category: 'medical' },
 ];
 
 function formatDate(dateStr?: string) {
@@ -53,10 +57,11 @@ interface CredentialRowProps {
   label: string;
   doc: Document | undefined;
   onReview: (id: string, status: 'approved' | 'rejected') => void;
+  onApproveClick: (id: string, label: string, doc: Document) => void;
   loading: string | null;
 }
 
-function CredentialRow({ label, doc, onReview, loading }: CredentialRowProps) {
+function CredentialRow({ label, doc, onReview, onApproveClick, loading }: CredentialRowProps) {
   const isApproved = doc?.reviewStatus === 'approved';
   const isRejected = doc?.reviewStatus === 'rejected';
   const isPending = doc && doc.reviewStatus === 'pending';
@@ -82,7 +87,7 @@ function CredentialRow({ label, doc, onReview, loading }: CredentialRowProps) {
             <>
               <button
                 disabled={isEmpty || loading === doc?._id}
-                onClick={() => doc && onReview(doc._id, 'approved')}
+                onClick={() => doc && onApproveClick(doc._id, label, doc)}
                 className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                   isEmpty
                     ? 'text-gray-200 cursor-not-allowed'
@@ -170,6 +175,17 @@ interface AdminCredentialsProps {
 const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
+  const [verifyModal, setVerifyModal] = useState<{
+    open: boolean;
+    docId: string;
+    label: string;
+    existingData?: {
+      credentialIdNumber?: string;
+      credentialIssueDate?: string;
+      credentialExpirationDate?: string;
+      issuingOrganization?: string;
+    };
+  }>({ open: false, docId: '', label: '' });
 
   useEffect(() => {
     if (!userId) return;
@@ -187,13 +203,46 @@ const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId }) => {
   const slotsToShow = CREDENTIAL_SLOTS.filter(
     (slot) =>
       !!docsByType[slot.key] ||
-      ['driver_license', 'tb_tests'].includes(slot.key)
+      ['driver_license', 'tb_tests', 'certifications'].includes(slot.key)
   );
 
   // Also include any uploaded docs not in the fixed slot list
   const extraDocs = documents.filter(
     (doc) => !CREDENTIAL_SLOTS.find((s) => s.key === doc.documentType)
   );
+
+  const handleApproveClick = (docId: string, label: string, doc: Document) => {
+    setVerifyModal({
+      open: true,
+      docId,
+      label,
+      existingData: {
+        credentialIdNumber: doc.credentialIdNumber,
+        credentialIssueDate: doc.credentialIssueDate,
+        credentialExpirationDate: doc.credentialExpirationDate,
+        issuingOrganization: doc.issuingOrganization,
+      },
+    });
+  };
+
+  const handleVerifySuccess = (data: any) => {
+    // Update the local documents state with the verified document
+    setDocuments((prev) =>
+      prev.map((d) =>
+        d._id === verifyModal.docId
+          ? {
+              ...d,
+              reviewStatus: 'approved' as const,
+              reviewedAt: new Date().toISOString(),
+              credentialIdNumber: data?.credentialIdNumber || d.credentialIdNumber,
+              credentialIssueDate: data?.credentialIssueDate || d.credentialIssueDate,
+              credentialExpirationDate: data?.credentialExpirationDate || d.credentialExpirationDate,
+              issuingOrganization: data?.issuingOrganization || d.issuingOrganization,
+            }
+          : d
+      )
+    );
+  };
 
   const handleReview = async (
     docId: string,
@@ -243,6 +292,7 @@ const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId }) => {
             label={slot.label}
             doc={docsByType[slot.key]}
             onReview={handleReview}
+            onApproveClick={handleApproveClick}
             loading={loading}
           />
         ))}
@@ -252,6 +302,7 @@ const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId }) => {
             label={doc.title}
             doc={doc}
             onReview={handleReview}
+            onApproveClick={handleApproveClick}
             loading={loading}
           />
         ))}
@@ -261,6 +312,16 @@ const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId }) => {
           </p>
         )}
       </div>
+
+      {/* Admin Verify Modal */}
+      <AdminVerifyModal
+        open={verifyModal.open}
+        onOpenChange={(open) => setVerifyModal((prev) => ({ ...prev, open }))}
+        documentId={verifyModal.docId}
+        credentialLabel={verifyModal.label}
+        existingData={verifyModal.existingData}
+        onSuccess={handleVerifySuccess}
+      />
     </div>
   );
 };

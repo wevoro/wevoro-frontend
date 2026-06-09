@@ -576,17 +576,6 @@ export default function FloatingFeedback() {
                 <div className='max-h-[434px] overflow-y-auto'>
                   {messages.length > 0 && (
                     <div className='flex flex-col items-center text-center pt-10 gap-4'>
-                      <Avatar className='size-20 inline-flex items-center justify-center bg-white'>
-                        <AvatarImage
-                          src='/wevoro.png'
-                          alt='wevoro'
-                          className='size-full object-contain'
-                        />
-                        <AvatarFallback className='text-white text-sm font-bold'>
-                          wevoro
-                        </AvatarFallback>
-                      </Avatar>
-
                       <span className='text-xs text-muted-foreground'>
                         Today
                       </span>
@@ -605,28 +594,9 @@ export default function FloatingFeedback() {
                           className={`flex ${
                             msg.type === 'user'
                               ? 'justify-end'
-                              : 'items-end gap-2.5'
+                              : 'items-end'
                           }`}
                         >
-                          {msg.type === 'bot' && (
-                            <Avatar
-                              className={cn(
-                                'size-10 inline-flex items-center justify-center bg-white ',
-                                idx !== messages.length - 1 &&
-                                  !isLastBotInGroup &&
-                                  'invisible'
-                              )}
-                            >
-                              <AvatarImage
-                                src='/wevoro.png'
-                                alt='wevoro'
-                                className='size-full object-contain'
-                              />
-                              <AvatarFallback className='text-white text-sm font-bold'>
-                                wevoro
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
 
                           <div
                             className={`max-w-[90%]  ${

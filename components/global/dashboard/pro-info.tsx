@@ -1,12 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 import ProfileName from './profile-name';
-import { proLinkGenerator } from '@/utils/proLinkGenerator';
+import ShareProfileModal from './share-profile-modal';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
-  // console.log('🚀 ~ ProInfo ~ user:', user);
   const personalInfo = user?.personalInfo;
   const status = user?.status;
   const role = user?.role;
@@ -14,6 +12,11 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
     personalInfo?.firstName && personalInfo?.lastName
       ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
       : 'N/A';
+
+  const shareLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/p/${user?.shareId || user?._id}`
+    : `/p/${user?.shareId || user?._id}`;
+
   return (
     <div className='flex flex-col gap-1 sm:gap-3 w-full'>
       <ProfileName
@@ -26,7 +29,6 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
       <div className='flex justify-between lg:flex-row flex-col sm:gap-6 gap-3'>
         <div className='flex-1 flex flex-col sm:gap-3 gap-1'>
           <p className='text-base sm:text-xl text-[#3A4742] font-medium'>
-            {/* {name} */}
           </p>
 
           {!isProProfileFromPartner && !isPublicProPage && (
@@ -55,27 +57,17 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
         {!isProProfileFromPartner && !isPublicProPage && (
           <div className='flex flex-col gap-3 flex-1 xl:-mt-10'>
             <p className='text-sm sm:text-base font-semibold text-tertiary'>
-              Share Link with Employers
+              Share Profile with Agencies
             </p>
-            <div className='flex items-center justify-between bg-[#FAFAFA] pl-4 pr-2 sm:h-[52px] h-10 rounded-lg max-w-[480px] relative'>
-              <span className='text-sm sm:text-lg text-tertiary mr-4 truncate max-w-[250px] sm:max-w-[300px]'>
-                {proLinkGenerator(user?.personalInfo?.firstName, user?._id)}
-              </span>
+            <ShareProfileModal shareLink={shareLink}>
               <Button
-                className='absolute right-2 bg-primary h-9 text-white sm:px-4 px-2 rounded-[7px] flex items-center text-sm font-medium'
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    proLinkGenerator(user?.personalInfo?.firstName, user?._id),
-                  );
-                  toast.success('Link copied to clipboard!', {
-                    position: 'top-center',
-                  });
-                }}
+                className='w-fit gap-2 rounded-xl h-11 px-6'
+                variant='default'
               >
-                <Copy className='h-4 w-4 sm:mr-3' />
-                <span className='sm:block hidden'>Copy</span>
+                <Share2 className='w-4 h-4' />
+                Share Profile
               </Button>
-            </div>
+            </ShareProfileModal>
           </div>
         )}
       </div>
@@ -84,3 +76,4 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
 };
 
 export default ProInfo;
+

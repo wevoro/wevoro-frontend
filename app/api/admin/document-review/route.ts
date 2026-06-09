@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 
 export async function PATCH(req: Request) {
   try {
-    const { documentId, reviewStatus } = await req.json();
+    const body = await req.json();
+    const { documentId, reviewStatus, credentialIdNumber, credentialIssueDate, credentialExpirationDate, issuingOrganization, rejectionReason } = body;
 
     if (!documentId || !reviewStatus) {
       return NextResponse.json(
@@ -14,6 +15,11 @@ export async function PATCH(req: Request) {
 
     const response = await api.patch(`/document/${documentId}/review`, {
       reviewStatus,
+      credentialIdNumber,
+      credentialIssueDate,
+      credentialExpirationDate,
+      issuingOrganization,
+      rejectionReason,
     });
 
     if (response.status === 200) {

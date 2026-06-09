@@ -264,3 +264,133 @@ export async function getShiftById(id: string) {
     return null;
   }
 }
+
+export async function getCredentialStatus(userId: string) {
+  try {
+    const { REQUIRED_CREDENTIALS } = await import('@/lib/credential-config');
+    const response = await api.get(`/document`, {
+      params: { userId },
+    });
+    const documents = response.data.data || [];
+
+    const docByType: Record<string, any> = {};
+    documents.forEach((doc: any) => {
+      docByType[doc.documentType] = doc;
+    });
+
+    return REQUIRED_CREDENTIALS.map((cred) => {
+      const doc = docByType[cred.key] || null;
+      let state: 'not_uploaded' | 'pending' | 'verified' | 'rejected' = 'not_uploaded';
+      if (doc) {
+        if (doc.reviewStatus === 'approved') state = 'verified';
+        else if (doc.reviewStatus === 'rejected') state = 'rejected';
+        else state = 'pending';
+      }
+      return {
+        key: cred.key,
+        label: cred.label,
+        category: cred.category,
+        state,
+        document: doc,
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching credential status:', error);
+    return null;
+  }
+}
+
+export async function getUserByShareId(shareId: string) {
+  try {
+    const response = await api.get(`/user/share/${shareId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching user by share ID:', error);
+    return null;
+  }
+}
+
+// SCRUM-66: Update GCHEXS status
+export async function updateGchexsStatus(
+  gchexsStatus: 'yes' | 'no',
+  gchexsDocumentUrl?: string,
+  gchexsDocumentFileId?: string,
+) {
+  try {
+    const response = await api.patch('/user/gchexs', {
+      gchexsStatus,
+      gchexsDocumentUrl,
+      gchexsDocumentFileId,
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error updating GCHEXS status:', error);
+    return null;
+  }
+}
+
+// SCRUM-67: Get download package for a caregiver
+export async function getDownloadPackage(caregiverId: string) {
+  try {
+    const response = await api.get(`/document/download-package/${caregiverId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error getting download package:', error);
+    return null;
+  }
+}
+
+// SCRUM-67: Download individual document
+export async function downloadDocument(documentId: string) {
+  try {
+    const response = await api.get(`/document/download/${documentId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error downloading document:', error);
+    return null;
+  }
+}
+
+// SCRUM-67: Request private access
+export async function requestPrivateAccess(caregiverId: string) {
+  try {
+    const response = await api.post(`/document/request-private-access/${caregiverId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error requesting private access:', error);
+    return null;
+  }
+}
+
+// SCRUM-67: Update private access (grant/revoke)
+export async function updatePrivateAccess(accessId: string, action: 'grant' | 'revoke') {
+  try {
+    const response = await api.patch(`/document/private-access/${accessId}`, { action });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error updating private access:', error);
+    return null;
+  }
+}
+
+// SCRUM-67: Get access requests for caregiver
+export async function getAccessRequests() {
+  try {
+    const response = await api.get('/document/access-requests');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error getting access requests:', error);
+    return null;
+  }
+}
+
+// SCRUM-67: Get download audit log (admin)
+export async function getDownloadAuditLog(caregiverId: string) {
+  try {
+    const response = await api.get(`/document/download-audit/${caregiverId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error getting download audit:', error);
+    return null;
+  }
+}

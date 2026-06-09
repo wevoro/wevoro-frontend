@@ -51,7 +51,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         ? user?.professionalInfo
         : {};
 
-  const { education, experience, certifications, skills } = userData;
+  const { education, experience, certifications, skills, role } = userData;
 
   useEffect(() => {
     if (
@@ -123,6 +123,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         },
       ],
       skills: skills || [],
+      role: role || '',
     },
   });
 
@@ -300,6 +301,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   experience: [{ jobTitle: '', companyName: '', duration: '', responsibilities: '' }],
                   certifications: [{ title: '', institution: '', issueDate: '', expireDate: '', credentialId: '', credentialUrl: '', certificateFile: null }],
                   skills: [],
+                  role: '',
                 });
               }}
             >
@@ -313,6 +315,51 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
 
       <div className='flex flex-col gap-10'>
+        {/* SCRUM-60: Role (CNA / PCA) — required; drives [Role] Certificate label */}
+        <div className='flex flex-col gap-3'>
+          <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
+            Role <span className='text-red-500'>*</span>
+          </h2>
+          <p className='text-sm text-muted-foreground -mt-1'>
+            This determines which certificate is required on your profile.
+          </p>
+          <Controller
+            control={control}
+            name='role'
+            rules={{ required: 'Please select your role' }}
+            render={({ field }) => (
+              <div className='flex flex-col sm:flex-row gap-3'>
+                {[
+                  { value: 'CNA', title: 'CNA', sub: 'Certified Nursing Assistant' },
+                  { value: 'PCA', title: 'PCA', sub: 'Personal Care Assistant' },
+                ].map((opt) => {
+                  const selected = field.value === opt.value;
+                  return (
+                    <button
+                      type='button'
+                      key={opt.value}
+                      onClick={() => field.onChange(opt.value)}
+                      className={`flex-1 text-left rounded-2xl border-2 p-4 transition-colors ${
+                        selected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <p className='font-semibold text-gray-900 text-lg'>
+                        {opt.title}
+                      </p>
+                      <p className='text-sm text-muted-foreground'>{opt.sub}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+          {errors?.role && (
+            <p className='text-sm text-red-500'>{(errors.role as any).message}</p>
+          )}
+        </div>
+
         {/* Education Section */}
         <div className='flex flex-col gap-5'>
           <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>

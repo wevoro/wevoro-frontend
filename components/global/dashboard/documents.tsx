@@ -38,6 +38,11 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getUserDocuments } from '@/app/actions';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
+import { REQUIRED_CREDENTIALS } from '@/lib/credential-config';
+
+// SCRUM-61: documents that belong to the locked credential list never appear in
+// the supporting-Documents section. The Credentials Status section owns those.
+const CREDENTIAL_DOCUMENT_TYPES = REQUIRED_CREDENTIALS.map((c) => c.documentType);
 
 interface Document {
   _id: string;
@@ -57,81 +62,44 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
 }) => {
   const { data: documents, refetch: refetchDocuments } = useDocuments();
 
-  const medicalDocuments = documents?.filter(
-    (document: Document) => document.category === 'medical',
-  );
-  const nonMedicalDocuments = documents?.filter(
-    (document: Document) => document.category === 'non_medical',
+  // SCRUM-61: single combined Documents section — supporting docs only.
+  // Credential rows (CNA Certificate, Driver's License, Auto Insurance, CPR Test,
+  // TB Test) are excluded; they're owned by the Credentials Status section.
+  const supportingDocuments = (documents ?? []).filter(
+    (d: Document) => !CREDENTIAL_DOCUMENT_TYPES.includes(d.documentType),
   );
 
   return (
-    <>
-      <div
+    <div
+      className={cn(
+        'bg-white md:rounded-2xl',
+        from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
+      )}
+    >
+      <Title
+        text='Documents'
         className={cn(
-          'bg-white md:rounded-2xl',
-          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
+          'border-b pb-4',
+          from === 'onboard' ? '!text-lg md:!text-xl' : '!text-lg md:!text-2xl',
         )}
-      >
-        <Title
-          text='Non Medical Document'
-          className={cn(
-            'border-b pb-4',
-            from === 'onboard'
-              ? '!text-lg md:!text-xl'
-              : '!text-lg md:!text-2xl',
-          )}
-        />
+      />
 
-        <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
-          {nonMedicalDocuments?.map((document: any, index: number) => (
-            <EachDocument
-              document={document}
-              key={index}
-              refetchDocuments={refetchDocuments}
-            />
-          ))}
-          {from !== 'onboard' && (
-            <UploadDocumentButton
-              category='non_medical'
-              hasDocumets={nonMedicalDocuments?.length! > 0}
-            />
-          )}
-        </div>
-      </div>
-      <div
-        className={cn(
-          'bg-white md:rounded-2xl',
-          from === 'admin' ? 'p-0' : 'px-4 p-6 md:p-8 ',
+      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
+        {supportingDocuments.map((document: any, index: number) => (
+          <EachDocument
+            document={document}
+            key={index}
+            refetchDocuments={refetchDocuments}
+          />
+        ))}
+        {from !== 'onboard' && (
+          <UploadDocumentButton
+            category='non_medical'
+            hasDocumets={supportingDocuments.length > 0}
+          />
         )}
-      >
-        <Title
-          text='Medical Document'
-          className={cn(
-            'border-b pb-4',
-            from === 'onboard'
-              ? '!text-lg md:!text-xl'
-              : '!text-lg md:!text-2xl',
-          )}
-        />
-
-        <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
-          {medicalDocuments?.map((document: any, index: number) => (
-            <div key={index}>
-              <EachDocument
-                document={document}
-                refetchDocuments={refetchDocuments}
-              />
-            </div>
-          ))}
-          {from !== 'onboard' && (
-            <UploadDocumentButton
-              category='medical'
-              hasDocumets={medicalDocuments?.length! > 0}
-            />
-          )}
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -180,8 +148,8 @@ const EachDocument = ({
           <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
             {document.title}
           </p>
-          <p className='text-xs sm:text-sm md:text-base font-medium text-muted-foreground uppercase'>
-            {document.documentType}
+          <p className='text-xs sm:text-sm font-medium text-muted-foreground'>
+            {document.category === 'medical' ? 'Medical' : 'Non-Medical'}
           </p>
         </div>
       </div>
@@ -196,9 +164,10 @@ const UploadDocumentButton = ({
   category: string;
   hasDocumets: boolean;
 }) => {
-  // console.log('🚀 ~ UploadDocumentButton ~ hasDocumets:', hasDocumets);
+  // SCRUM-61: Documents section's "+" button is Add More — supporting doc list,
+  // Category defaults to Non-Medical, both fields editable.
   return (
-    <UploadDocumentModal category={category}>
+    <UploadDocumentModal addMore>
       <Button
         variant='special'
         className={cn(

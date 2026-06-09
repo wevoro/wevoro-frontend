@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getUserDocuments } from '@/app/actions';
 import AdminVerifyModal from './admin-verify-modal';
+import {
+  REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
+  getCredentialLabel,
+} from '@/lib/credential-config';
 
 interface Document {
   _id: string;
@@ -23,13 +27,14 @@ interface Document {
   issuingOrganization?: string;
 }
 
-const CREDENTIAL_SLOTS = [
-  { key: 'certifications', label: 'CNA Certificate', category: 'non_medical' },
-  { key: 'driver_license', label: "Driver's License", category: 'non_medical' },
-  { key: 'auto_insurance', label: 'Auto Insurance', category: 'non_medical' },
-  { key: 'cpr_test', label: 'CPR Test', category: 'medical' },
-  { key: 'tb_tests', label: 'TB Test', category: 'medical' },
-];
+// SCRUM-60: slots are built per caregiver, with role-driven certificate label.
+function buildCredentialSlots(role?: string | null) {
+  return REQUIRED_CREDENTIALS_BASE.map((c) => ({
+    key: c.key,
+    label: getCredentialLabel(c, role),
+    category: c.category,
+  }));
+}
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return '';
@@ -170,9 +175,12 @@ function CredentialRow({ label, doc, onReview, onApproveClick, loading }: Creden
 
 interface AdminCredentialsProps {
   userId: string;
+  /** SCRUM-60: caregiver role for [Role] Certificate label. */
+  role?: string | null;
 }
 
-const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId }) => {
+const AdminCredentials: React.FC<AdminCredentialsProps> = ({ userId, role }) => {
+  const CREDENTIAL_SLOTS = buildCredentialSlots(role);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [verifyModal, setVerifyModal] = useState<{

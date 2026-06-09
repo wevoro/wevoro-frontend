@@ -304,7 +304,10 @@ export function ReviewApplicationModal({
                       }))
                     }
                   />
-                  <AdminCredentials userId={localData?._id} />
+                  <AdminCredentials
+                    userId={localData?._id}
+                    role={localData?.professionalInfo?.role}
+                  />
                 </>
               )}
 

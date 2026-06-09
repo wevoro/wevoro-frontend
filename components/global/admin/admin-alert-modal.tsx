@@ -18,19 +18,30 @@ import { Loader2, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { adminStatusMap } from '@/utils/status';
 import { useAdminContext } from '@/lib/contexts';
 import { getUserDocuments } from '@/app/actions';
+import {
+  REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
+  getCredentialLabel,
+} from '@/lib/credential-config';
 
-const REQUIRED_CREDENTIALS = [
-  { key: 'driver_license', label: "Driver's License" },
-  { key: 'tb_tests', label: 'TB Test' },
-];
+// SCRUM-60: admin Approve is gated on all 5 required credentials being Verified.
+// Role-driven label is resolved from the caregiver's professionalInfo.role.
+function buildRequiredCredentials(role?: string | null) {
+  return REQUIRED_CREDENTIALS_BASE.map((c) => ({
+    key: c.key,
+    label: getCredentialLabel(c, role),
+  }));
+}
 
 function CredentialGateDialog({
   missingReviews,
   onClose,
+  role,
 }: {
   missingReviews: string[];
   onClose: () => void;
+  role?: string | null;
 }) {
+  const required = buildRequiredCredentials(role);
   return (
     <div className='flex flex-col gap-4'>
       <div className='flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl'>
@@ -47,7 +58,7 @@ function CredentialGateDialog({
       </div>
 
       <div className='flex flex-col gap-2'>
-        {REQUIRED_CREDENTIALS.map((cred) => {
+        {required.map((cred) => {
           const missing = missingReviews.includes(cred.key);
           return (
             <div
@@ -109,7 +120,8 @@ export default function AdminAlertModal({
       setIsOpen(true);
       try {
         const docs = await getUserDocuments(data._id);
-        const missing = REQUIRED_CREDENTIALS.filter((cred) => {
+        const required = buildRequiredCredentials(data?.professionalInfo?.role);
+        const missing = required.filter((cred) => {
           const doc = (docs ?? []).find(
             (d: any) => d.documentType === cred.key
           );
@@ -237,6 +249,7 @@ export default function AdminAlertModal({
             </DialogHeader>
             <CredentialGateDialog
               missingReviews={missingReviews!}
+              role={data?.professionalInfo?.role}
               onClose={() => {
                 setIsOpen(false);
                 setOpen && setOpen(false);

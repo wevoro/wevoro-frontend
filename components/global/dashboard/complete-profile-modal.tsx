@@ -6,6 +6,11 @@ import { AlertTriangle, CheckCircle2, Clock, Upload } from 'lucide-react';
 import UploadDocumentModal from './upload-document-modal';
 import { Button } from '@/components/ui/button';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
+import { useUserContext } from '@/lib/contexts';
+import {
+  REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
+  getCredentialLabel,
+} from '@/lib/credential-config';
 
 interface CompleteProfileModalProps {
   open: boolean;
@@ -104,6 +109,35 @@ function CredentialRow({
   );
 }
 
+/**
+ * SCRUM-60: Renders all 5 required credential rows with role-driven labels.
+ */
+function RequiredCredentialRows() {
+  const { user } = useUserContext();
+  const role = user?.professionalInfo?.role;
+  return (
+    <>
+      {REQUIRED_CREDENTIALS_BASE.map((c) => {
+        const label = getCredentialLabel(c, role);
+        const hint =
+          c.category === 'medical'
+            ? 'doc or pdf formats, up to 5MB.'
+            : 'jpeg, png, pdf formats, up to 2MB.';
+        return (
+          <CredentialRow
+            key={c.key}
+            label={label}
+            hint={hint}
+            category={c.category}
+            documentType={c.documentType}
+            defaultTitle={label}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({
   open,
   onClose,
@@ -137,29 +171,9 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({
             </span>
           </div>
 
-          <CredentialRow
-            label='CNA certificate'
-            hint='doc or pdf formats, up to 5mb.'
-            category='non_medical'
-            documentType='certifications'
-            defaultTitle='CNA Certificate'
-          />
+          <RequiredCredentialRows />
 
-          <CredentialRow
-            label="Driver's license"
-            hint='jpeg, png, pdf formats, up to 2MB.'
-            category='non_medical'
-            documentType='driver_license'
-            defaultTitle="Driver's License"
-          />
-
-          <CredentialRow
-            label='TB test'
-            hint='doc or pdf formats, up to 5mb.'
-            category='medical'
-            documentType='tb_tests'
-            defaultTitle='TB Test'
-          />
+          {/* legacy direct rows removed — list is now driven by REQUIRED_CREDENTIALS_BASE */}
 
           <div className='w-full'>
             <Button

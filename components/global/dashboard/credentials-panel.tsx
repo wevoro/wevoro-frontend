@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { useUserContext } from '@/lib/contexts';
+import {
+  REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
+  getCredentialLabel,
+} from '@/lib/credential-config';
 
 interface Document {
   _id: string;
@@ -20,29 +24,11 @@ interface Document {
   reviewStatus?: string;
 }
 
-const REQUIRED_CREDENTIALS = [
-  {
-    key: 'driver_license',
-    category: 'non_medical',
-    label: "Driver's License",
-    defaultTitle: "Driver's License",
-    hint: 'jpeg, png, pdf formats, up to 2MB.',
-  },
-  {
-    key: 'certifications',
-    category: 'non_medical',
-    label: 'CNA certificate',
-    defaultTitle: 'CNA Certificate',
-    hint: 'doc or pdf formats, up to 5mb.',
-  },
-  {
-    key: 'tb_tests',
-    category: 'medical',
-    label: 'TB Test',
-    defaultTitle: 'TB Test',
-    hint: 'jpeg, png, pdf formats, up to 2MB.',
-  },
-];
+// SCRUM-60: 5-credential list with role-driven label resolved at view time.
+const HINT_BY_CATEGORY: Record<string, string> = {
+  non_medical: 'jpeg, png, pdf formats, up to 2MB.',
+  medical: 'doc or pdf formats, up to 5MB.',
+};
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return '';
@@ -59,13 +45,24 @@ const CredentialsPanel: React.FC = () => {
   const { data: documents } = useDocuments();
 
   const completion = user?.completionPercentage ?? 0;
+  // SCRUM-60: role drives the certificate row label.
+  const role = user?.professionalInfo?.role;
+
+  // Resolve the 5 required credentials with role-driven label + per-category hint.
+  const requiredCredentials = REQUIRED_CREDENTIALS_BASE.map((c) => ({
+    key: c.key,
+    category: c.category,
+    label: getCredentialLabel(c, role),
+    defaultTitle: getCredentialLabel(c, role),
+    hint: HINT_BY_CATEGORY[c.category] ?? 'doc or pdf formats, up to 5MB.',
+  }));
 
   const uploadedByType: Record<string, Document> = {};
   (documents ?? []).forEach((doc: Document) => {
     uploadedByType[doc.documentType] = doc;
   });
 
-  const requiredKeys = REQUIRED_CREDENTIALS.map((c) => c.key);
+  const requiredKeys = requiredCredentials.map((c) => c.key);
   const extraDocs = (documents ?? []).filter(
     (doc: Document) => !requiredKeys.includes(doc.documentType),
   );
@@ -125,7 +122,7 @@ const CredentialsPanel: React.FC = () => {
             className='flex flex-col overflow-y-auto scrollbar-thin'
             style={{ gap: 12, maxHeight: 480, scrollbarWidth: 'thin', scrollbarColor: '#000 transparent', marginRight: -16, paddingRight: 16 }}
           >
-            {REQUIRED_CREDENTIALS.map((cred) => {
+            {requiredCredentials.map((cred) => {
               const doc = uploadedByType[cred.key];
               const isReviewed = doc?.reviewStatus === 'approved';
 

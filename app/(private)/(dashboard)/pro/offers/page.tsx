@@ -63,7 +63,7 @@ const OffersPage: React.FC = () => {
       const ui = getInitialStatus(offer);
       if (ui === 'received') {
         received.push(offer);
-      } else if (ui !== 'received') {
+      } else {
         submitted.push({ offer, status: ui });
       }
     });

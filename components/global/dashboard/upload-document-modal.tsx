@@ -22,9 +22,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CloudUpload, Lock, Loader2, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { SUPPORTING_DOCUMENT_TITLES } from '@/lib/credential-config';
 
+// SCRUM-61: credential rows use a different preset list (locked). Add More
+// uses the supporting-document preset list only — credential titles never appear
+// in the Add More dropdown.
 const MEDICAL_DOCUMENT_TYPES = [
   { value: 'tb_tests', label: 'TB Tests' },
+  { value: 'cpr_test', label: 'CPR Test' },
   { value: 'vaccination', label: 'Vaccination' },
   { value: 'physical_results', label: 'Physical Results' },
   { value: 'other', label: 'Other' },
@@ -32,8 +37,9 @@ const MEDICAL_DOCUMENT_TYPES = [
 
 const NON_MEDICAL_DOCUMENT_TYPES = [
   { value: 'resume', label: 'Resume' },
-  { value: 'driver_license', label: 'Driver License' },
-  { value: 'certifications', label: 'Certifications' },
+  { value: 'driver_license', label: "Driver's License" },
+  { value: 'auto_insurance', label: 'Auto Insurance' },
+  { value: 'certifications', label: 'Certificate' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -54,6 +60,8 @@ interface UploadDocumentModalProps {
   category?: string;
   documentType?: string;
   defaultTitle?: string;
+  /** SCRUM-61: when true, modal opens in Add More mode (default non_medical, supporting-doc list, unlocked). */
+  addMore?: boolean;
   document?: Document; // For edit mode
 }
 
@@ -62,18 +70,23 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   category,
   documentType: defaultDocumentType,
   defaultTitle,
+  addMore,
   document, // Existing document for editing
 }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<boolean>(false);
+  // SCRUM-61: Add More defaults Category to Non-Medical for the streamlined common case.
+  const initialCategory = category || (addMore ? 'non_medical' : '');
   const [formData, setFormData] = useState({
-    category: category || '',
+    category: initialCategory,
     documentType: defaultDocumentType || '',
     title: defaultTitle || '',
     isPublic: false,
     consent: false,
     file: null as File | null,
   });
+  // SCRUM-60/44: credential rows lock both Category and Document Type.
+  const isCredentialRow = !!defaultDocumentType && !addMore;
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -94,8 +107,12 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     }
   }, [document, open]);
 
-  const documentTypes =
-    formData.category === 'medical'
+  // SCRUM-61: Add More draws from the supporting-document preset list ONLY
+  // (no credential titles). Credential rows always use the full list because
+  // their Document Title is pre-filled and locked anyway.
+  const documentTypes = addMore
+    ? SUPPORTING_DOCUMENT_TITLES
+    : formData.category === 'medical'
       ? MEDICAL_DOCUMENT_TYPES
       : formData.category === 'non_medical'
         ? NON_MEDICAL_DOCUMENT_TYPES
@@ -270,6 +287,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
             <Select
               value={formData.category}
               onValueChange={handleCategoryChange}
+              disabled={isCredentialRow}
             >
               <SelectTrigger className='w-full h-14 rounded-lg border-gray-200'>
                 <SelectValue placeholder='Select category' />
@@ -293,7 +311,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, documentType: value }))
               }
-              disabled={!formData.category}
+              disabled={!formData.category || isCredentialRow}
             >
               <SelectTrigger className='w-full h-14 rounded-lg border-gray-200'>
                 <SelectValue placeholder='Select document type' />

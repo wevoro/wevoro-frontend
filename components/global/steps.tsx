@@ -54,7 +54,7 @@ const Steps = ({
     },
     {
       id: 3,
-      name: 'Document Upload',
+      name: 'Credentials',
       icon: <FileText className='h-[18px] w-[18px]' />,
       link: '/pro/onboard/document-upload',
       completed: isDocumentUploadCompleted,

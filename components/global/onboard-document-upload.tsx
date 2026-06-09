@@ -9,37 +9,33 @@ import UploadDocumentModal from './dashboard/upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { Button } from '../ui/button';
 import { CloudUpload } from 'lucide-react';
-
-const CREDENTIAL_SLOTS = [
-  {
-    key: 'certifications',
-    label: 'CNA certificate',
-    category: 'non_medical',
-    documentType: 'certifications',
-    defaultTitle: 'CNA Certificate',
-    hint: 'doc or pdf formats, up to 5mb.',
-  },
-  {
-    key: 'driver_license',
-    label: "Driver's license",
-    category: 'non_medical',
-    documentType: 'driver_license',
-    defaultTitle: "Driver's License",
-    hint: 'jpeg, png, pdf formats, up to 2MB.',
-  },
-  {
-    key: 'tb_tests',
-    label: 'TB test',
-    category: 'medical',
-    documentType: 'tb_tests',
-    defaultTitle: 'TB Test',
-    hint: 'doc or pdf formats, up to 5mb.',
-  },
-];
+import { useUserContext } from '@/lib/contexts';
+import {
+  REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
+  getCredentialLabel,
+} from '@/lib/credential-config';
 
 const OnboardDocumentUpload = forwardRef(() => {
   const router = useRouter();
   const { data: documents } = useDocuments();
+  const { user } = useUserContext();
+  const role = user?.professionalInfo?.role;
+
+  // SCRUM-60: 5 required credentials with role-driven label for the certificate row.
+  const credentialSlots = REQUIRED_CREDENTIALS_BASE.map((c) => {
+    const label = getCredentialLabel(c, role);
+    return {
+      key: c.key,
+      label,
+      category: c.category,
+      documentType: c.documentType,
+      defaultTitle: label,
+      hint:
+        c.category === 'medical'
+          ? 'doc or pdf formats, up to 5MB.'
+          : 'jpeg, png, pdf formats, up to 2MB.',
+    };
+  });
 
   const uploadedByType: Record<string, any> = {};
   (documents ?? []).forEach((doc: any) => {
@@ -49,7 +45,7 @@ const OnboardDocumentUpload = forwardRef(() => {
   return (
     <div>
       <div className='flex sm:flex-row flex-col gap-4 justify-between sm:items-center mb-8'>
-        <Title text='Documents upload' className='mb-0' />
+        <Title text='Credentials' className='mb-0' />
         <OnboardButton
           text='Skip for now'
           className='sm:w-max bg-transparent text-tertiary border border-gray-300 hover:text-white'
@@ -58,7 +54,7 @@ const OnboardDocumentUpload = forwardRef(() => {
       </div>
 
       <div className='flex flex-col gap-4'>
-        {CREDENTIAL_SLOTS.map((slot) => {
+        {credentialSlots.map((slot) => {
           const uploaded = uploadedByType[slot.documentType];
           const isUploaded = !!uploaded;
 

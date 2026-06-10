@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wevoro — Quick Feature Demo (SCRUM 60–67)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; padding: 30px 20px; }
+    .container { max-width: 1300px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+    .subtitle { color: #64748b; font-size: 0.78rem; margin-bottom: 24px; }
+
+    .cred-box {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .cred-box h3 { font-size: 0.85rem; font-weight: 700; color: #059669; margin-bottom: 10px; }
+    .cred-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .cred-table th { text-align: left; padding: 6px 10px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; font-weight: 700; color: #475569; }
+    .cred-table td { padding: 6px 10px; border-bottom: 1px solid #f1f5f9; }
+    .cred-table a { color: #2563eb; text-decoration: none; font-weight: 500; }
+    .cred-table a:hover { text-decoration: underline; }
+
+    .scrum-block {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .scrum-title {
+      padding: 12px 16px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .scrum-title .step-num {
+      background: rgba(255,255,255,0.3);
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800;
+    }
+
+    .feat-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .feat-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      font-weight: 700;
+      color: #475569;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .feat-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .feat-table tr:hover { background: #f8fafc; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .b-pro { background: #dcfce7; color: #166534; }
+    .b-partner { background: #dbeafe; color: #1e40af; }
+    .b-admin { background: #fce7f3; color: #9d174d; }
+    .b-public { background: #f3e8ff; color: #6b21a8; }
+
+    .url-cell a { color: #2563eb; text-decoration: none; word-break: break-all; font-size: 0.72rem; }
+    .url-cell a:hover { text-decoration: underline; }
+
+    .loc { color: #059669; font-weight: 600; font-size: 0.72rem; }
+
+    .covers { color: #64748b; font-size: 0.68rem; margin-top: 4px; }
+    .covers strong { color: #475569; }
+
+    .demo-note {
+      background: #f0fdf4;
+      border-left: 3px solid #22c55e;
+      padding: 8px 14px;
+      margin: 0 16px 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.78rem;
+      color: #166534;
+    }
+
+    footer { text-align: center; padding: 24px 0; color: #94a3b8; font-size: 0.7rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Wevoro — Quick Feature Demo</h1>
+  <p class="subtitle">SCRUM 60–67 | 10 Steps Only | Branch: qa-may | June 10, 2026</p>
+
+  <!-- ==================== LOGIN CREDENTIALS ==================== -->
+  <div class="cred-box">
+    <h3>🔑 Test Accounts (All passwords: Test1234!)</h3>
+    <table class="cred-table">
+      <tr><th>Account</th><th>Email</th><th>Password</th><th>Login URL</th></tr>
+      <tr>
+        <td><span class="badge b-pro">Pro</span></td>
+        <td>testpro@wevoro.com</td>
+        <td>Test1234!</td>
+        <td><a href="https://wevoro-frontend.vercel.app/pro/login" target="_blank">wevoro-frontend.vercel.app/pro/login</a></td>
+      </tr>
+      <tr>
+        <td><span class="badge b-partner">Partner</span></td>
+        <td>testpartner@wevoro.com</td>
+        <td>Test1234!</td>
+        <td><a href="https://wevoro-frontend.vercel.app/partner/login" target="_blank">wevoro-frontend.vercel.app/partner/login</a></td>
+      </tr>
+      <tr>
+        <td><span class="badge b-admin">Admin</span></td>
+        <td>testadmin@wevoro.com</td>
+        <td>Test1234!</td>
+        <td><a href="https://wevoro-frontend.vercel.app/admin/login" target="_blank">wevoro-frontend.vercel.app/admin/login</a></td>
+      </tr>
+      <tr>
+        <td><span class="badge b-public">Public</span></td>
+        <td>No login</td>
+        <td>—</td>
+        <td><a href="https://wevoro-frontend.vercel.app/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank">wevoro-frontend.vercel.app/p/8620b7e4-...</a></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ==================== STEP 1 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #059669, #10b981);">
+      <span class="step-num">1</span>
+      Pro Profile — Role, Credentials Status & GCHEXS
+    </div>
+    <div class="demo-note">Login as Pro → go to Profile → scroll down and show everything on this one page</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Role Picker (CNA/PCA)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Professional Information section → click Edit → "Role" field at the top</span></td>
+        <td>Here we added a Role picker. User picks CNA or PCA. If you don't pick one, it shows error.</td>
+      </tr>
+      <tr>
+        <td><strong>5 Credential Status Cards</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Scroll down to "Credentials Status" section → 5 cards stacked</span></td>
+        <td>Now we have 5 required credentials instead of 3. Each card shows its status.</td>
+      </tr>
+      <tr>
+        <td><strong>Color Bands (Green/Yellow/Red)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Same cards → top-right corner → colored countdown timer + border color</span></td>
+        <td>Green = lots of time, yellow = expiring soon, red = urgent. Counts down live.</td>
+      </tr>
+      <tr>
+        <td><strong>Credential Details</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Same cards → below name → grid: ID, Issue Date, Expiry Date, Issuing Org</span></td>
+        <td>Each verified card shows details — ID, dates, who issued it. Admin fills this.</td>
+      </tr>
+      <tr>
+        <td><strong>View / Update / Remove</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Verified cards → "View Credential". Pending cards → "Update" / "Remove"</span></td>
+        <td>View the document, upload a new file, or remove it.</td>
+      </tr>
+      <tr>
+        <td><strong>GCHEXS Background Check</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Above Credentials Status → "GCHEXS Background Check" → badge + Edit button</span></td>
+        <td>Click Edit, pick Yes or No, upload a file, save. Badge changes to Verified.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-60 (#1-5), SCRUM-62 (#12-16), SCRUM-66 (#26-27)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
+      <a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/profile</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 2 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
+      <span class="step-num">2</span>
+      Pro Profile — Documents Section & Add More
+    </div>
+    <div class="demo-note">Stay on same Pro Profile page → scroll down to Documents section</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Combined Documents</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Scroll to "Documents" section → all documents in one list with tags</span></td>
+        <td>Documents now in one section. Before split into two tabs — now all together.</td>
+      </tr>
+      <tr>
+        <td><strong>Add More Button (+)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Top-right of Documents section → click "+" → modal opens</span></td>
+        <td>Click plus to add extra documents like Resume or Offer Letter.</td>
+      </tr>
+      <tr>
+        <td><strong>Category Auto-Set</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Same modal → Category field pre-filled with "Non-Medical"</span></td>
+        <td>Category already set to Non-Medical. No need to pick it.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-61 (#7-11)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
+      <a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/profile</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 3 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6);">
+      <span class="step-num">3</span>
+      Pro Onboarding — Renamed Step & 5 Upload Slots
+    </div>
+    <div class="demo-note">Stay as Pro → go to onboarding credentials page</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Step Renamed + 5 Slots + Dynamic Label</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/onboard/document-upload" target="_blank">wevoro-frontend.vercel.app/pro/onboard/document-upload</a></td>
+        <td><span class="loc">Left sidebar → Step 3 says "Credentials" → 5 upload rows → first row name changes based on role</span></td>
+        <td>Step 3 renamed to Credentials. 5 upload slots. First one changes name — CNA or PCA.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-60 (#3-4), SCRUM-61 (#6)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
+      <a href="https://wevoro-frontend.vercel.app/pro/onboard/document-upload" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/onboard/document-upload</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 4 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #db2777, #ec4899);">
+      <span class="step-num">4</span>
+      Pro — Share Profile & Notifications
+    </div>
+    <div class="demo-note">Stay as Pro → go back to Profile → show Share and Notifications</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Share Profile</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><span class="loc">Profile top area → click "Share Profile" button → modal with link</span></td>
+        <td>Click it, get a link. Copy it or send by SMS or email.</td>
+      </tr>
+      <tr>
+        <td><strong>Expiration Notifications</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/notifications" target="_blank">wevoro-frontend.vercel.app/pro/notifications</a></td>
+        <td><span class="loc">Top nav → click 🔔 bell icon → warning notifications</span></td>
+        <td>System sends warning when credential expires. Yellow = 60 days, red = 30 days.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-64 (#21), SCRUM-65 (#23-25)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
+      <a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/profile</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 5 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #6b21a8, #a855f7);">
+      <span class="step-num">5</span>
+      Public Profile (No Login)
+    </div>
+    <div class="demo-note">Open the shared link in a new tab or incognito — no login needed</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Public Profile Page</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank">wevoro-frontend.vercel.app/p/8620b7e4-...</a></td>
+        <td><span class="loc">Name (last name hidden), city, role, verified count</span></td>
+        <td>Public profile. No login. Shows name, city, role, verified credentials. Last name hidden.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-64 (#22)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-public" style="font-size:0.6rem">No Login</span>
+      <a href="https://wevoro-frontend.vercel.app/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/p/8620b7e4-...</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 6 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #ea580c, #f97316);">
+      <span class="step-num">6</span>
+      Partner — Caregiver List & Credential View
+    </div>
+    <div class="demo-note">Login as Partner → go to Pros tab → click View Profile on a caregiver</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Caregiver List</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros" target="_blank">wevoro-frontend.vercel.app/partner/pros</a></td>
+        <td><span class="loc">"Pros" tab in sidebar → list of caregivers with View Profile</span></td>
+        <td>Partner sees all caregivers. Click View Profile to check credentials.</td>
+      </tr>
+      <tr>
+        <td><strong>Credential Cards (Read-Only)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
+        <td><span class="loc">Caregiver detail → "Credentials Status" → same 5 cards, no edit buttons</span></td>
+        <td>Same credential cards — but read-only. Can't change anything.</td>
+      </tr>
+      <tr>
+        <td><strong>GCHEXS (Read-Only)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
+        <td><span class="loc">Same page → "GCHEXS Background Check" → badge, no Edit</span></td>
+        <td>Partner can view background check status — but can't change it.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-63 (#17-18), SCRUM-66 (#28)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-partner" style="font-size:0.6rem">Partner Account</span>
+      <a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 7 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #be123c, #f43f5e);">
+      <span class="step-num">7</span>
+      Partner — Download & Private Access
+    </div>
+    <div class="demo-note">Stay on same caregiver detail page as Partner</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>View Credential (Single Download)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
+        <td><span class="loc">Credentials Status → any verified card → "View Credential" button</span></td>
+        <td>Click View Credential to download one document.</td>
+      </tr>
+      <tr>
+        <td><strong>Download All (Bulk)</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
+        <td><span class="loc">Below Credentials Status → purple "Download Credential Package" button</span></td>
+        <td>This purple button downloads all documents at once — one click.</td>
+      </tr>
+      <tr>
+        <td><strong>Request Private Access</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
+        <td><span class="loc">Documents section → private docs have lock → "Request Access" button</span></td>
+        <td>Private docs locked. Click Request Access, caregiver gets notification.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-67 (#29-32)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-partner" style="font-size:0.6rem">Partner Account</span>
+      <a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 8 ==================== -->
+  <div class="scrum-block">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #4338ca, #6366f1);">
+      <span class="step-num">8</span>
+      Admin — Approve & Reject Credentials
+    </div>
+    <div class="demo-note">Login as Admin → click on a pro application → find pending credentials</div>
+    <table class="feat-table">
+      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr>
+        <td><strong>Approve with Details</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/admin" target="_blank">wevoro-frontend.vercel.app/admin</a></td>
+        <td><span class="loc">Click a pro → pending credential → "Approve" → fill ID, dates, org → Confirm</span></td>
+        <td>Admin clicks Approve, fills in ID, dates, who issued it. Shows on caregiver profile.</td>
+      </tr>
+      <tr>
+        <td><strong>Reject with Reason</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/admin" target="_blank">wevoro-frontend.vercel.app/admin</a></td>
+        <td><span class="loc">Same panel → another pending → "Reject" → type reason → Confirm</span></td>
+        <td>Admin rejects and types a reason. Caregiver sees it and can re-upload.</td>
+      </tr>
+      <tr>
+        <td><strong>Download Audit Trail</strong></td>
+        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/admin" target="_blank">wevoro-frontend.vercel.app/admin</a></td>
+        <td><span class="loc">Caregiver detail → scroll to bottom → "Download Audit Trail" table</span></td>
+        <td>Admin sees who downloaded what and when. Everything tracked.</td>
+      </tr>
+    </table>
+    <div class="covers"><strong>Covers:</strong> SCRUM-63 (#19-20), SCRUM-67 (#33)</div>
+    <div style="padding: 4px 10px 10px;">
+      <span class="badge b-admin" style="font-size:0.6rem">Admin Account</span>
+      <a href="https://wevoro-frontend.vercel.app/admin" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/admin</a>
+    </div>
+  </div>
+
+
+
+  <footer>
+    Wevoro Platform — Quick Demo Guide | SCRUM 60–67 | Branch: qa-may | June 10, 2026
+  </footer>
+
+</div>
+</body>
+</html>

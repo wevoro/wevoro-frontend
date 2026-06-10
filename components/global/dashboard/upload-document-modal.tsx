@@ -246,11 +246,11 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         resetForm();
         setOpen(false);
       } else {
-        toast.error(result.message || 'Failed to process document');
+        toast.error(`${result.message || 'Failed'} (status: ${result.status})`);
       }
     } catch (error: any) {
       console.error('Document operation error:', error);
-      toast.error('Failed to process document. Please try again.');
+      toast.error(`Upload error: ${error.message || 'Unknown'}`);
     } finally {
       setIsLoading(false);
     }

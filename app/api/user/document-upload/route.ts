@@ -46,9 +46,15 @@ export async function POST(req: Request) {
         ? `${process.env.NEXT_PUBLIC_QA_API_URL}/document/upload`
         : '/document/upload';
 
+    console.log('📤 [DocumentUpload] env:', env, '| apiUrl:', apiUrl);
+    console.log('📤 [DocumentUpload] baseURL:', api.defaults.baseURL);
+    console.log('📤 [DocumentUpload] file:', file instanceof File ? `${file.name} (${file.size} bytes)` : 'none');
+
     const response = await api.post(apiUrl, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+
+    console.log('📤 [DocumentUpload] Response status:', response.status);
 
     if (response.status === 200) {
       return NextResponse.json({
@@ -64,8 +70,15 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error(
-      'Document upload failed:',
-      error.response?.data || error.message,
+      '❌ [DocumentUpload] FAILED:',
+      JSON.stringify({
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+        code: error.code,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+      }),
     );
     return NextResponse.json(
       {
@@ -76,3 +89,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

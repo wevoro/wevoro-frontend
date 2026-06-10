@@ -3,11 +3,11 @@ import axios, { AxiosRequestConfig, AxiosError, AxiosInstance } from 'axios';
 const isServer = typeof window === 'undefined';
 
 const api: AxiosInstance = axios.create({
-  baseURL:
+  baseURL: (
     process.env.NODE_ENV === 'development'
       ? process.env.NEXT_PUBLIC_LOCAL_API_URL
-      : process.env.NEXT_PUBLIC_PROD_API_URL,
-  // withCredentials: true, // Ensure cookies are sent with requests
+      : process.env.NEXT_PUBLIC_PROD_API_URL
+  )?.trim(),
 });
 
 // Request interceptor: Attach the access token to headers

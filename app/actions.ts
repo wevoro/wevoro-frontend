@@ -245,26 +245,6 @@ export async function getCountry() {
   return data.country;
 }
 
-export async function getShifts() {
-  try {
-    const response = await api.get('/shift');
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching shifts:', error);
-    return [];
-  }
-}
-
-export async function getShiftById(id: string) {
-  try {
-    const response = await api.get(`/shift/${id}`);
-    return response.data.data;
-  } catch (error) {
-    console.error('Error fetching shift:', error);
-    return null;
-  }
-}
-
 export async function getCredentialStatus(userId: string) {
   try {
     const { REQUIRED_CREDENTIALS } = await import('@/lib/credential-config');

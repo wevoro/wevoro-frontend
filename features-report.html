@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wevoro Platform — Feature Completion Report (SCRUM 60–67)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a1a; background: #fff; padding: 40px 50px; font-size: 11px; line-height: 1.5; }
+  h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #666; margin-bottom: 24px; }
+  h2 { font-size: 14px; font-weight: 700; color: #fff; background: #1e293b; padding: 8px 14px; border-radius: 6px; margin: 20px 0 8px 0; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 10.5px; }
+  thead th { background: #f1f5f9; color: #334155; font-weight: 600; text-align: left; padding: 6px 8px; border: 1px solid #e2e8f0; }
+  tbody td { padding: 5px 8px; border: 1px solid #e2e8f0; vertical-align: top; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 600; }
+  .badge-pro { background: #dcfce7; color: #166534; }
+  .badge-partner { background: #dbeafe; color: #1e40af; }
+  .badge-admin { background: #fce7f3; color: #9d174d; }
+  .badge-public { background: #f3e8ff; color: #6b21a8; }
+  .badge-all { background: #fef3c7; color: #92400e; }
+  .section-divider { border: none; border-top: 2px solid #e2e8f0; margin: 24px 0; }
+  .login-table td { font-family: 'Courier New', monospace; }
+  .url { color: #2563eb; word-break: break-all; font-size: 9.5px; }
+  .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 10px; text-align: center; }
+  @media print {
+    body { padding: 20px 30px; }
+    h2 { break-after: avoid; }
+    table { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Wevoro Platform — Feature Completion Report</h1>
+<p class="subtitle">SCRUM 60–67 | Generated: June 9, 2026 | Branch: qa-may</p>
+
+<!-- ===== SCRUM 60 ===== -->
+<h2>SCRUM-60 — Role Selection (CNA/PCA) & 5 Required Credentials</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Role selector</td><td>Required CNA/PCA single-select cards on onboarding</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/onboard/professional-info</td><td>Top — "Role *" section</td></tr>
+<tr><td>2</td><td>Role validation</td><td>Blocks submission if no role selected</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Submit without selecting</td></tr>
+<tr><td>3</td><td>5 credential slots</td><td>Expanded from 3→5: [Role] Cert, Driver's License, Auto Insurance, CPR, TB</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/onboard/document-upload</td><td>All 5 rows listed</td></tr>
+<tr><td>4</td><td>Dynamic certificate label</td><td>Shows "CNA Certificate" or "PCA Certificate" based on role</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>First row label</td></tr>
+<tr><td>5</td><td>Role editable post-onboarding</td><td>Changing role updates label everywhere; uploaded file retained</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/edit/professional-information?edit=true</td><td>Top of form</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 61 ===== -->
+<h2>SCRUM-61 — Documents Restructure & Onboarding Rename</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>6</td><td>Step renamed to "Credentials"</td><td>Onboarding step 3 renamed from "Document Upload" to "Credentials"</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/onboard/document-upload</td><td>Left sidebar — Step 3</td></tr>
+<tr><td>7</td><td>Combined Documents section</td><td>Merged Medical/Non-Medical into single "Documents" section</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/profile</td><td>Scroll to "Documents"</td></tr>
+<tr><td>8</td><td>Add More dropdown</td><td>Supporting doc titles: Resume, Signed Job Description, Offer Letter, Previous Experience, Other</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/profile</td><td>Documents → "+" → modal dropdown</td></tr>
+<tr><td>9</td><td>Add More defaults Non-Medical</td><td>Category auto-set to Non-Medical when opening Add More</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Same modal — Category field</td></tr>
+<tr><td>10</td><td>Credential titles excluded</td><td>Add More dropdown does NOT show CNA Cert, Driver's License, etc.</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Same modal — dropdown list</td></tr>
+<tr><td>11</td><td>Document card with category</td><td>Each card shows title + "Medical" or "Non-Medical" as secondary text</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Documents section cards</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 62 ===== -->
+<h2>SCRUM-62 — Credentials Status + Expiration Bands</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>12</td><td>Credential status cards</td><td>5 slots showing Verified / Pending / Not Uploaded / Rejected</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/profile</td><td>Scroll to "Credentials Status"</td></tr>
+<tr><td>13</td><td>Expiration bands</td><td>Green (60+ days), Yellow (30-60), Red (&lt;30 days) color bar on each card</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Color bar on verified cards</td></tr>
+<tr><td>14</td><td>View credential</td><td>Opens uploaded document in new tab</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>"View Credential" link</td></tr>
+<tr><td>15</td><td>Re-upload credential</td><td>Replace existing credential with new file</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Three-dot → "Update"</td></tr>
+<tr><td>16</td><td>Remove credential</td><td>Delete credential with confirmation dialog</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Three-dot → "Remove"</td></tr>
+<tr><td>17</td><td>4-field approval modal</td><td>Admin fills Credential ID, Issue Date, Expiration Date, Issuing Org</td><td><span class="badge badge-admin">Admin</span></td><td class="url">localhost:3003/admin</td><td>Click caregiver → "Approve"</td></tr>
+<tr><td>18</td><td>Reject with reason</td><td>Admin enters rejection reason; caregiver sees it on card</td><td><span class="badge badge-admin">Admin</span></td><td class="url">Same page</td><td>Click caregiver → "Reject"</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 63 ===== -->
+<h2>SCRUM-63 — Agency Credential View</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>19</td><td>Credential badges</td><td>Agency sees Verified / Pending / Not Uploaded / Action Required badges</td><td><span class="badge badge-partner">Partner</span></td><td class="url">localhost:3003/partner/pros/68306854e3f96305071c5666</td><td>"Credential Status" section</td></tr>
+<tr><td>20</td><td>Metadata + countdown</td><td>Shows credential ID, dates, org, days until expiration</td><td><span class="badge badge-partner">Partner</span></td><td class="url">Same page</td><td>Inside each verified card</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 64 ===== -->
+<h2>SCRUM-64 — Profile Share Flow</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>21</td><td>Share Profile modal</td><td>Copy Link, SMS, Email sharing options</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/profile</td><td>"Share Profile" button at top</td></tr>
+<tr><td>22</td><td>Public preview page</td><td>Name, photo, city, "X of 5 Verified" credential summary</td><td><span class="badge badge-public">Public</span></td><td class="url">localhost:3003/p/55e37876-d677-417f-a192-f513ff8417e2</td><td>Full page</td></tr>
+<tr><td>23</td><td>Agency CTAs</td><td>Sign Up and Sign In buttons for agencies to onboard</td><td><span class="badge badge-public">Public</span></td><td class="url">Same page</td><td>Bottom of page</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 65 ===== -->
+<h2>SCRUM-65 — Credential Notifications</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>24</td><td>Expiration alerts</td><td>Daily cron sends notifications at 60d, 30d, 0d before expiry</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/notifications</td><td>Amber/Red color-coded cards</td></tr>
+<tr><td>25</td><td>Rejection notification</td><td>Instant notification with reason + link to re-upload</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Orange card — "Action Required"</td></tr>
+<tr><td>26</td><td>Agency alerts</td><td>Agencies notified when engaged caregiver hits Red or Expired</td><td><span class="badge badge-partner">Partner</span></td><td class="url">localhost:3003/partner/notifications</td><td>Red notification cards</td></tr>
+<tr><td>27</td><td>CTA deep-links</td><td>Each notification has "View →" linking to relevant profile section</td><td><span class="badge badge-all">All</span></td><td class="url">Notification pages</td><td>"View →" link on each card</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 66 ===== -->
+<h2>SCRUM-66 — GCHEXS Background Check Flag</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>28</td><td>GCHEXS self-report</td><td>Yes/No answer to "Have you completed GCHEXS fingerprinting?"</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/profile</td><td>Below Personal Information</td></tr>
+<tr><td>29</td><td>Optional doc upload</td><td>Upload GCHEXS confirmation (PDF/JPEG/PNG, max 5MB)</td><td><span class="badge badge-pro">Pro</span></td><td class="url">Same page</td><td>Click "Answer now" → modal</td></tr>
+<tr><td>30</td><td>Agency badge</td><td>Green "GCHEXS Completed" or grey "Not Completed" pill (read-only)</td><td><span class="badge badge-partner">Partner</span></td><td class="url">localhost:3003/partner/pros/68306854e3f96305071c5666</td><td>Below Personal Information</td></tr>
+<tr><td>31</td><td>Admin status</td><td>GCHEXS status visible on caregiver detail (read-only)</td><td><span class="badge badge-admin">Admin</span></td><td class="url">localhost:3003/admin</td><td>Caregiver detail view</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SCRUM 67 ===== -->
+<h2>SCRUM-67 — Document Download & Audit</h2>
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>What Was Done</th><th>Account</th><th>URL</th><th>Where on Page</th></tr></thead>
+<tbody>
+<tr><td>32</td><td>Individual download</td><td>Download any single verified credential document</td><td><span class="badge badge-partner">Partner</span></td><td class="url">localhost:3003/partner/pros/68306854e3f96305071c5666</td><td>"Download" on each card</td></tr>
+<tr><td>33</td><td>Bulk download</td><td>Download all credentials at once as a package</td><td><span class="badge badge-partner">Partner</span></td><td class="url">Same page</td><td>"Download Credential Package" button</td></tr>
+<tr><td>34</td><td>Request private access</td><td>Agency requests access to caregiver's private documents</td><td><span class="badge badge-partner">Partner</span></td><td class="url">Same page</td><td>Documents section</td></tr>
+<tr><td>35</td><td>Grant/revoke access</td><td>Caregiver approves or denies agency request</td><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/profile</td><td>Documents section</td></tr>
+<tr><td>36</td><td>Download audit trail</td><td>Every download logged with agency name, document, timestamp</td><td><span class="badge badge-admin">Admin</span></td><td class="url">localhost:3003/admin</td><td>Caregiver detail → audit</td></tr>
+</tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2 style="background:#059669;">Test Account Credentials</h2>
+<table>
+<thead><tr><th>Account Type</th><th>Login URL</th><th>Email</th><th>Password</th></tr></thead>
+<tbody>
+<tr><td><span class="badge badge-pro">Pro</span></td><td class="url">localhost:3003/pro/login</td><td class="login-table">testit@ok.com</td><td class="login-table">Test1234!</td></tr>
+<tr><td><span class="badge badge-partner">Partner</span></td><td class="url">localhost:3003/partner/login</td><td class="login-table">partner@test.com</td><td class="login-table">Test1234!</td></tr>
+<tr><td><span class="badge badge-admin">Admin</span></td><td class="url">localhost:3003/admin/login</td><td class="login-table">admin@gmail.com</td><td class="login-table">Test1234!</td></tr>
+<tr><td><span class="badge badge-public">Public</span></td><td class="url">localhost:3003/p/55e37876-d677-417f-a192-f513ff8417e2</td><td colspan="2">No login needed</td></tr>
+</tbody>
+</table>
+
+<div class="footer">
+  Wevoro Platform — Feature Completion Report | SCRUM 60–67 | Branch: qa-may | June 9, 2026
+</div>
+
+</body>
+</html>

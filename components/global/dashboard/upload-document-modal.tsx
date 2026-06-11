@@ -87,6 +87,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   });
   // SCRUM-60/44: credential rows lock both Category and Document Type.
   const isCredentialRow = !!defaultDocumentType && !addMore;
+  const isMedicalCategory = formData.category === 'medical';
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -265,7 +266,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     formData.category &&
     formData.documentType &&
     formData.title &&
-    formData.consent &&
+    (isMedicalCategory ? formData.consent : true) &&
     (isEditMode || formData.file); // File required only for create
 
   return (
@@ -441,7 +442,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
             </div>
           </div>
 
-          {/* Consent Checkbox */}
+          {/* Consent Checkbox — only for medical documents */}
+          {isMedicalCategory && (
           <div className='flex items-center gap-4 py-2'>
             <Checkbox
               id='consent'
@@ -463,6 +465,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
               </span>
             </label>
           </div>
+          )}
 
           {/* Action Buttons */}
           <div className='flex gap-3 pt-2'>

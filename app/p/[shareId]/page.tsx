@@ -50,7 +50,7 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
   const state = personalInfo?.address?.state;
   const location = city && state ? `${city}, ${state}` : city || state || '';
   const avatarUrl = personalInfo?.image;
-  const role = proUser.role === 'pro' ? 'CNA' : proUser.role;
+  const role = proUser.professionalInfo?.role || (proUser.role === 'pro' ? 'CNA' : proUser.role);
   const verifiedCount = proUser.credentialsSummary?.verified || 0;
   const totalCount = proUser.credentialsSummary?.total || 5;
 

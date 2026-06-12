@@ -1,11 +1,28 @@
 import { getAllAvailablePros } from '@/app/actions';
 import { Button } from '@/components/ui/button';
-import { FileText, Heart, MapPin, MoveUpRight, X } from 'lucide-react';
+import { FileText, Heart, MapPin, MoveUpRight, Users, X } from 'lucide-react';
 import React from 'react';
 
 const PartnerPros = async () => {
-  const pros = await getAllAvailablePros();
-  console.log('🚀 ~ PartnerPros ~ pros:', pros);
+  let pros: any[] = [];
+  try {
+    pros = (await getAllAvailablePros()) || [];
+  } catch (error) {
+    console.error('Error fetching pros:', error);
+    pros = [];
+  }
+
+  if (!pros || pros.length === 0) {
+    return (
+      <div className='flex flex-col items-center justify-center gap-4 py-20 bg-white md:rounded-[16px]'>
+        <Users className='size-16 text-muted-foreground/40' />
+        <h3 className='text-lg font-semibold text-tertiary'>No Caregivers Found</h3>
+        <p className='text-sm text-muted-foreground text-center max-w-md'>
+          No approved caregivers are available at the moment. Caregivers will appear here once they sign up and get approved.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col gap-8'>
@@ -16,14 +33,14 @@ const PartnerPros = async () => {
               <div className='flex items-center gap-2'>
                 <img
                   src={pro?.personalInfo?.image || '/dummy-profile-pic.png'}
-                  alt={pro?.personalInfo?.name}
+                  alt={pro?.personalInfo?.firstName || 'Caregiver'}
                   width={58}
                   height={58}
                   className='w-12 h-12 sm:size-[58px] rounded-full object-cover'
                 />
                 <div>
                   <h2 className='text-base sm:text-lg text-tertiary inline-flex items-center gap-2 sm:pb-1 font-semibold'>
-                    {pro?.personalInfo?.firstName} {pro?.personalInfo?.lastName}
+                    {pro?.personalInfo?.firstName || ''} {pro?.personalInfo?.lastName || ''}
                   </h2>
                   <p className='text-muted-foreground text-xs sm:text-sm flex items-center gap-1.5'>
                     <MapPin className='size-4' />{' '}
@@ -58,12 +75,14 @@ const PartnerPros = async () => {
               </div>
             </div>
 
-            <p
-              className='text-sm md:text-base text-muted-foreground'
-              dangerouslySetInnerHTML={{
-                __html: pro?.personalInfo?.bio,
-              }}
-            />
+            {pro?.personalInfo?.bio && (
+              <p
+                className='text-sm md:text-base text-muted-foreground'
+                dangerouslySetInnerHTML={{
+                  __html: pro.personalInfo.bio,
+                }}
+              />
+            )}
 
             <div className='flex flex-wrap gap-3 items-center'>
               {pro?.professionalInfo?.skills
@@ -99,7 +118,7 @@ const PartnerPros = async () => {
               </div>
             </div>
 
-            {pro.requirements && (
+            {pro?.requirements && (
               <div className='flex flex-col gap-3'>
                 <p className='text-base text-tertiary flex items-center gap-2'>
                   <FileText className='w-6 h-6 text-muted-foreground' />

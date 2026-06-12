@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Clock, MoreVertical, Eye, RefreshCw, Trash2 } from 'lucide-react';
+import { ShieldCheck, Clock, MoreVertical, Eye, RefreshCw, Trash2, AlertCircle, Hourglass, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -60,17 +60,34 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
   index = 0,
 }) => {
   const doc = credential.document;
+  const state = credential.state;
+  const isVerified = state === 'verified';
+  const isPending = state === 'pending';
+  const isRejected = state === 'rejected';
+
   const expiration = useMemo(
     () => getExpirationInfo(doc?.credentialExpirationDate),
     [doc?.credentialExpirationDate]
   );
 
-  const bandBg = {
-    green: 'bg-emerald-50 border-emerald-200',
-    yellow: 'bg-amber-50 border-amber-200',
-    red: 'bg-red-50 border-red-200',
-    gray: 'bg-gray-50 border-gray-200',
-  }[expiration.band];
+  // Card background based on state
+  const bandBg = isVerified
+    ? {
+        green: 'bg-emerald-50 border-emerald-200',
+        yellow: 'bg-amber-50 border-amber-200',
+        red: 'bg-red-50 border-red-200',
+        gray: 'bg-gray-50 border-gray-200',
+      }[expiration.band]
+    : isRejected
+    ? 'bg-red-50 border-red-200'
+    : 'bg-amber-50 border-amber-200'; // pending
+
+  // Status badge config
+  const statusConfig = isVerified
+    ? { icon: <ShieldCheck className='w-3.5 h-3.5' />, text: 'VERIFIED', bg: 'bg-emerald-100 text-emerald-700' }
+    : isRejected
+    ? { icon: <AlertCircle className='w-3.5 h-3.5' />, text: 'REJECTED', bg: 'bg-red-100 text-red-700' }
+    : { icon: <Hourglass className='w-3.5 h-3.5' />, text: 'PENDING', bg: 'bg-amber-100 text-amber-700' };
 
   return (
     <motion.div
@@ -79,19 +96,25 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
       transition={{ duration: 0.3, delay: index * 0.08 }}
       className={`relative bg-white rounded-2xl border p-5 shadow-sm hover:shadow-md transition-shadow ${bandBg}`}
     >
-      {/* Top row: Verified by + Expiration countdown */}
+      {/* Top row */}
       <div className='flex items-start justify-between mb-3'>
         <p className='text-xs text-gray-400'>
-          Verified by Wevoro on {formatDate(doc?.reviewedAt)}
+          {isVerified
+            ? `Verified by Wevoro on ${formatDate(doc?.reviewedAt)}`
+            : isPending
+            ? `Uploaded on ${formatDate(doc?.createdAt)}`
+            : `Rejected — please re-upload`}
         </p>
         <div className='flex items-center gap-2'>
-          {/* Expiration countdown */}
-          <div className='flex items-center gap-1.5 px-3 py-1.5 rounded-full' style={{ backgroundColor: `${expiration.color}15` }}>
-            <Clock className='w-3.5 h-3.5' style={{ color: expiration.color }} />
-            <span className='text-xs font-semibold' style={{ color: expiration.color }}>
-              {expiration.text === 'Expired' ? 'Expired' : `Expires in ${expiration.text}`}
-            </span>
-          </div>
+          {/* Expiration countdown (only for verified with expiration data) */}
+          {isVerified && doc?.credentialExpirationDate && (
+            <div className='flex items-center gap-1.5 px-3 py-1.5 rounded-full' style={{ backgroundColor: `${expiration.color}15` }}>
+              <Clock className='w-3.5 h-3.5' style={{ color: expiration.color }} />
+              <span className='text-xs font-semibold' style={{ color: expiration.color }}>
+                {expiration.text === 'Expired' ? 'Expired' : `Expires in ${expiration.text}`}
+              </span>
+            </div>
+          )}
           {/* Three-dot menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -101,8 +124,17 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='w-48'>
               <DropdownMenuItem onClick={onUpdateVerification} className='gap-2 cursor-pointer'>
-                <RefreshCw className='w-4 h-4' />
-                Update Verification
+                {isPending || isRejected ? (
+                  <>
+                    <CloudUpload className='w-4 h-4' />
+                    Re-upload Document
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className='w-4 h-4' />
+                    Update Verification
+                  </>
+                )}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onRemove} className='gap-2 cursor-pointer text-red-600 focus:text-red-600'>
                 <Trash2 className='w-4 h-4' />
@@ -116,40 +148,82 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
       {/* Credential name + badge */}
       <div className='flex items-center gap-3 mb-4'>
         <h3 className='text-lg font-bold text-gray-900'>{credential.label}</h3>
-        <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold'>
-          <ShieldCheck className='w-3.5 h-3.5' />
-          VERIFIED
+        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${statusConfig.bg}`}>
+          {statusConfig.icon}
+          {statusConfig.text}
         </span>
       </div>
 
-      {/* Metadata grid */}
-      <div className='grid grid-cols-2 gap-x-6 gap-y-3 mb-4'>
-        <div>
-          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>ID</p>
-          <p className='text-sm font-medium text-gray-800'>{doc?.credentialIdNumber || 'N/A'}</p>
+      {/* Rejection reason */}
+      {isRejected && doc?.rejectionReason && (
+        <div className='mb-4 p-3 rounded-xl bg-red-100/50 border border-red-200'>
+          <p className='text-xs font-semibold text-red-700 mb-1'>Rejection Reason:</p>
+          <p className='text-xs text-red-600'>{doc.rejectionReason}</p>
         </div>
-        <div>
-          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>Issued Date</p>
-          <p className='text-sm font-medium text-gray-800'>{formatDate(doc?.credentialIssueDate)}</p>
-        </div>
-        <div>
-          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>Expiration Date</p>
-          <p className='text-sm font-medium text-gray-800'>{formatDate(doc?.credentialExpirationDate)}</p>
-        </div>
-        <div>
-          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>Issuing Organization</p>
-          <p className='text-sm font-medium text-gray-800'>{doc?.issuingOrganization || 'N/A'}</p>
-        </div>
-      </div>
+      )}
 
-      {/* View Credential button */}
-      <div className='flex justify-end'>
+      {/* Metadata grid (show for verified; show partial for pending) */}
+      {isVerified && (
+        <div className='grid grid-cols-2 gap-x-6 gap-y-3 mb-4'>
+          <div>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>ID</p>
+            <p className='text-sm font-medium text-gray-800'>{doc?.credentialIdNumber || 'N/A'}</p>
+          </div>
+          <div>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>Issued Date</p>
+            <p className='text-sm font-medium text-gray-800'>{formatDate(doc?.credentialIssueDate)}</p>
+          </div>
+          <div>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>Expiration Date</p>
+            <p className='text-sm font-medium text-gray-800'>{formatDate(doc?.credentialExpirationDate)}</p>
+          </div>
+          <div>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>Issuing Organization</p>
+            <p className='text-sm font-medium text-gray-800'>{doc?.issuingOrganization || 'N/A'}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Pending info */}
+      {isPending && (
+        <p className='text-xs text-amber-600 mb-4'>
+          Your document is being reviewed by the Wevoro team. You&apos;ll be notified once it&apos;s processed.
+        </p>
+      )}
+
+      {/* Action buttons */}
+      <div className='flex justify-end gap-2'>
+        {/* View Credential */}
         <a href={doc?.url} target='_blank' rel='noopener noreferrer'>
           <Button variant='outline' size='sm' className='gap-2 rounded-xl'>
             <Eye className='w-4 h-4' />
             View Credential
           </Button>
         </a>
+        {/* Re-upload for rejected */}
+        {isRejected && (
+          <Button
+            variant='default'
+            size='sm'
+            className='gap-2 rounded-xl'
+            onClick={onUpdateVerification}
+          >
+            <CloudUpload className='w-4 h-4' />
+            Re-upload
+          </Button>
+        )}
+        {/* Update for pending */}
+        {isPending && (
+          <Button
+            variant='outline'
+            size='sm'
+            className='gap-2 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50'
+            onClick={onUpdateVerification}
+          >
+            <RefreshCw className='w-4 h-4' />
+            Update
+          </Button>
+        )}
       </div>
     </motion.div>
   );

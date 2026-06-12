@@ -20,11 +20,15 @@ const CredentialStatusSection: React.FC = () => {
   const { data: credentials, refetch } = useCredentialStatus(user?._id);
   const queryClient = useQueryClient();
 
-  const verifiedCredentials = (credentials ?? []).filter(
-    (c: CredentialStatus) => c.state === 'verified'
+  // Show ALL uploaded credentials (verified, pending, rejected) — not just verified
+  const uploadedCredentials = (credentials ?? []).filter(
+    (c: CredentialStatus) => c.state !== 'not_uploaded'
   );
+  const verifiedCount = uploadedCredentials.filter((c: CredentialStatus) => c.state === 'verified').length;
+  const pendingCount = uploadedCredentials.filter((c: CredentialStatus) => c.state === 'pending').length;
+  const rejectedCount = uploadedCredentials.filter((c: CredentialStatus) => c.state === 'rejected').length;
 
-  if (verifiedCredentials.length === 0) return null;
+  if (uploadedCredentials.length === 0) return null;
 
   const handleRemove = async () => {
     if (!removeDialog.credential?.document?._id) return;
@@ -62,9 +66,23 @@ const CredentialStatusSection: React.FC = () => {
         <div className='flex items-center gap-2'>
           <ShieldCheck className='w-5 h-5 text-primary' />
           <h2 className='text-lg font-semibold text-gray-900'>Credentials Status</h2>
-          <span className='text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full'>
-            {verifiedCredentials.length} verified
-          </span>
+          <div className='flex items-center gap-1.5'>
+            {verifiedCount > 0 && (
+              <span className='text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium'>
+                {verifiedCount} verified
+              </span>
+            )}
+            {pendingCount > 0 && (
+              <span className='text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium'>
+                {pendingCount} pending
+              </span>
+            )}
+            {rejectedCount > 0 && (
+              <span className='text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium'>
+                {rejectedCount} rejected
+              </span>
+            )}
+          </div>
         </div>
         {collapsed ? (
           <ChevronDown className='w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
@@ -75,7 +93,7 @@ const CredentialStatusSection: React.FC = () => {
 
       {!collapsed && (
         <div className='grid gap-4'>
-          {verifiedCredentials.map((cred: CredentialStatus, idx: number) => (
+          {uploadedCredentials.map((cred: CredentialStatus, idx: number) => (
             <CredentialStatusCard
               key={cred.key}
               credential={cred}

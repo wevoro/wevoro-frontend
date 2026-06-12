@@ -25,7 +25,7 @@ export default function VercelPage() {
         border: '1px solid #333',
         minWidth: 350,
       }}>
-        <h1 style={{ fontSize: 28, marginBottom: 8 }}>🚀 Wevoro QA</h1>
+        <h1 style={{ fontSize: 28, marginBottom: 8 }}>🚀 Wevoro QA v2</h1>
         <p style={{ color: '#888', marginBottom: 24 }}>Deployment Check</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>

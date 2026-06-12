@@ -3,9 +3,18 @@ import { NextResponse } from 'next/server';
 
 export async function DELETE(req: Request) {
   try {
-    // Get documentId from URL search params
-    const { searchParams } = new URL(req.url);
-    const documentId = searchParams.get('documentId');
+    // Get documentId from request body or URL search params
+    let documentId: string | null = null;
+    
+    // Try body first (frontend sends JSON body)
+    try {
+      const body = await req.json();
+      documentId = body.documentId || null;
+    } catch {
+      // Fallback to search params
+      const { searchParams } = new URL(req.url);
+      documentId = searchParams.get('documentId');
+    }
 
     if (!documentId) {
       return NextResponse.json(

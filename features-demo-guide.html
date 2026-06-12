@@ -91,7 +91,7 @@
 
     .loc { color: #059669; font-weight: 600; font-size: 0.72rem; }
 
-    .covers { color: #64748b; font-size: 0.68rem; margin-top: 4px; }
+    .covers { color: #64748b; font-size: 0.68rem; margin-top: 4px; padding: 0 10px; }
     .covers strong { color: #475569; }
 
     .demo-note {
@@ -104,6 +104,20 @@
       color: #166534;
     }
 
+    .test-steps {
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+      padding: 10px 14px;
+      margin: 8px 16px 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.73rem;
+      color: #92400e;
+      line-height: 1.7;
+    }
+    .test-steps strong { color: #78350f; }
+    .test-steps ol { margin: 4px 0 0 16px; }
+    .test-steps li { margin-bottom: 3px; }
+
     footer { text-align: center; padding: 24px 0; color: #94a3b8; font-size: 0.7rem; }
   </style>
 </head>
@@ -111,7 +125,7 @@
 <div class="container">
 
   <h1>Wevoro — Quick Feature Demo</h1>
-  <p class="subtitle">SCRUM 60–67 | 10 Steps Only | Branch: qa-may | June 10, 2026</p>
+  <p class="subtitle">SCRUM 60–67 | 8 Testing Steps | Branch: qa | June 12, 2026</p>
 
   <!-- ==================== LOGIN CREDENTIALS ==================== -->
   <div class="cred-box">
@@ -119,28 +133,34 @@
     <table class="cred-table">
       <tr><th>Account</th><th>Email</th><th>Password</th><th>Login URL</th></tr>
       <tr>
-        <td><span class="badge b-pro">Pro</span></td>
+        <td><span class="badge b-pro">Pro (Caregiver)</span></td>
         <td>testpro@wevoro.com</td>
         <td>Test1234!</td>
-        <td><a href="https://wevoro-frontend.vercel.app/pro/login" target="_blank">wevoro-frontend.vercel.app/pro/login</a></td>
+        <td><a href="https://qa.wevoro.com/pro/login" target="_blank">qa.wevoro.com/pro/login</a></td>
       </tr>
       <tr>
-        <td><span class="badge b-partner">Partner</span></td>
+        <td><span class="badge b-pro">Pro 2</span></td>
+        <td>testpro2@wevoro.com</td>
+        <td>Test1234!</td>
+        <td><a href="https://qa.wevoro.com/pro/login" target="_blank">qa.wevoro.com/pro/login</a></td>
+      </tr>
+      <tr>
+        <td><span class="badge b-partner">Partner (Agency)</span></td>
         <td>testpartner@wevoro.com</td>
         <td>Test1234!</td>
-        <td><a href="https://wevoro-frontend.vercel.app/partner/login" target="_blank">wevoro-frontend.vercel.app/partner/login</a></td>
+        <td><a href="https://qa.wevoro.com/partner/login" target="_blank">qa.wevoro.com/partner/login</a></td>
       </tr>
       <tr>
         <td><span class="badge b-admin">Admin</span></td>
         <td>testadmin@wevoro.com</td>
         <td>Test1234!</td>
-        <td><a href="https://wevoro-frontend.vercel.app/admin/login" target="_blank">wevoro-frontend.vercel.app/admin/login</a></td>
+        <td><a href="https://qa.wevoro.com/admin/login" target="_blank">qa.wevoro.com/admin/login</a></td>
       </tr>
       <tr>
         <td><span class="badge b-public">Public</span></td>
         <td>No login</td>
         <td>—</td>
-        <td><a href="https://wevoro-frontend.vercel.app/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank">wevoro-frontend.vercel.app/p/8620b7e4-...</a></td>
+        <td><a href="https://qa.wevoro.com/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank">qa.wevoro.com/p/8620b7e4-...</a></td>
       </tr>
     </table>
   </div>
@@ -151,50 +171,68 @@
       <span class="step-num">1</span>
       Pro Profile — Role, Credentials Status & GCHEXS
     </div>
-    <div class="demo-note">Login as Pro → go to Profile → scroll down and show everything on this one page</div>
+    <div class="demo-note">Login as Pro (testpro@wevoro.com) → go to Profile → scroll down and test everything on this page</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
         <td><strong>Role Picker (CNA/PCA)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
         <td><span class="loc">Professional Information section → click Edit → "Role" field at the top</span></td>
-        <td>We added a new role selection so caregivers can choose between CNA or PCA</td>
+        <td>New role selector (CNA/PCA). Changing role updates credential labels across the entire app (e.g., "CNA Certificate" → "PCA Certificate")</td>
       </tr>
       <tr>
-        <td><strong>5 Credential Status Cards</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
-        <td><span class="loc">Scroll down to "Credentials Status" section → 5 cards stacked</span></td>
-        <td>We expanded the required credentials from 3 to 5 with clear status for each one</td>
+        <td><strong>Credential Status Cards (All States)</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Scroll down to "Credentials Status" section → cards for each uploaded credential</span></td>
+        <td>Shows ALL uploaded credentials (Verified ✅, Pending ⏳, Rejected ❌) with animated cards. Each card has status badge, actions menu (⋮), and View/Update/Remove buttons</td>
       </tr>
       <tr>
-        <td><strong>Color Bands (Green/Yellow/Red)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
-        <td><span class="loc">Same cards → top-right corner → colored countdown timer + border color</span></td>
-        <td>Added color-coded expiry tracking — green, yellow, and red based on how soon it expires</td>
+        <td><strong>Expiration Color Bands</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Verified cards → top-right → colored countdown timer</span></td>
+        <td>🟢 Green = 60+ days, 🟡 Yellow = 30-60 days, 🔴 Red = <30 days or expired. Shows exact days/hours/minutes remaining</td>
       </tr>
       <tr>
-        <td><strong>Credential Details</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
-        <td><span class="loc">Same cards → below name → grid: ID, Issue Date, Expiry Date, Issuing Org</span></td>
-        <td>Verified credentials now display full details like ID, dates, and issuing organization</td>
+        <td><strong>Credential Metadata (Verified)</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Verified cards → grid: ID, Issue Date, Expiry Date, Issuing Organization</span></td>
+        <td>Admin-entered metadata displayed on verified cards. Shows credential ID number, issue date, expiration date, and issuing organization</td>
       </tr>
       <tr>
-        <td><strong>View / Update / Remove</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
-        <td><span class="loc">Verified cards → "View Credential". Pending cards → "Update" / "Remove"</span></td>
-        <td>Caregivers can now view, update, or remove their uploaded credentials</td>
+        <td><strong>Rejection Reason Display</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Rejected cards → red background → "Rejection Reason:" box</span></td>
+        <td>When admin rejects a credential, the reason is shown on the card so the caregiver knows what to fix. Has a "Re-upload" button for quick action</td>
+      </tr>
+      <tr>
+        <td><strong>View / Update / Remove Actions</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Any credential card → ⋮ three-dot menu (top-right) OR action buttons at bottom</span></td>
+        <td>Verified: View + Update Verification + Remove. Pending: View + Update + Remove. Rejected: View + Re-upload + Remove. Remove shows confirmation dialog</td>
       </tr>
       <tr>
         <td><strong>GCHEXS Background Check</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
         <td><span class="loc">Above Credentials Status → "GCHEXS Background Check" → badge + Edit button</span></td>
-        <td>New section for Georgia background check status with edit option</td>
+        <td>Self-report Georgia background check status (Yes/No) with optional document upload. Green pill when completed, grey when not</td>
       </tr>
     </table>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>Login as <strong>testpro@wevoro.com</strong> / Test1234! → go to Profile</li>
+        <li>Scroll to "Credentials Status" — you should see cards for uploaded credentials (some verified, some pending, some rejected)</li>
+        <li>On a <strong>Verified card</strong>: check the green border, expiration countdown, metadata grid, and "View Credential" button</li>
+        <li>On a <strong>Rejected card</strong>: check the red background, rejection reason text, and "Re-upload" button</li>
+        <li>Click the <strong>⋮ menu</strong> on any card → try "Update Verification" (opens upload modal) and "Remove" (shows confirmation)</li>
+        <li>Check GCHEXS section → click Edit → toggle Yes/No → optionally upload a document</li>
+        <li>Try changing <strong>Role</strong> (CNA → PCA) in Professional Information → credential labels should update</li>
+      </ol>
+    </div>
     <div class="covers"><strong>Covers:</strong> SCRUM-60 (#1-5), SCRUM-62 (#12-16), SCRUM-66 (#26-27)</div>
     <div style="padding: 4px 10px 10px;">
       <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
-      <a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/profile</a>
+      <a href="https://qa.wevoro.com/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/pro/profile</a>
     </div>
   </div>
 
@@ -202,34 +240,44 @@
   <div class="scrum-block">
     <div class="scrum-title" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
       <span class="step-num">2</span>
-      Pro Profile — Documents Section & Add More
+      Pro Profile — Floating Credentials Panel & Documents
     </div>
-    <div class="demo-note">Stay on same Pro Profile page → scroll down to Documents section</div>
+    <div class="demo-note">Stay on same Pro Profile page → check bottom-right floating panel & Documents section</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
-        <td><strong>Combined Documents</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td><strong>Floating Credentials Panel</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Bottom-right corner → floating "Credentials" box with profile completion bar</span></td>
+        <td>Shows 5 required credentials with upload status. Shows completion percentage. Upload button for missing credentials. Collapsible header</td>
+      </tr>
+      <tr>
+        <td><strong>Combined Documents Section</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
         <td><span class="loc">Scroll to "Documents" section → all documents in one list with tags</span></td>
-        <td>Medical and Non-Medical documents are now combined into one section</td>
+        <td>Medical and Non-Medical documents combined into one section with category tags</td>
       </tr>
       <tr>
         <td><strong>Add More Button (+)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
         <td><span class="loc">Top-right of Documents section → click "+" → modal opens</span></td>
-        <td>Caregivers can upload additional supporting documents from here</td>
-      </tr>
-      <tr>
-        <td><strong>Category Auto-Set</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
-        <td><span class="loc">Same modal → Category field pre-filled with "Non-Medical"</span></td>
-        <td>The category is pre-selected so users don't have to set it manually</td>
+        <td>Upload additional supporting documents. Category auto-set to "Non-Medical"</td>
       </tr>
     </table>
-    <div class="covers"><strong>Covers:</strong> SCRUM-61 (#7-11)</div>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>Check the <strong>floating panel</strong> (bottom-right) — it should show all 5 credentials with their upload status</li>
+        <li>Click "Upload" on any missing credential → modal opens → upload a file</li>
+        <li>After upload, the floating panel should update to show the new credential as "Pending review"</li>
+        <li>Scroll to <strong>Documents section</strong> → verify all docs are listed with category tags</li>
+        <li>Click the <strong>"+"</strong> button → upload an additional document → it should appear in the list</li>
+      </ol>
+    </div>
+    <div class="covers"><strong>Covers:</strong> SCRUM-60 (floating panel), SCRUM-61 (#7-11)</div>
     <div style="padding: 4px 10px 10px;">
       <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
-      <a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/profile</a>
+      <a href="https://qa.wevoro.com/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/pro/profile</a>
     </div>
   </div>
 
@@ -237,22 +285,30 @@
   <div class="scrum-block">
     <div class="scrum-title" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6);">
       <span class="step-num">3</span>
-      Pro Onboarding — Renamed Step & 5 Upload Slots
+      Pro Onboarding — Credentials Upload Step
     </div>
     <div class="demo-note">Stay as Pro → go to onboarding credentials page</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
         <td><strong>Step Renamed + 5 Slots + Dynamic Label</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/onboard/document-upload" target="_blank">wevoro-frontend.vercel.app/pro/onboard/document-upload</a></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/onboard/document-upload" target="_blank">qa.wevoro.com/pro/onboard/document-upload</a></td>
         <td><span class="loc">Left sidebar → Step 3 says "Credentials" → 5 upload rows → first row name changes based on role</span></td>
-        <td>Onboarding step renamed and now shows all 5 credential upload areas with dynamic labels</td>
+        <td>Onboarding step renamed from "Documents" to "Credentials". Now shows all 5 credential upload areas. First row label is dynamic (CNA/PCA based on role)</td>
       </tr>
     </table>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>Navigate to the onboarding page → check Step 3 is labeled "Credentials"</li>
+        <li>Verify 5 upload slots are shown with correct labels</li>
+        <li>If role is CNA → first row should say "CNA Certificate". If PCA → "PCA Certificate"</li>
+      </ol>
+    </div>
     <div class="covers"><strong>Covers:</strong> SCRUM-60 (#3-4), SCRUM-61 (#6)</div>
     <div style="padding: 4px 10px 10px;">
       <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
-      <a href="https://wevoro-frontend.vercel.app/pro/onboard/document-upload" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/onboard/document-upload</a>
+      <a href="https://qa.wevoro.com/pro/onboard/document-upload" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/pro/onboard/document-upload</a>
     </div>
   </div>
 
@@ -262,26 +318,35 @@
       <span class="step-num">4</span>
       Pro — Share Profile & Notifications
     </div>
-    <div class="demo-note">Stay as Pro → go back to Profile → show Share and Notifications</div>
+    <div class="demo-note">Stay as Pro → go back to Profile → test Share and Notifications</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
-        <td><strong>Share Profile</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank">wevoro-frontend.vercel.app/pro/profile</a></td>
-        <td><span class="loc">Profile top area → click "Share Profile" button → modal with link</span></td>
-        <td>Caregivers can share their profile using a unique link via copy, SMS, or email</td>
+        <td><strong>Share Profile Button</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/profile" target="_blank">qa.wevoro.com/pro/profile</a></td>
+        <td><span class="loc">Profile top area → click "Share Profile" button → copies unique link</span></td>
+        <td>Generates unique share link (e.g., qa.wevoro.com/p/abc123). Click copies link to clipboard with toast confirmation. Link can be shared via SMS, email, or copy-paste</td>
       </tr>
       <tr>
-        <td><strong>Expiration Notifications</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/pro/notifications" target="_blank">wevoro-frontend.vercel.app/pro/notifications</a></td>
-        <td><span class="loc">Top nav → click 🔔 bell icon → warning notifications</span></td>
-        <td>Automatic alerts when credentials are close to expiring or get rejected</td>
+        <td><strong>Expiration & Rejection Notifications</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/pro/settings" target="_blank">qa.wevoro.com/pro/settings</a></td>
+        <td><span class="loc">Top nav → click 🔔 bell icon → credential-specific notifications</span></td>
+        <td>Daily cron checks credential expiration. Notifications at 60 days (yellow), 30 days (red), 0 days (expired). Immediate notification when admin rejects a credential with the reason</td>
       </tr>
     </table>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>On Profile page → click <strong>"Share Profile"</strong> → toast should say "Link copied!"</li>
+        <li>Paste the copied link in a new incognito tab → should show the public preview page (Step 5)</li>
+        <li>Check the <strong>🔔 bell icon</strong> for any credential-related notifications</li>
+        <li>If a credential was rejected by admin, you should see a notification with the rejection reason</li>
+      </ol>
+    </div>
     <div class="covers"><strong>Covers:</strong> SCRUM-64 (#21), SCRUM-65 (#23-25)</div>
     <div style="padding: 4px 10px 10px;">
       <span class="badge b-pro" style="font-size:0.6rem">Pro Account</span>
-      <a href="https://wevoro-frontend.vercel.app/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/pro/profile</a>
+      <a href="https://qa.wevoro.com/pro/profile" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/pro/profile</a>
     </div>
   </div>
 
@@ -289,22 +354,32 @@
   <div class="scrum-block">
     <div class="scrum-title" style="background: linear-gradient(135deg, #6b21a8, #a855f7);">
       <span class="step-num">5</span>
-      Public Profile (No Login)
+      Public Profile Preview (No Login Required)
     </div>
-    <div class="demo-note">Open the shared link in a new tab or incognito — no login needed</div>
+    <div class="demo-note">Open the shared link in a new incognito tab — no login needed</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
-        <td><strong>Public Profile Page</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank">wevoro-frontend.vercel.app/p/8620b7e4-...</a></td>
-        <td><span class="loc">Name (last name hidden), city, role, verified count</span></td>
-        <td>Anyone can view this page without login — shows basic info with privacy protection</td>
+        <td><strong>Public Profile Preview Page</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank">qa.wevoro.com/p/8620b7e4-...</a></td>
+        <td><span class="loc">Shows: first name + last initial, role badge, city/state, verified credential count. Hidden: full name, documents, specific details</span></td>
+        <td>Privacy-protected preview showing minimal info to entice agencies to sign up. Shows "X of 5 credentials verified" count. CTA button "Sign up to view full profile" links to partner registration</td>
       </tr>
     </table>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>Open the URL in <strong>incognito/private browsing</strong> (no login)</li>
+        <li>Verify you see: first name + last initial only (e.g., "Sarah J."), role badge, city/state</li>
+        <li>Verify credential <strong>count</strong> is shown (e.g., "3 of 5 credentials verified") but NO individual credential details</li>
+        <li>Click <strong>"Sign up to view full profile"</strong> → should redirect to partner registration</li>
+        <li>Verify full last name, documents, and credential specifics are NOT visible</li>
+      </ol>
+    </div>
     <div class="covers"><strong>Covers:</strong> SCRUM-64 (#22)</div>
     <div style="padding: 4px 10px 10px;">
       <span class="badge b-public" style="font-size:0.6rem">No Login</span>
-      <a href="https://wevoro-frontend.vercel.app/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/p/8620b7e4-...</a>
+      <a href="https://qa.wevoro.com/p/8620b7e4-9b01-4492-a14d-9e0a0c125ecb" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/p/8620b7e4-...</a>
     </div>
   </div>
 
@@ -312,111 +387,154 @@
   <div class="scrum-block">
     <div class="scrum-title" style="background: linear-gradient(135deg, #ea580c, #f97316);">
       <span class="step-num">6</span>
-      Partner — Caregiver List & Credential View
+      Partner (Agency) — Caregiver List & Credential View
     </div>
-    <div class="demo-note">Login as Partner → go to Pros tab → click View Profile on a caregiver</div>
+    <div class="demo-note">Login as Partner (testpartner@wevoro.com) → go to Pros tab → click View Profile on a caregiver</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
         <td><strong>Caregiver List</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros" target="_blank">wevoro-frontend.vercel.app/partner/pros</a></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/partner/pros" target="_blank">qa.wevoro.com/partner/pros</a></td>
         <td><span class="loc">"Pros" tab in sidebar → list of caregivers with View Profile</span></td>
-        <td>Agency partners can browse and view all available caregivers from here</td>
+        <td>Agency partners can browse all available caregivers. Each row shows name, role, credential status summary</td>
       </tr>
       <tr>
-        <td><strong>Credential Cards (Read-Only)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
-        <td><span class="loc">Caregiver detail → "Credentials Status" → same 5 cards, no edit buttons</span></td>
-        <td>Partners see all credential details but cannot make any changes</td>
+        <td><strong>All 5 Credential Cards (Read-Only)</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/partner/pros" target="_blank">qa.wevoro.com/partner/pros</a></td>
+        <td><span class="loc">Click "View Profile" on any caregiver → "Credentials Status" section → all 5 cards</span></td>
+        <td>Agencies see ALL 5 credentials regardless of state. Verified = green with full metadata. Pending = "PENDING REVIEW". Not Uploaded = "NOT UPLOADED". Rejected = "ACTION REQUIRED". NO edit/remove buttons (read-only)</td>
       </tr>
       <tr>
         <td><strong>GCHEXS (Read-Only)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
-        <td><span class="loc">Same page → "GCHEXS Background Check" → badge, no Edit</span></td>
-        <td>Background check status is visible to partners in view-only mode</td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/partner/pros" target="_blank">qa.wevoro.com/partner/pros</a></td>
+        <td><span class="loc">Same caregiver detail page → "GCHEXS Background Check" → badge only, no Edit button</span></td>
+        <td>Background check status visible to partners in view-only mode. Green pill if completed, grey if not</td>
+      </tr>
+      <tr>
+        <td><strong>Download Credential Package</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/partner/pros" target="_blank">qa.wevoro.com/partner/pros</a></td>
+        <td><span class="loc">Below Credentials Status → "Download Credential Package" button</span></td>
+        <td>One-click bulk download of all verified/public credentials as a ZIP package. Each download is logged for audit trail</td>
       </tr>
     </table>
-    <div class="covers"><strong>Covers:</strong> SCRUM-63 (#17-18), SCRUM-66 (#28)</div>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>Login as <strong>testpartner@wevoro.com</strong> / Test1234!</li>
+        <li>Go to <strong>Pros</strong> tab → you should see a list of caregivers</li>
+        <li>Click <strong>"View Profile"</strong> on any caregiver</li>
+        <li>Scroll to <strong>"Credentials Status"</strong> → verify ALL 5 credential cards are shown</li>
+        <li>Verified cards should show full metadata (ID, dates, org). Pending/Not Uploaded cards should show badge only</li>
+        <li>Verify there are <strong>NO edit/remove buttons</strong> — everything is read-only</li>
+        <li>Check GCHEXS badge is visible but has <strong>no Edit button</strong></li>
+        <li>Try clicking <strong>"Download Credential Package"</strong> → should download a ZIP</li>
+      </ol>
+    </div>
+    <div class="covers"><strong>Covers:</strong> SCRUM-63 (#17-18), SCRUM-66 (#28), SCRUM-67 (#29-32)</div>
     <div style="padding: 4px 10px 10px;">
       <span class="badge b-partner" style="font-size:0.6rem">Partner Account</span>
-      <a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a>
+      <a href="https://qa.wevoro.com/partner/pros" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/partner/pros</a>
     </div>
   </div>
 
   <!-- ==================== STEP 7 ==================== -->
   <div class="scrum-block">
-    <div class="scrum-title" style="background: linear-gradient(135deg, #be123c, #f43f5e);">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #4338ca, #6366f1);">
       <span class="step-num">7</span>
-      Partner — Download & Private Access
+      Admin — Approve & Reject Credentials
     </div>
-    <div class="demo-note">Stay on same caregiver detail page as Partner</div>
+    <div class="demo-note">Login as Admin (testadmin@wevoro.com) → click on a pro application → find pending credentials</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Feature</th><th>URL</th><th>Where to Find It</th><th>What Was Done</th></tr>
       <tr>
-        <td><strong>View Credential (Single Download)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
-        <td><span class="loc">Credentials Status → any verified card → "View Credential" button</span></td>
-        <td>Partners can download any single credential document from here</td>
+        <td><strong>Approve with 4 Required Fields</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/admin" target="_blank">qa.wevoro.com/admin</a></td>
+        <td><span class="loc">Click a pro → pending credential → click ✓ Approve → form appears with 4 fields</span></td>
+        <td>Admin must enter: 1) Credential ID Number, 2) Issue Date, 3) Expiration Date (must be after Issue Date), 4) Issuing Organization. All 4 fields are required. On re-verification, fields are pre-filled with previous values</td>
       </tr>
       <tr>
-        <td><strong>Download All (Bulk)</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
-        <td><span class="loc">Below Credentials Status → purple "Download Credential Package" button</span></td>
-        <td>One-click download for all verified credentials as a package</td>
+        <td><strong>Reject with Reason</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/admin" target="_blank">qa.wevoro.com/admin</a></td>
+        <td><span class="loc">Same panel → pending credential → click ✗ Reject → textarea appears</span></td>
+        <td>Admin must enter a rejection reason. Reason is shown to the caregiver on their profile card AND sent as a notification. Caregiver sees "Re-upload" button to fix the issue</td>
       </tr>
       <tr>
-        <td><strong>Request Private Access</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a></td>
-        <td><span class="loc">Documents section → private docs have lock → "Request Access" button</span></td>
-        <td>Partners can request access to private documents with caregiver approval</td>
+        <td><strong>Download Audit Trail</strong></td>
+        <td class="url-cell"><a href="https://qa.wevoro.com/admin" target="_blank">qa.wevoro.com/admin</a></td>
+        <td><span class="loc">Caregiver detail → scroll to bottom → "Download Audit Trail" table</span></td>
+        <td>Every document download by agencies is logged. Shows: agency name, document title, download type (individual/bulk), timestamp</td>
       </tr>
     </table>
-    <div class="covers"><strong>Covers:</strong> SCRUM-67 (#29-32)</div>
+    <div class="test-steps">
+      <strong>🧪 How to Test:</strong>
+      <ol>
+        <li>Login as <strong>testadmin@wevoro.com</strong> / Test1234!</li>
+        <li>Find a pro with <strong>pending</strong> credentials</li>
+        <li><strong>Approve test:</strong> Click ✓ on a pending credential → fill all 4 fields (ID, Issue Date, Expiration Date, Issuing Org) → click Confirm</li>
+        <li>Verify: the credential now shows as "Verified" on the pro's profile with the metadata you entered</li>
+        <li><strong>Reject test:</strong> Click ✗ on another pending credential → type a rejection reason → click Confirm</li>
+        <li>Login as Pro → check the credential card shows <strong>red "REJECTED" badge</strong> with the reason you typed</li>
+        <li>Check Pro's <strong>notifications</strong> (🔔) for the rejection notification</li>
+        <li><strong>Validation test:</strong> Try approving with Expiration Date BEFORE Issue Date → should show error</li>
+      </ol>
+    </div>
+    <div class="covers"><strong>Covers:</strong> SCRUM-62 (#19-20 admin fields), SCRUM-65 (#25 rejection notification), SCRUM-67 (#33 audit)</div>
     <div style="padding: 4px 10px 10px;">
-      <span class="badge b-partner" style="font-size:0.6rem">Partner Account</span>
-      <a href="https://wevoro-frontend.vercel.app/partner/pros/6a28fad7f4e290a24e7a3826" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/partner/pros/6a28fad7...</a>
+      <span class="badge b-admin" style="font-size:0.6rem">Admin Account</span>
+      <a href="https://qa.wevoro.com/admin" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">qa.wevoro.com/admin</a>
     </div>
   </div>
 
   <!-- ==================== STEP 8 ==================== -->
   <div class="scrum-block">
-    <div class="scrum-title" style="background: linear-gradient(135deg, #4338ca, #6366f1);">
+    <div class="scrum-title" style="background: linear-gradient(135deg, #be123c, #f43f5e);">
       <span class="step-num">8</span>
-      Admin — Approve & Reject Credentials
+      End-to-End Flow Test
     </div>
-    <div class="demo-note">Login as Admin → click on a pro application → find pending credentials</div>
+    <div class="demo-note">Full cycle: Pro uploads → Admin reviews → Pro sees result → Partner sees it</div>
     <table class="feat-table">
-      <tr><th>Features</th><th>URL</th><th>Where to Find It</th><th></th></tr>
+      <tr><th>Step</th><th>Action</th><th>Expected Result</th></tr>
       <tr>
-        <td><strong>Approve with Details</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/admin" target="_blank">wevoro-frontend.vercel.app/admin</a></td>
-        <td><span class="loc">Click a pro → pending credential → "Approve" → fill ID, dates, org → Confirm</span></td>
-        <td>Admin verifies a credential by entering its official details during approval</td>
+        <td><strong>1. Pro uploads</strong></td>
+        <td>Login as Pro → floating panel → upload a missing credential</td>
+        <td>Credential appears as "Pending review" in both floating panel and Credentials Status section</td>
       </tr>
       <tr>
-        <td><strong>Reject with Reason</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/admin" target="_blank">wevoro-frontend.vercel.app/admin</a></td>
-        <td><span class="loc">Same panel → another pending → "Reject" → type reason → Confirm</span></td>
-        <td>Admin can reject a credential with a reason so the caregiver knows what to fix</td>
+        <td><strong>2. Admin approves</strong></td>
+        <td>Login as Admin → find the pending credential → Approve with all 4 fields</td>
+        <td>Credential status changes to "Verified" with green badge and expiration countdown</td>
       </tr>
       <tr>
-        <td><strong>Download Audit Trail</strong></td>
-        <td class="url-cell"><a href="https://wevoro-frontend.vercel.app/admin" target="_blank">wevoro-frontend.vercel.app/admin</a></td>
-        <td><span class="loc">Caregiver detail → scroll to bottom → "Download Audit Trail" table</span></td>
-        <td>Every document download is logged for compliance and tracking</td>
+        <td><strong>3. Pro sees verified</strong></td>
+        <td>Login as Pro → Profile → Credentials Status</td>
+        <td>Card shows green "VERIFIED" badge, metadata grid (ID, dates, org), and "View Credential" button</td>
+      </tr>
+      <tr>
+        <td><strong>4. Partner sees it</strong></td>
+        <td>Login as Partner → Pros → View Profile on the caregiver</td>
+        <td>Credential card shows "VERIFIED" with full metadata. Download button available. Read-only (no edit/remove)</td>
+      </tr>
+      <tr>
+        <td><strong>5. Pro shares profile</strong></td>
+        <td>Login as Pro → Profile → click "Share Profile" → paste in incognito</td>
+        <td>Preview page shows name, role, city, and "X of 5 credentials verified" count. CTA → partner signup</td>
       </tr>
     </table>
-    <div class="covers"><strong>Covers:</strong> SCRUM-63 (#19-20), SCRUM-67 (#33)</div>
-    <div style="padding: 4px 10px 10px;">
-      <span class="badge b-admin" style="font-size:0.6rem">Admin Account</span>
-      <a href="https://wevoro-frontend.vercel.app/admin" target="_blank" style="color:#2563eb; font-size:0.72rem; margin-left:8px;">wevoro-frontend.vercel.app/admin</a>
+    <div class="test-steps">
+      <strong>🧪 Full E2E Flow:</strong>
+      <ol>
+        <li><strong>Pro:</strong> Upload a credential → appears as Pending</li>
+        <li><strong>Admin:</strong> Approve it with metadata → status changes to Verified</li>
+        <li><strong>Pro:</strong> Refresh profile → green card with countdown timer + metadata</li>
+        <li><strong>Partner:</strong> View same caregiver → see Verified card (read-only)</li>
+        <li><strong>Admin:</strong> Reject another credential with reason → Pro sees red card with reason</li>
+        <li><strong>Pro:</strong> Re-upload the rejected credential → status goes back to Pending</li>
+      </ol>
     </div>
   </div>
 
-
-
   <footer>
-    Wevoro Platform — Quick Demo Guide | SCRUM 60–67 | Branch: qa-may | June 10, 2026
+    Wevoro Platform — QA Testing Guide | SCRUM 60–67 | Branch: qa | <a href="https://qa.wevoro.com" style="color:#2563eb;">https://qa.wevoro.com</a> | June 12, 2026
   </footer>
 
 </div>

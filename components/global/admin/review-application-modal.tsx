@@ -38,7 +38,9 @@ function BackgroundChecks({
   onStatusChange: (status: string) => void;
 }) {
   const [loading, setLoading] = useState(false);
-  const status = data?.backgroundCheckStatus ?? 'not_verified';
+  const [status, setStatus] = useState<string>(
+    data?.backgroundCheckStatus ?? 'not_verified'
+  );
 
   const handleUpdate = async (newStatus: 'verified' | 'failed') => {
     setLoading(true);
@@ -58,6 +60,7 @@ function BackgroundChecks({
             ? 'Background check verified'
             : 'Background check failed'
         );
+        setStatus(newStatus);
         onStatusChange(newStatus);
       } else {
         toast.error(result.message || 'Update failed');

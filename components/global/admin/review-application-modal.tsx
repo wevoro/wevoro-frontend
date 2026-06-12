@@ -28,6 +28,7 @@ import AdminAlertModal from './admin-alert-modal';
 import PartnerPersonalInformation from '../dashboard/partner-personal-information';
 import { AdminEditUserModal } from './admin-edit-user-modal';
 import AdminCredentials from './admin-credentials';
+import DownloadAuditTrail from './download-audit-trail';
 import { toast } from 'sonner';
 
 function BackgroundChecks({
@@ -311,6 +312,7 @@ export function ReviewApplicationModal({
                     userId={localData?._id}
                     role={localData?.professionalInfo?.role}
                   />
+                  <DownloadAuditTrail userId={localData?._id} />
                 </>
               )}
 

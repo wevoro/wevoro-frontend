@@ -48,12 +48,12 @@ const GchexsSection: React.FC<GchexsSectionProps> = ({
         formData.append('isPublic', 'true');
         formData.append('consent', 'true');
 
-        const uploadResponse = await fetch('/api/document/upload', {
+        const uploadResponse = await fetch('/api/user/document-upload', {
           method: 'POST',
           body: formData,
         });
         const uploadData = await uploadResponse.json();
-        if (uploadData.success) {
+        if (uploadData.status === 200 || uploadData.success) {
           docUrl = uploadData.data?.url;
           docFileId = uploadData.data?._id;
         }

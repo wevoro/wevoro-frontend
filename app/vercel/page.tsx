@@ -1,6 +1,11 @@
 export default function VercelPage() {
-  const buildDate = '6/12/2026';
-  const buildTime = '9:16 AM (GMT+6)';
+  const now = new Date();
+  const buildDate = now.toLocaleDateString('en-US');
+  const buildTime = now.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  });
 
   return (
     <div style={{

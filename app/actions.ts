@@ -76,6 +76,15 @@ export async function getPros() {
   }
 }
 
+export async function getAllAvailablePros() {
+  try {
+    const response = await api.get(`/user/all-pros`);
+    return response.data.data;
+  } catch (error) {
+    return null;
+  }
+}
+
 export async function getNotifications() {
   try {
     const response = await api.get(`/user/notification`);

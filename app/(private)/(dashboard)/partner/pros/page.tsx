@@ -1,10 +1,10 @@
-import { getPros } from '@/app/actions';
+import { getAllAvailablePros } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { FileText, Heart, MapPin, MoveUpRight, X } from 'lucide-react';
 import React from 'react';
 
 const PartnerPros = async () => {
-  const pros = await getPros();
+  const pros = await getAllAvailablePros();
   console.log('🚀 ~ PartnerPros ~ pros:', pros);
 
   return (

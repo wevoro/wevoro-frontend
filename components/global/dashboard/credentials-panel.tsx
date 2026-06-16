@@ -70,7 +70,7 @@ const CredentialsPanel: React.FC = () => {
   return (
     // BUG-02: Responsive panel — adapts to viewport, collapse button always accessible
     <div
-      className='fixed bottom-4 right-4 sm:bottom-8 sm:right-8 md:right-[120px] z-40 bg-white flex flex-col w-[calc(100%-2rem)] sm:w-[340px] md:w-[375px] max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]'
+      className='fixed bottom-4 right-4 sm:bottom-8 sm:right-8 md:right-[120px] z-40 bg-white flex flex-col w-[calc(100%-2rem)] sm:w-[340px] md:w-[375px] max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden'
       style={{
         borderRadius: 16,
         padding: 20,

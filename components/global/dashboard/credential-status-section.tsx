@@ -57,82 +57,86 @@ const CredentialStatusSection: React.FC = () => {
   };
 
   return (
-    <div className='flex flex-col gap-4'>
-      {/* Section header */}
-      <button
-        onClick={() => setCollapsed((v) => !v)}
-        className='flex items-center justify-between w-full group'
-      >
-        <div className='flex items-center gap-2'>
-          <ShieldCheck className='w-5 h-5 text-primary' />
-          <h2 className='text-lg font-semibold text-gray-900'>Credentials Status</h2>
-          <div className='flex items-center gap-1.5'>
-            {verifiedCount > 0 && (
-              <span className='text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium'>
-                {verifiedCount} verified
-              </span>
-            )}
-            {pendingCount > 0 && (
-              <span className='text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium'>
-                {pendingCount} pending
-              </span>
-            )}
-            {rejectedCount > 0 && (
-              <span className='text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium'>
-                {rejectedCount} rejected
-              </span>
-            )}
-          </div>
-        </div>
-        {collapsed ? (
-          <ChevronDown className='w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
-        ) : (
-          <ChevronUp className='w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
-        )}
-      </button>
-
-      {!collapsed && (
-        <div className='grid gap-4'>
-          {uploadedCredentials.map((cred: CredentialStatus, idx: number) => (
-            <CredentialStatusCard
-              key={cred.key}
-              credential={cred}
-              index={idx}
-              onUpdateVerification={() => setUploadModal({ open: true, credential: cred })}
-              onRemove={() => setRemoveDialog({ open: true, credential: cred })}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Remove confirmation dialog */}
-      <RemoveCredentialDialog
-        open={removeDialog.open}
-        onOpenChange={(open) => setRemoveDialog({ open, credential: removeDialog.credential })}
-        credentialName={removeDialog.credential?.label || ''}
-        onConfirm={handleRemove}
-        loading={removeLoading}
-      />
-
-      {/* Upload modal for Update Verification */}
-      {uploadModal.open && uploadModal.credential && (
-        <UploadDocumentModal
-          category={uploadModal.credential.category}
-          documentType={uploadModal.credential.key}
-          defaultTitle={uploadModal.credential.label}
-          document={uploadModal.credential.document as any}
-          open={uploadModal.open}
-          onOpenChange={(open) => {
-            if (!open) {
-              setUploadModal({ open: false, credential: null });
-              refetch();
-              queryClient.invalidateQueries({ queryKey: ['documents'] });
-            }
-          }}
+    // BUG-05: White background container matching Personal/Professional Information sections
+    <div className='bg-white md:rounded-2xl px-4 p-6 md:p-8'>
+      <div className='flex flex-col gap-4'>
+        {/* BUG-06: Section header — font size matches other section headings */}
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          className='flex items-center justify-between w-full group border-b pb-4'
         >
-          <span />
-        </UploadDocumentModal>
-      )}
+          <div className='flex items-center gap-2 flex-wrap'>
+            <h2 className='text-lg md:text-2xl font-semibold text-tertiary'>
+              Credentials Status
+            </h2>
+            <div className='flex items-center gap-1.5'>
+              {verifiedCount > 0 && (
+                <span className='text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium'>
+                  {verifiedCount} verified
+                </span>
+              )}
+              {pendingCount > 0 && (
+                <span className='text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium'>
+                  {pendingCount} pending
+                </span>
+              )}
+              {rejectedCount > 0 && (
+                <span className='text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium'>
+                  {rejectedCount} rejected
+                </span>
+              )}
+            </div>
+          </div>
+          {collapsed ? (
+            <ChevronDown className='w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
+          ) : (
+            <ChevronUp className='w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
+          )}
+        </button>
+
+        {!collapsed && (
+          <div className='grid gap-4'>
+            {uploadedCredentials.map((cred: CredentialStatus, idx: number) => (
+              <CredentialStatusCard
+                key={cred.key}
+                credential={cred}
+                index={idx}
+                onUpdateVerification={() => setUploadModal({ open: true, credential: cred })}
+                onRemove={() => setRemoveDialog({ open: true, credential: cred })}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Remove confirmation dialog */}
+        <RemoveCredentialDialog
+          open={removeDialog.open}
+          onOpenChange={(open) => setRemoveDialog({ open, credential: removeDialog.credential })}
+          credentialName={removeDialog.credential?.label || ''}
+          onConfirm={handleRemove}
+          loading={removeLoading}
+        />
+
+        {/* Upload modal for Update Verification */}
+        {uploadModal.open && uploadModal.credential && (
+          <UploadDocumentModal
+            category={uploadModal.credential.category}
+            documentType={uploadModal.credential.key}
+            defaultTitle={uploadModal.credential.label}
+            document={uploadModal.credential.document as any}
+            open={uploadModal.open}
+            onOpenChange={(open) => {
+              if (!open) {
+                setUploadModal({ open: false, credential: null });
+                refetch();
+                queryClient.invalidateQueries({ queryKey: ['documents'] });
+              }
+            }}
+          >
+            <span />
+          </UploadDocumentModal>
+        )}
+      </div>
     </div>
   );
 };

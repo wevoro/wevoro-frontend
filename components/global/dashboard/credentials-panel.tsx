@@ -68,20 +68,20 @@ const CredentialsPanel: React.FC = () => {
   );
 
   return (
+    // BUG-02: Responsive panel — adapts to viewport, collapse button always accessible
     <div
-      className='fixed bottom-8 right-[120px] z-40 bg-white flex flex-col'
+      className='fixed bottom-4 right-4 sm:bottom-8 sm:right-8 md:right-[120px] z-40 bg-white flex flex-col w-[calc(100%-2rem)] sm:w-[340px] md:w-[375px] max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]'
       style={{
-        width: 375,
         borderRadius: 16,
-        padding: 24,
-        gap: 20,
+        padding: 20,
+        gap: 16,
         boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.10)',
       }}
     >
-      {/* Header */}
+      {/* Header — always visible */}
       <button
         onClick={() => setCollapsed((v) => !v)}
-        className='flex items-center justify-between w-full'
+        className='flex items-center justify-between w-full shrink-0'
       >
         <div className='flex items-center gap-3'>
           <div className='relative w-9 h-9 shrink-0'>
@@ -92,7 +92,7 @@ const CredentialsPanel: React.FC = () => {
               className='object-contain rounded-full'
             />
           </div>
-          <span className='font-bold text-gray-900 text-xl'>Credentials</span>
+          <span className='font-bold text-gray-900 text-lg sm:text-xl'>Credentials</span>
         </div>
         {collapsed ? (
           <ChevronDown className='w-5 h-5 text-gray-400' />
@@ -102,9 +102,9 @@ const CredentialsPanel: React.FC = () => {
       </button>
 
       {!collapsed && (
-        <>
+        <div className='flex flex-col gap-4 overflow-y-auto min-h-0'>
           {/* Profile Completion — single row */}
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-3 shrink-0'>
             <span className='text-sm text-gray-500 shrink-0'>Profile Completion</span>
             <div className='flex-1 h-2 bg-gray-200 rounded-full overflow-hidden'>
               <div
@@ -120,7 +120,7 @@ const CredentialsPanel: React.FC = () => {
           {/* Credential cards — scrollable */}
           <div
             className='flex flex-col overflow-y-auto scrollbar-thin'
-            style={{ gap: 12, maxHeight: 480, scrollbarWidth: 'thin', scrollbarColor: '#000 transparent', marginRight: -16, paddingRight: 16 }}
+            style={{ gap: 12, maxHeight: 'calc(100vh - 200px)', scrollbarWidth: 'thin', scrollbarColor: '#000 transparent', marginRight: -8, paddingRight: 8 }}
           >
             {requiredCredentials.map((cred) => {
               const doc = uploadedByType[cred.key];
@@ -130,15 +130,15 @@ const CredentialsPanel: React.FC = () => {
                 <div
                   key={cred.key}
                   className='flex flex-col rounded-2xl'
-                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 24px' }}
+                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '14px 14px 20px' }}
                 >
                   {doc ? (
                     /* Uploaded state */
                     <>
                       <div
-                        className='flex items-center justify-between rounded-xl px-4 py-3'
+                        className='flex items-center justify-between rounded-xl px-3 sm:px-4 py-2.5 sm:py-3'
                         style={{
-                          backgroundColor: isReviewed ? '#fff' : '#fff',
+                          backgroundColor: '#fff',
                           border: '1px solid #E5E7EB',
                         }}
                       >
@@ -157,7 +157,7 @@ const CredentialsPanel: React.FC = () => {
                             </span>
                           )}
                           <span
-                            className='text-sm font-medium'
+                            className='text-xs sm:text-sm font-medium'
                             style={{ color: isReviewed ? '#1A7A3C' : '#6B7280' }}
                           >
                             {isReviewed ? 'Reviewed' : 'Pending review'}
@@ -205,10 +205,10 @@ const CredentialsPanel: React.FC = () => {
               <div
                 key={doc._id}
                 className='flex flex-col rounded-2xl'
-                style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '16px 16px 24px' }}
+                style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '14px 14px 20px' }}
               >
                 <div
-                  className='flex items-center justify-between rounded-xl px-4 py-3'
+                  className='flex items-center justify-between rounded-xl px-3 sm:px-4 py-2.5 sm:py-3'
                   style={{ backgroundColor: '#fff', border: '1px solid #E5E7EB' }}
                 >
                   <div className='flex items-center gap-2'>
@@ -232,7 +232,7 @@ const CredentialsPanel: React.FC = () => {
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

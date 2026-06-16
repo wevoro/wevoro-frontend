@@ -50,32 +50,28 @@ function getExpirationInfo(expirationDate?: string) {
 // Color configs for each band
 const BAND_COLORS = {
   green: {
-    border: 'border-emerald-300',
+    border: 'border-gray-200',
     bg: 'bg-white',
     countdownText: 'text-emerald-600',
     countdownBg: 'bg-emerald-50',
-    leftBar: 'bg-emerald-500',
   },
   yellow: {
-    border: 'border-amber-300',
+    border: 'border-gray-200',
     bg: 'bg-white',
     countdownText: 'text-amber-600',
     countdownBg: 'bg-amber-50',
-    leftBar: 'bg-amber-500',
   },
   red: {
-    border: 'border-red-300',
+    border: 'border-gray-200',
     bg: 'bg-white',
     countdownText: 'text-red-600',
     countdownBg: 'bg-red-50',
-    leftBar: 'bg-red-500',
   },
   gray: {
     border: 'border-gray-200',
     bg: 'bg-white',
     countdownText: 'text-gray-500',
     countdownBg: 'bg-gray-50',
-    leftBar: 'bg-gray-400',
   },
 };
 

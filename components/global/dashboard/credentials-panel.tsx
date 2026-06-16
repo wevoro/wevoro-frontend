@@ -70,7 +70,7 @@ const CredentialsPanel: React.FC = () => {
   return (
     // BUG-02: Responsive panel — adapts to viewport, collapse button always accessible
     <div
-      className='fixed bottom-4 right-4 sm:bottom-8 sm:right-8 md:right-[120px] z-40 bg-white flex flex-col w-[calc(100%-2rem)] sm:w-[340px] md:w-[375px] max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden'
+      className='fixed bottom-4 right-4 sm:bottom-8 sm:right-8 md:right-[120px] z-40 bg-white flex flex-col w-[calc(100%-2rem)] sm:w-[340px] md:w-[375px] max-h-[60vh] overflow-hidden'
       style={{
         borderRadius: 16,
         padding: 20,
@@ -126,7 +126,7 @@ const CredentialsPanel: React.FC = () => {
           {/* Credential cards — scrollable */}
           <div
             className='flex flex-col overflow-y-auto scrollbar-thin'
-            style={{ gap: 12, maxHeight: 'calc(100vh - 200px)', scrollbarWidth: 'thin', scrollbarColor: '#000 transparent', marginRight: -8, paddingRight: 8 }}
+            style={{ gap: 12, scrollbarWidth: 'thin', scrollbarColor: '#000 transparent', marginRight: -8, paddingRight: 8 }}
           >
             {requiredCredentials.map((cred) => {
               const doc = uploadedByType[cred.key];

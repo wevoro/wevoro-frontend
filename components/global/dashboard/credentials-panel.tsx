@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronUp, ChevronDown, CloudUpload } from 'lucide-react';
+import { ChevronUp, ChevronDown, CloudUpload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -78,12 +78,12 @@ const CredentialsPanel: React.FC = () => {
         boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.10)',
       }}
     >
-      {/* Header — always visible */}
-      <button
-        onClick={() => setCollapsed((v) => !v)}
-        className='flex items-center justify-between w-full shrink-0'
-      >
-        <div className='flex items-center gap-3'>
+      {/* Header — always visible, sticky at top */}
+      <div className='flex items-center justify-between w-full shrink-0'>
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          className='flex items-center gap-3'
+        >
           <div className='relative w-9 h-9 shrink-0'>
             <Image
               src='/wevoro.png'
@@ -93,13 +93,19 @@ const CredentialsPanel: React.FC = () => {
             />
           </div>
           <span className='font-bold text-gray-900 text-lg sm:text-xl'>Credentials</span>
-        </div>
-        {collapsed ? (
-          <ChevronDown className='w-5 h-5 text-gray-400' />
-        ) : (
-          <ChevronUp className='w-5 h-5 text-gray-400' />
-        )}
-      </button>
+        </button>
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          className='w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors'
+          aria-label={collapsed ? 'Expand credentials' : 'Collapse credentials'}
+        >
+          {collapsed ? (
+            <ChevronUp className='w-5 h-5 text-gray-400' />
+          ) : (
+            <X className='w-5 h-5 text-gray-500' />
+          )}
+        </button>
+      </div>
 
       {!collapsed && (
         <div className='flex flex-col gap-4 overflow-y-auto min-h-0'>

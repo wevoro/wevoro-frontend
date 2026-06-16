@@ -13,9 +13,10 @@ export default function Profile() {
         <PersonalInformation />
         {/* SCRUM-66: GCHEXS Background Check Self-Report Flag */}
         <GchexsSection isEditable={true} />
-        <CredentialStatusSection />
         <ProfessionalInformation />
         <Skills />
+        {/* BUG-08: Credentials Status moved below Skills, above Documents */}
+        <CredentialStatusSection />
         <Documents />
       </div>
       <CredentialsPanel />

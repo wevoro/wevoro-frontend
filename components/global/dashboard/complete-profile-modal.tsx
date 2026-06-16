@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { AlertTriangle, CheckCircle2, Clock, Upload } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Upload, XCircle } from 'lucide-react';
 import UploadDocumentModal from './upload-document-modal';
 import { Button } from '@/components/ui/button';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -24,6 +24,7 @@ interface CredentialRowProps {
   documentType: string;
   defaultTitle: string;
   accept?: string;
+  rejectionReason?: string;
 }
 
 function getDocStatus(doc: any): 'none' | 'pending' | 'approved' | 'rejected' {
@@ -37,14 +38,21 @@ function CredentialRow({
   category,
   documentType,
   defaultTitle,
+  rejectionReason,
 }: CredentialRowProps) {
   const { data: documents } = useDocuments();
   const doc = (documents ?? []).find((d: any) => d.documentType === documentType);
   const status = getDocStatus(doc);
 
+  // BUG-03: Only show credentials that require action
+  // NOT UPLOADED → show with Upload CTA
+  // REJECTED → show with rejection reason and Re-Upload CTA
+  // PENDING / VERIFIED → do NOT show
+  if (status === 'pending' || status === 'approved') return null;
+
   return (
-    <div className='w-full border border-gray-200 rounded-2xl p-5 flex items-center justify-between gap-4'>
-      <div className='flex items-center gap-4 min-w-0'>
+    <div className='w-full border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4'>
+      <div className='flex items-center gap-3 sm:gap-4 min-w-0 w-full sm:w-auto'>
         {/* Status icon */}
         <div className='shrink-0'>
           {status === 'none' && (
@@ -52,45 +60,30 @@ function CredentialRow({
               <Upload className='w-4 h-4 text-gray-400' />
             </div>
           )}
-          {status === 'pending' && (
-            <div className='w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center'>
-              <Clock className='w-5 h-5 text-amber-500' />
-            </div>
-          )}
-          {status === 'approved' && (
-            <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center'>
-              <CheckCircle2 className='w-5 h-5 text-primary' />
-            </div>
-          )}
           {status === 'rejected' && (
             <div className='w-10 h-10 rounded-full bg-red-50 flex items-center justify-center'>
-              <CheckCircle2 className='w-5 h-5 text-red-400' />
+              <XCircle className='w-5 h-5 text-red-400' />
             </div>
           )}
         </div>
 
-        <div className='min-w-0'>
-          <p className='font-semibold text-gray-900'>{label}</p>
-          <p className='text-sm text-gray-400'>{hint}</p>
-          {status === 'pending' && (
-            <span className='inline-block mt-1 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5'>
-              Pending review
-            </span>
-          )}
-          {status === 'approved' && (
-            <span className='inline-block mt-1 text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5'>
-              Reviewed ✓
-            </span>
-          )}
+        <div className='min-w-0 flex-1'>
+          <p className='font-semibold text-gray-900 text-sm sm:text-base'>{label}</p>
+          <p className='text-xs sm:text-sm text-gray-400'>{hint}</p>
           {status === 'rejected' && (
-            <span className='inline-block mt-1 text-xs font-medium text-red-500 bg-red-50 border border-red-200 rounded-full px-2 py-0.5'>
-              Rejected — please re-upload
-            </span>
+            <div className='mt-1'>
+              <span className='inline-block text-xs font-medium text-red-500 bg-red-50 border border-red-200 rounded-full px-2 py-0.5'>
+                Rejected — please re-upload
+              </span>
+              {rejectionReason && (
+                <p className='text-xs text-red-500 mt-1'>Reason: {rejectionReason}</p>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* Upload button always available so user can re-upload */}
+      {/* Upload button */}
       <UploadDocumentModal
         category={category}
         documentType={documentType}
@@ -99,10 +92,10 @@ function CredentialRow({
       >
         <Button
           variant='outline'
-          className='border-primary text-primary rounded-xl hover:bg-primary/5 gap-2 shrink-0'
+          className='border-primary text-primary rounded-xl hover:bg-primary/5 gap-2 shrink-0 w-full sm:w-auto'
         >
           <Upload className='w-4 h-4' />
-          {status === 'none' ? 'Upload' : 'Update'}
+          {status === 'none' ? 'Upload' : 'Re-Upload'}
         </Button>
       </UploadDocumentModal>
     </div>
@@ -110,11 +103,23 @@ function CredentialRow({
 }
 
 /**
- * SCRUM-60: Renders all 5 required credential rows with role-driven labels.
+ * SCRUM-60: Renders required credential rows with role-driven labels.
+ * BUG-03: Only shows credentials that need action (not_uploaded + rejected).
  */
 function RequiredCredentialRows() {
   const { user } = useUserContext();
+  const { data: documents } = useDocuments();
   const role = user?.professionalInfo?.role;
+
+  // Check if ALL credentials are verified or pending — if so, return null
+  const allHandled = REQUIRED_CREDENTIALS_BASE.every((c) => {
+    const doc = (documents ?? []).find((d: any) => d.documentType === c.documentType);
+    const status = getDocStatus(doc);
+    return status === 'approved' || status === 'pending';
+  });
+
+  if (allHandled) return null;
+
   return (
     <>
       {REQUIRED_CREDENTIALS_BASE.map((c) => {
@@ -123,6 +128,7 @@ function RequiredCredentialRows() {
           c.category === 'medical'
             ? 'doc or pdf formats, up to 5MB.'
             : 'jpeg, png, pdf formats, up to 2MB.';
+        const doc = (documents ?? []).find((d: any) => d.documentType === c.documentType);
         return (
           <CredentialRow
             key={c.key}
@@ -131,6 +137,7 @@ function RequiredCredentialRows() {
             category={c.category}
             documentType={c.documentType}
             defaultTitle={label}
+            rejectionReason={doc?.rejectionReason}
           />
         );
       })}
@@ -149,37 +156,36 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({
         if (!o) onClose();
       }}
     >
+      {/* BUG-01: Responsive modal — scrollable, X always accessible */}
       <DialogContent
-        className='sm:max-w-[600px] p-8 rounded-2xl'
+        className='sm:max-w-[600px] p-4 sm:p-6 md:p-8 rounded-2xl max-h-[90vh] overflow-y-auto'
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className='flex flex-col items-center gap-6'>
+        <div className='flex flex-col items-center gap-4 sm:gap-6'>
           <div className='text-center'>
-            <h2 className='text-2xl font-bold text-gray-900'>
+            <h2 className='text-xl sm:text-2xl font-bold text-gray-900'>
               Completing Profile
             </h2>
-            <p className='text-gray-500 mt-2'>
+            <p className='text-gray-500 mt-2 text-sm sm:text-base'>
               Please upload the below credentials to complete your profile
             </p>
           </div>
 
-          <div className='w-full flex items-center gap-3 bg-amber-50 border border-amber-300 rounded-full px-5 py-3'>
+          <div className='w-full flex items-center gap-3 bg-amber-50 border border-amber-300 rounded-full px-4 sm:px-5 py-2.5 sm:py-3'>
             <AlertTriangle className='w-5 h-5 text-amber-500 shrink-0' />
-            <span className='text-amber-600 font-medium text-sm'>
+            <span className='text-amber-600 font-medium text-xs sm:text-sm'>
               Important: Your profile is not visible for the employers
             </span>
           </div>
 
           <RequiredCredentialRows />
 
-          {/* legacy direct rows removed — list is now driven by REQUIRED_CREDENTIALS_BASE */}
-
           <div className='w-full'>
             <Button
               variant='outline'
               onClick={onClose}
-              className='w-full h-14 font-semibold text-lg rounded-xl border-gray-200'
+              className='w-full h-12 sm:h-14 font-semibold text-base sm:text-lg rounded-xl border-gray-200'
             >
               Later
             </Button>

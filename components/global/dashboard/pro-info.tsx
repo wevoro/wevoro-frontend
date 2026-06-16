@@ -55,7 +55,7 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
           )}
         </div>
         {!isProProfileFromPartner && !isPublicProPage && (
-          <div className='flex flex-col gap-3 flex-1 xl:-mt-10'>
+          <div className='flex flex-col gap-3'>
             <p className='text-sm sm:text-base font-semibold text-tertiary'>
               Share Profile with Agencies
             </p>

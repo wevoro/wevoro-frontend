@@ -40,7 +40,7 @@ function formatDate(dateStr?: string) {
 }
 
 const CredentialsPanel: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const { user } = useUserContext();
   const { data: documents } = useDocuments();
 

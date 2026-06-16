@@ -129,10 +129,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
       transition={{ duration: 0.3, delay: index * 0.08 }}
       className={`relative rounded-2xl border overflow-hidden ${colors.border} ${colors.bg} shadow-sm hover:shadow-md transition-shadow`}
     >
-      {/* Left color bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${colors.leftBar}`} />
-
-      <div className='p-5 pl-6'>
+      <div className='p-5'>
         {/* Top row: verification info + expiration countdown + menu */}
         <div className='flex items-start justify-between mb-3'>
           <p className='text-xs text-gray-400'>

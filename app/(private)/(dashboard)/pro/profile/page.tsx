@@ -11,10 +11,10 @@ export default function Profile() {
     <>
       <div className='flex flex-col gap-8'>
         <PersonalInformation />
-        {/* SCRUM-66: GCHEXS Background Check Self-Report Flag */}
-        <GchexsSection isEditable={true} />
         <ProfessionalInformation />
         <Skills />
+        {/* SCRUM-83: GCHEXS banner moved above Credentials Status */}
+        <GchexsSection isEditable={true} />
         {/* BUG-08: Credentials Status moved below Skills, above Documents */}
         <CredentialStatusSection />
         <Documents />

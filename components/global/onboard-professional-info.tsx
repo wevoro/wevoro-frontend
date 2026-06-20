@@ -431,9 +431,25 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                   </label>
                   <Input
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='Input Text'
+                    placeholder='e.g. 2024'
                     type='number'
-                    {...register(`education.${index}.yearOfGraduation`)}
+                    maxLength={4}
+                    max={new Date().getFullYear()}
+                    min={1900}
+                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                      if (e.currentTarget.value.length > 4) {
+                        e.currentTarget.value = e.currentTarget.value.slice(0, 4);
+                      }
+                    }}
+                    {...register(`education.${index}.yearOfGraduation`, {
+                      validate: (value: string) => {
+                        if (!value) return true;
+                        const year = parseInt(value, 10);
+                        if (value.length > 4) return 'Year must be 4 digits';
+                        if (year < 1900 || year > new Date().getFullYear()) return `Year must be between 1900 and ${new Date().getFullYear()}`;
+                        return true;
+                      },
+                    })}
                   />
                 </div>
                 <div className='flex flex-col gap-3'>
@@ -710,6 +726,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                       )
                     }
                     min={getIssueDate(index)}
+                    max='2099-12-31'
                   />
                   {getArrayFieldError(
                     errors.certifications,

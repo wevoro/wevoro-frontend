@@ -521,10 +521,17 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Input Text'
+                placeholder='Enter city name'
                 {...register('address.city', {
                   required: from !== 'admin' && 'City is required',
+                  pattern: {
+                    value: /^[A-Za-z\s\-'.]+$/,
+                    message: 'City must contain only letters',
+                  },
                 })}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^A-Za-z\s\-'.]/g, '');
+                }}
                 isError={!!errors.address?.city}
               />
               {errors.address?.city &&
@@ -537,10 +544,17 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Input Text'
+                placeholder='Enter state/province'
                 {...register('address.state', {
                   required: from !== 'admin' && 'State is required',
+                  pattern: {
+                    value: /^[A-Za-z\s\-'.]+$/,
+                    message: 'State must contain only letters',
+                  },
                 })}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^A-Za-z\s\-'.]/g, '');
+                }}
                 isError={!!errors.address?.state}
               />
               {errors.address?.state &&
@@ -553,10 +567,18 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Input Text'
+                placeholder='Enter zip code'
                 {...register('address.zipCode', {
                   required: from !== 'admin' && 'Zip code is required',
+                  pattern: {
+                    value: /^[0-9\-]+$/,
+                    message: 'Zip code must contain only numbers',
+                  },
                 })}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^0-9\-]/g, '');
+                }}
+                maxLength={10}
                 isError={!!errors.address?.zipCode}
               />
               {errors.address?.zipCode &&
@@ -569,10 +591,17 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Input Text'
+                placeholder='Enter country'
                 {...register('address.country', {
                   required: from !== 'admin' && 'Country is required',
+                  pattern: {
+                    value: /^[A-Za-z\s\-'.]+$/,
+                    message: 'Country must contain only letters',
+                  },
                 })}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^A-Za-z\s\-'.]/g, '');
+                }}
                 isError={!!errors.address?.country}
               />
               {errors.address?.country &&

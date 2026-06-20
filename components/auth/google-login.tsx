@@ -47,12 +47,12 @@ export default function GoogleLogin({ source }: GoogleLoginProps) {
         console.log({ completionPercentage });
 
         const proPath =
-          completionPercentage > 50
+          completionPercentage > 0
             ? '/pro/profile'
             : '/pro/onboard/personal-info';
 
         const partnerPath =
-          completionPercentage > 50
+          completionPercentage > 0
             ? querySuffix
               ? `/partner/pros/${id}?s=true`
               : '/partner/profile'

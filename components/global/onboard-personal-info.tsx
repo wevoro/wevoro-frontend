@@ -173,9 +173,10 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
         if (from === 'admin') {
           refetchUsers();
           refetchQaUsers();
-          // onClose && onClose();
+          toast.success('Profile information updated successfully!');
+          onClose && onClose();
         }
-        reset();
+        reset(data);
 
         if (!from) {
           toast.success(
@@ -456,6 +457,13 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               control={control}
               rules={{
                 required: from !== 'admin' && 'Phone number is required',
+                validate: (value: string) => {
+                  if (from === 'admin' || !value) return true;
+                  const digitsOnly = value.replace(/\D/g, '');
+                  if (digitsOnly.length < 10) return 'Phone number must be at least 10 digits';
+                  if (digitsOnly.length > 15) return 'Phone number must not exceed 15 digits';
+                  return true;
+                },
               }}
               render={({ field }) => (
                 <PhoneInput

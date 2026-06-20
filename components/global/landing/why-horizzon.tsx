@@ -49,7 +49,12 @@ export default function WhyWevoro({
               {item.title}
             </h3>
             <p className='text-muted-foreground md:text-base text-sm max-w-[332px]'>
-              {item.description}
+              {(() => {
+                const desc = item.description || '';
+                const opens = (desc.match(/\(/g) || []).length;
+                const closes = (desc.match(/\)/g) || []).length;
+                return opens > closes ? desc + ')' : desc;
+              })()}
             </p>
           </div>
         ))}

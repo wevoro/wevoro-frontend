@@ -86,7 +86,9 @@ const Solution = ({
 
         {footerText && (
           <p className='text-secondary text-sm md:text-2xl mt-12 text-center'>
-            {footerText}
+            Network shifts are optional and will launch in our Q1 2025 pilot.
+            Your caregivers remain your employees—they are simply accessing
+            supplemental hours during your slow periods.
           </p>
         )}
       </Container>

@@ -7,6 +7,10 @@ import { toast } from 'sonner';
 interface DownloadPackageButtonProps {
   caregiverId: string;
   caregiverName: string;
+  /** SCRUM-88: invoked after a successful download so callers can refetch
+   * (e.g. move the agency Submitted card to Received). */
+  onDownloaded?: () => void;
+  className?: string;
 }
 
 /**
@@ -16,6 +20,8 @@ interface DownloadPackageButtonProps {
 const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
   caregiverId,
   caregiverName,
+  onDownloaded,
+  className,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,6 +55,9 @@ const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
           await new Promise((resolve) => setTimeout(resolve, 300));
         }
       }
+
+      // SCRUM-88: notify caller so the engagement can transition to Received.
+      onDownloaded?.();
     } catch (err) {
       toast.error('Failed to download credential package');
     } finally {
@@ -60,7 +69,7 @@ const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
     <Button
       onClick={handleDownloadPackage}
       disabled={isLoading}
-      className='bg-indigo-600 hover:bg-indigo-700 text-white gap-2'
+      className={className || 'bg-indigo-600 hover:bg-indigo-700 text-white gap-2'}
     >
       {isLoading ? (
         <>

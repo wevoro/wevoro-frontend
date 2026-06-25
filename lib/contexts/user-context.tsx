@@ -13,6 +13,8 @@ interface User {
   status: string;
   completionPercentage?: number;
   coverImage?: string;
+  // SCRUM-64: caregiver public share link id
+  shareId?: string;
   offersSent?: number;
   jobConversionPercentage?: number;
   personalInfo?: {

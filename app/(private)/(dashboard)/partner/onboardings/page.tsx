@@ -15,7 +15,7 @@ import {
   FileSearch,
 } from 'lucide-react';
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
@@ -33,8 +33,12 @@ import { useUIContext, useUserContext } from '@/lib/contexts';
 import { useOffers } from '@/app/apiHooks/useOffers';
 import DocumentViewer from '@/components/global/dashboard/document-viewer';
 import { OfferRequestModal } from '@/components/global/dashboard/offer-request-modal';
+import { isCredentialingMode } from '@/lib/credentialing';
+import AgencyOffersView from '@/components/global/dashboard/credentialing/agency-offers-view';
 
-const PartnerOffers = () => {
+// SCRUM-54: scheduling-era agency Submissions/Onboardings view. Preserved as-is
+// and shown only when the credentialing-mode flag is OFF.
+const SchedulingPartnerOffers = () => {
   const {
     data: offers = [],
     isLoading: isOffersLoading,
@@ -360,6 +364,19 @@ const PartnerOffers = () => {
       ))}
     </div>
   );
+};
+
+// SCRUM-88: when credentialing mode is ON, the agency Offers tab is repurposed to
+// track caregiver↔agency credentialing engagements; otherwise the scheduling-era
+// Submissions view (SCRUM-54) is shown unchanged.
+const PartnerOffers = () => {
+  if (isCredentialingMode())
+    return (
+      <Suspense fallback={null}>
+        <AgencyOffersView />
+      </Suspense>
+    );
+  return <SchedulingPartnerOffers />;
 };
 
 export default PartnerOffers;

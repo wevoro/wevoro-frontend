@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import moment from 'moment';
 import { useOffers } from '@/app/apiHooks/useOffers';
 import { Search, Loader2 } from 'lucide-react';
@@ -15,6 +15,8 @@ import {
 import ReceivedCard from '@/components/global/dashboard/offers-v2/received-card';
 import SubmittedCard from '@/components/global/dashboard/offers-v2/submitted-card';
 import { getInitialStatus } from '@/components/global/dashboard/offers-v2/helpers';
+import { isCredentialingMode } from '@/lib/credentialing';
+import CaregiverOffersView from '@/components/global/dashboard/credentialing/caregiver-offers-view';
 
 type SubTab = 'received' | 'submitted';
 type StatusFilter = 'all' | 'pending' | 'upcoming' | 'active' | 'completed';
@@ -47,7 +49,9 @@ function matchesSearch(offer: any, q: string): boolean {
   return haystack.includes(lc);
 }
 
-const OffersPage: React.FC = () => {
+// SCRUM-55: scheduling-era caregiver Offers view. Preserved as-is and shown only
+// when the credentialing-mode flag is OFF.
+const SchedulingOffersView: React.FC = () => {
   const { data: offers = [], isLoading } = useOffers();
   const [subTab, setSubTab] = useState<SubTab>('received');
   const [search, setSearch] = useState('');
@@ -211,6 +215,19 @@ const OffersPage: React.FC = () => {
       )}
     </div>
   );
+};
+
+// SCRUM-87: when credentialing mode is ON, the Offers tab is repurposed to track
+// caregiver↔agency credentialing engagements; otherwise the scheduling-era view
+// (SCRUM-55) is shown unchanged.
+const OffersPage: React.FC = () => {
+  if (isCredentialingMode())
+    return (
+      <Suspense fallback={null}>
+        <CaregiverOffersView />
+      </Suspense>
+    );
+  return <SchedulingOffersView />;
 };
 
 export default OffersPage;

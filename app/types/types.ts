@@ -5,7 +5,7 @@ export interface Notification {
   user: string;
   createdAt: string;
   // SCRUM-65: Credential notification fields
-  type?: 'general' | 'credential_yellow' | 'credential_red' | 'credential_expired' | 'credential_rejected' | 'private_access_request' | 'private_access_granted' | 'private_access_revoked';
+  type?: 'general' | 'credential_yellow' | 'credential_red' | 'credential_expired' | 'credential_rejected' | 'private_access_request' | 'private_access_granted' | 'private_access_revoked' | 'agency_onboarded' | 'credentials_downloaded';
   credentialDocumentId?: string;
   credentialName?: string;
   ctaLink?: string;

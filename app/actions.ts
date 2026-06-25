@@ -76,6 +76,28 @@ export async function getPros() {
   }
 }
 
+// SCRUM-87: caregiver's credentialing-mode Offers tab — Submitted/Received
+// agency engagements ({ received: [], submitted: [] }).
+export async function getCaregiverEngagements() {
+  try {
+    const response = await api.get(`/credentialing/caregiver-engagements`);
+    return response.data.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+// SCRUM-88: agency's credentialing-mode Offers tab — Submitted/Received
+// caregiver engagements ({ received: [], submitted: [] }).
+export async function getAgencyEngagements() {
+  try {
+    const response = await api.get(`/credentialing/agency-engagements`);
+    return response.data.data;
+  } catch (error) {
+    return null;
+  }
+}
+
 export async function getAllAvailablePros() {
   try {
     const response = await api.get(`/user/all-pros`);

@@ -85,6 +85,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const id = searchParams.get('id');
   const shouldStorePro = searchParams.get('s') === 'true';
+  // SCRUM-87/88: caregiver share-link attribution. Agencies arrive at signup via
+  // /p/[shareId] -> /partner/signup?shareId=...; capture it so the backend can
+  // attribute this agency to the caregiver who referred them.
+  const shareId = searchParams.get('shareId');
   const queryString = searchParams.toString();
   const querySuffix = queryString ? `?${queryString}` : '';
 
@@ -172,6 +176,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email: data.email,
           password: data.password,
           role: source,
+          // SCRUM-87/88: pass share-link attribution for agency signups.
+          sourceShareId: source === 'partner' ? shareId || undefined : undefined,
         }),
       });
 

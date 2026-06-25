@@ -3,13 +3,15 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { email, password, phone, role } = await req.json();
+    const { email, password, phone, role, sourceShareId } = await req.json();
 
     const response = await api.post(`/user/signup`, {
       email,
       password,
       phone,
       role,
+      // SCRUM-87/88: caregiver share-link attribution for agency signups.
+      sourceShareId,
     });
 
     if (response.status === 200) {

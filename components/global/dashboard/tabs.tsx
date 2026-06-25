@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserContext } from '@/lib/contexts';
 import { useOffers } from '@/app/apiHooks/useOffers';
+import { isCredentialingMode } from '@/lib/credentialing';
 
 const Tabs: React.FC = () => {
   const pathname = usePathname();
   const { user } = useUserContext();
   const { data: offers } = useOffers();
+  const credentialing = isCredentialingMode();
 
   const pendingOffers = offers?.filter(
     (offer: any) => offer.status === 'pending',
@@ -16,17 +18,29 @@ const Tabs: React.FC = () => {
 
   const jobOffers = offers?.filter((offer: any) => offer.status !== 'pending');
 
-  const tabItemsPro = [
-    { label: 'Profile', href: '/pro/profile' },
-    { label: `Offers (${pendingOffers?.length || 0})`, href: '/pro/offers' },
-    { label: `Jobs (${jobOffers?.length || 0})`, href: '/pro/jobs' },
-  ];
+  // SCRUM-87: in credentialing mode the Shift Schedule (Jobs) tab is hidden and
+  // tab order becomes Offers -> Profile. Otherwise the scheduling-era tabs stand.
+  const tabItemsPro = credentialing
+    ? [
+        { label: 'Offers', href: '/pro/offers' },
+        { label: 'Profile', href: '/pro/profile' },
+      ]
+    : [
+        { label: 'Profile', href: '/pro/profile' },
+        { label: `Offers (${pendingOffers?.length || 0})`, href: '/pro/offers' },
+        { label: `Jobs (${jobOffers?.length || 0})`, href: '/pro/jobs' },
+      ];
 
+  // SCRUM-88: in credentialing mode the agency Offers tab replaces the
+  // scheduling-era "Onboardings" submissions view (same /partner/onboardings
+  // route, repurposed body + sub-tabs).
   const tabItemsPartner = [
     { label: 'Profile', href: '/partner/profile' },
     { label: 'Pros', href: '/partner/pros' },
     {
-      label: `Onboardings (${offers?.length || 0})`,
+      label: credentialing
+        ? 'Offers'
+        : `Onboardings (${offers?.length || 0})`,
       href: '/partner/onboardings',
     },
   ];

@@ -11,6 +11,8 @@ import {
   Clock,
   FileCheck,
   ArrowRight,
+  UserPlus,
+  Download,
 } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -63,6 +65,19 @@ const NOTIFICATION_CONFIG: Record<
     bgColor: 'bg-gray-50',
     borderColor: 'border-l-4 border-gray-400',
     label: 'Access Revoked',
+  },
+  // SCRUM-87/88: credentialing-mode engagement notifications
+  agency_onboarded: {
+    icon: <UserPlus className='size-4 text-indigo-600' />,
+    bgColor: 'bg-indigo-50',
+    borderColor: 'border-l-4 border-indigo-500',
+    label: 'Agency Onboarded',
+  },
+  credentials_downloaded: {
+    icon: <Download className='size-4 text-emerald-600' />,
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-l-4 border-emerald-500',
+    label: 'Credentials Downloaded',
   },
   general: {
     icon: null,

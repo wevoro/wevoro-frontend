@@ -21,11 +21,15 @@ export default function LandingV2() {
     <>
       <Hero />
       <Stats />
-      <div id='how-it-works'>
+      <div id='caregivers'>
         <Caregivers />
       </div>
-      <Verified />
-      <Agencies />
+      <div id='how-it-works'>
+        <Verified />
+      </div>
+      <div id='agencies'>
+        <Agencies />
+      </div>
       <BetaFocus />
       <Testimonials />
       <div id='credential-network'>

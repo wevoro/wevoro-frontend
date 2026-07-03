@@ -13,6 +13,7 @@ import { getUserById } from '@/app/actions';
 import { useUIContext, useUserContext } from '@/lib/contexts';
 import { OfferRequestModal } from './offer-request-modal';
 import PartnerVerificationModal from './partner-verification-modal';
+import { isCredentialingMode } from '@/lib/credentialing';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -91,19 +92,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           )}
 
           <div className='flex items-center gap-4'>
-            {user?.role === 'partner' && user?.status === 'approved' && (
-              <OfferRequestModal proUser={userById}>
-                <Button
-                  className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-12'
-                  disabled={isPublicProPage}
-                >
-                  Send Offer
-                </Button>
-              </OfferRequestModal>
-            )}
+            {/* SCRUM-87/88: the scheduling-era "Send Offer" flow is hidden in
+                credentialing mode. Partners engage via share-link onboarding +
+                the "Download Credential Package" button instead — a sent Offer
+                would never surface in the pro's credentialing Offers tab. */}
+            {user?.role === 'partner' &&
+              user?.status === 'approved' &&
+              !isCredentialingMode() && (
+                <OfferRequestModal proUser={userById}>
+                  <Button
+                    className='h-12 md:h-14 rounded-[12px] text-sm md:text-lg px-12'
+                    disabled={isPublicProPage}
+                  >
+                    Send Offer
+                  </Button>
+                </OfferRequestModal>
+              )}
             {user?.role === 'partner' &&
               user?.status !== 'approved' &&
-              !isPublicProPage && (
+              !isPublicProPage &&
+              !isCredentialingMode() && (
                 <PartnerVerificationModal>
                   <Button
                     variant='outline'

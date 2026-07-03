@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 const platform = [
-  { label: 'For Caregivers', href: '/pros' },
-  { label: 'For Agencies', href: '/partners' },
+  { label: 'For Caregivers', href: '#caregivers' },
+  { label: 'For Agencies', href: '#agencies' },
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Credential Network', href: '#credential-network' },
 ];

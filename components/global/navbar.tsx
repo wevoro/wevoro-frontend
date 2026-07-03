@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type MouseEvent } from 'react';
 import Logo from './logo';
 import Container from './container';
 import { SelectAuthPath } from './landing/select-auth-path';
@@ -26,11 +26,32 @@ export default function Navbar({
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Single-page landing nav: each item scrolls to its section anchor on "/".
+  // The old standalone /pros and /partners pages are intentionally no longer
+  // linked from the primary nav (client request).
   const navItems = [
-    { name: 'Home', href: '/' },
-    { name: 'Pros', href: '/pros' },
-    { name: 'Partners', href: '/partners' },
+    { name: 'Caregivers', href: '#caregivers' },
+    { name: 'Agencies', href: '#agencies' },
+    { name: 'How It Works', href: '#how-it-works' },
+    { name: 'FAQ', href: '#faqs' },
   ];
+
+  // Scroll to the section if it exists on the current page; otherwise route to
+  // the landing page with the hash so the anchor still works from any page.
+  const handleNavClick = (
+    e: MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    const id = href.replace('#', '');
+    const el =
+      typeof document !== 'undefined' ? document.getElementById(id) : null;
+    e.preventDefault();
+    if (el) {
+      scrollToSection(id);
+    } else {
+      window.location.href = `/${href}`;
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,18 +117,17 @@ export default function Navbar({
                 <nav className='flex flex-col justify-center items-center gap-12 text-center mt-20'>
                   <div className='flex flex-col gap-12'>
                     {navItems.map((item) => (
-                      <Link
+                      <a
                         key={item.name}
                         href={item.href}
-                        className={`text-base font-medium ${
-                          pathname === item.href
-                            ? 'text-primary'
-                            : 'text-muted-foreground'
-                        }`}
-                        onClick={() => setIsOpen(false)}
+                        className='text-base font-medium text-muted-foreground hover:text-primary cursor-pointer'
+                        onClick={(e) => {
+                          setIsOpen(false);
+                          handleNavClick(e, item.href);
+                        }}
                       >
                         {item.name}
-                      </Link>
+                      </a>
                     ))}
                   </div>
                   {environmentType === 'waitlist' ? (
@@ -191,17 +211,14 @@ export default function Navbar({
           <div className='hidden md:flex items-center justify-center flex-1 px-8'>
             <div className='flex space-x-16'>
               {navItems.map((item) => (
-                <Link
+                <a
                   key={item.name}
                   href={item.href}
-                  className={`inline-flex items-center px-1 pt-1 text-base font-normal ${
-                    pathname === item.href
-                      ? 'text-primary'
-                      : 'text-tertiary hover:text-primary transition-colors'
-                  }`}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                  className='inline-flex items-center px-1 pt-1 text-base font-normal text-tertiary hover:text-primary transition-colors cursor-pointer'
                 >
                   {item.name}
-                </Link>
+                </a>
               ))}
             </div>
           </div>

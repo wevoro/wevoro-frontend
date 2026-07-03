@@ -19,11 +19,11 @@ const Tabs: React.FC = () => {
   const jobOffers = offers?.filter((offer: any) => offer.status !== 'pending');
 
   // SCRUM-87: in credentialing mode the Shift Schedule (Jobs) tab is hidden and
-  // tab order becomes Offers -> Profile. Otherwise the scheduling-era tabs stand.
+  // tab order is Profile -> Offers (client request). Otherwise scheduling-era tabs stand.
   const tabItemsPro = credentialing
     ? [
-        { label: 'Offers', href: '/pro/offers' },
         { label: 'Profile', href: '/pro/profile' },
+        { label: 'Offers', href: '/pro/offers' },
       ]
     : [
         { label: 'Profile', href: '/pro/profile' },

@@ -70,11 +70,13 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
           {/* Avatar */}
           <div className='relative w-24 h-24 mx-auto mb-4'>
             {avatarUrl && avatarUrl !== 'https://i.imgur.com/HeIi0wU.png' ? (
-              <Image
+              // Plain <img> (not next/image): avatar URLs come from arbitrary hosts
+              // and unconfigured hostnames crash next/image during SSR.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={avatarUrl}
                 alt={displayName}
-                fill
-                className='rounded-full object-cover border-4 border-white shadow-lg'
+                className='w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg'
               />
             ) : (
               <div className='w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border-4 border-white shadow-lg'>

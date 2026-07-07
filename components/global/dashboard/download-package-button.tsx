@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Download, Package, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { isSharingEnabled } from '@/lib/credentialing';
 
 interface DownloadPackageButtonProps {
   caregiverId: string;
@@ -65,6 +66,9 @@ const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
     }
   };
 
+  // Staged rollout: download surfaces hidden while sharing is disabled.
+  if (!isSharingEnabled()) return null;
+
   return (
     <Button
       onClick={handleDownloadPackage}
@@ -124,6 +128,9 @@ export const DownloadDocumentButton: React.FC<{
       setIsLoading(false);
     }
   };
+
+  // Staged rollout: download surfaces hidden while sharing is disabled.
+  if (!isSharingEnabled()) return null;
 
   return (
     <button

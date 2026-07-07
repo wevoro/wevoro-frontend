@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Copy } from 'lucide-react';
 import { proLinkGenerator } from '@/utils/proLinkGenerator';
 import { useUserContext } from '@/lib/contexts';
+import { isSharingEnabled } from '@/lib/credentialing';
 
 const ProAccountInfo = () => {
   const { user } = useUserContext();
@@ -36,6 +37,7 @@ const ProAccountInfo = () => {
           </div>
         </div>
       </div>
+      {isSharingEnabled() && (
       <div className='flex flex-col gap-3 flex-1'>
         <p className='text-sm sm:text-base font-semibold text-tertiary'>
           Share Link with Employers
@@ -60,6 +62,7 @@ const ProAccountInfo = () => {
           </Button>
         </div>
       </div>
+      )}
     </>
   );
 };

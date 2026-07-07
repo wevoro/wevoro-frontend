@@ -11,3 +11,17 @@
  */
 export const isCredentialingMode = (): boolean =>
   process.env.NEXT_PUBLIC_CREDENTIALING_MODE !== 'false';
+
+/**
+ * Staged-rollout flag for credential SHARING, deliberately INDEPENDENT from the
+ * credentialing/scheduling flag above (client directive: "sharing should not
+ * sit behind a feature flag tied to scheduling").
+ *
+ * Gates only the share/download surfaces: Share Profile buttons, the share-link
+ * box, the public /p/[shareId] preview, and the credential download buttons.
+ * Defaults ON unless explicitly 'false' — flip to 'false' for a day-one launch
+ * with profiles/uploads only, then back on (rebuild) once sharing is cleared
+ * for real users. Read from NEXT_PUBLIC_SHARING_ENABLED (inlined at build).
+ */
+export const isSharingEnabled = (): boolean =>
+  process.env.NEXT_PUBLIC_SHARING_ENABLED !== 'false';

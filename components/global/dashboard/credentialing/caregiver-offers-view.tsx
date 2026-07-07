@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useUserContext } from '@/lib/contexts';
 import { useCaregiverEngagements } from '@/app/apiHooks/useCaregiverEngagements';
 import ShareProfileModal from '@/components/global/dashboard/share-profile-modal';
+import { isSharingEnabled } from '@/lib/credentialing';
 import { EngagementCard, EngagementEntry } from './engagement-card';
 
 type SubTab = 'received' | 'submitted';
@@ -125,12 +126,14 @@ const CaregiverOffersView: React.FC = () => {
             No agencies yet. Share your profile link to invite agencies to view
             your credentials.
           </p>
-          <ShareProfileModal shareLink={shareLink}>
-            <Button className='h-11 rounded-xl gap-2 font-semibold'>
-              <Share2 className='size-4' />
-              Share Profile
-            </Button>
-          </ShareProfileModal>
+          {isSharingEnabled() && (
+            <ShareProfileModal shareLink={shareLink}>
+              <Button className='h-11 rounded-xl gap-2 font-semibold'>
+                <Share2 className='size-4' />
+                Share Profile
+              </Button>
+            </ShareProfileModal>
+          )}
         </div>
       ) : (
         <div className='flex flex-col gap-4'>

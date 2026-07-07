@@ -3,6 +3,7 @@ import { Share2 } from 'lucide-react';
 import React from 'react';
 import ProfileName from './profile-name';
 import ShareProfileModal from './share-profile-modal';
+import { isSharingEnabled } from '@/lib/credentialing';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
   const personalInfo = user?.personalInfo;
@@ -54,7 +55,7 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
             </div>
           )}
         </div>
-        {!isProProfileFromPartner && !isPublicProPage && (
+        {isSharingEnabled() && !isProProfileFromPartner && !isPublicProPage && (
           <div className='flex flex-col gap-3'>
             <p className='text-sm sm:text-base font-semibold text-tertiary'>
               Share Profile with Agencies

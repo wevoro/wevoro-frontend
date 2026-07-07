@@ -1,6 +1,7 @@
 import React from 'react';
 import { getUserByShareId, getUser } from '@/app/actions';
 import { redirect } from 'next/navigation';
+import { isSharingEnabled } from '@/lib/credentialing';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, MapPin, User, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
@@ -13,6 +14,23 @@ export const metadata = {
 
 const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => {
   const { shareId } = params;
+
+  // Staged rollout: while sharing is disabled the public preview is offline.
+  if (!isSharingEnabled()) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <div className='text-center max-w-md px-6'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-2'>
+            Profile sharing is coming soon
+          </h1>
+          <p className='text-gray-500'>
+            Caregiver profile sharing is not open yet. Please check back soon.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const proUser = await getUserByShareId(shareId);
   const currentUser = await getUser();
 

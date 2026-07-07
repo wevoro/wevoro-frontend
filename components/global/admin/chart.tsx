@@ -117,13 +117,13 @@ const Chart = ({ pros, partners }: any) => {
               value='pro'
               className='rounded-[8px] py-1 sm:py-2 px-2 sm:px-4'
             >
-              Pro's
+              Caregivers
             </TabsTrigger>
             <TabsTrigger
               value='partner'
               className='rounded-[8px] py-1 sm:py-2 px-2 sm:px-4'
             >
-              Partner's
+              Agencies
             </TabsTrigger>
           </TabsList>
         </Tabs>

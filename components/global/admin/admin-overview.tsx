@@ -44,13 +44,13 @@ export default function OverviewPage() {
       <div className='grid gap-4 sm:gap-6 md:grid-cols-3'>
         {[
           {
-            title: "Pro's",
+            title: "Caregivers",
             count: pros?.length,
             change: formatChange(proStats.current - proStats.lastMonth),
             icon: FileBadge,
           },
           {
-            title: "Partner's",
+            title: "Agencies",
             count: partners?.length,
             change: formatChange(partnerStats.current - partnerStats.lastMonth),
             icon: Building2,

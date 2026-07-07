@@ -75,7 +75,7 @@ export default function PartnersPage() {
 
   return (
     <div className='space-y-6'>
-      <Title className='mb-4 sm:mb-6' text='Partners' />
+      <Title className='mb-4 sm:mb-6' text='Agencies' />
 
       <div className='flex flex-col sm:flex-row gap-4'>
         <Input

@@ -155,9 +155,9 @@ export default function AdminAlertModal({
       : alertType === 'remove'
         ? 'You are about to remove the user from the platform. The user will be notified through his registered email that his account has been deleted by the admin. <strong>Would you like to proceed?</strong>'
         : alertType === 'approve'
-          ? 'You are about to approve the Pro application. The Pro will be notified by your response. <strong>Would you like to proceed?</strong>'
+          ? 'You are about to approve the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
           : alertType === 'reject'
-            ? 'You are about to reject the Pro application. The Pro will be notified by your response. <strong>Would you like to proceed?</strong>'
+            ? 'You are about to reject the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
             : '';
 
   const placeholder =

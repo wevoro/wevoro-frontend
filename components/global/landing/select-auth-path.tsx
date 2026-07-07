@@ -27,12 +27,12 @@ export function SelectAuthPath({
             <>
               <Link href='/pro/signup'>
                 <DropdownMenuItem className='cursor-pointer'>
-                  <span>Pro</span>
+                  <span>Caregiver</span>
                 </DropdownMenuItem>
               </Link>
               <Link href='/partner/signup'>
                 <DropdownMenuItem className='cursor-pointer'>
-                  <span>Partner</span>
+                  <span>Agency</span>
                 </DropdownMenuItem>
               </Link>
             </>
@@ -41,12 +41,12 @@ export function SelectAuthPath({
             <>
               <Link href='/pro/login'>
                 <DropdownMenuItem className='cursor-pointer'>
-                  <span>Pro</span>
+                  <span>Caregiver</span>
                 </DropdownMenuItem>
               </Link>
               <Link href='/partner/login'>
                 <DropdownMenuItem className='cursor-pointer'>
-                  <span>Partner</span>
+                  <span>Agency</span>
                 </DropdownMenuItem>
               </Link>
             </>

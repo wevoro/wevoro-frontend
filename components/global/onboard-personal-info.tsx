@@ -186,6 +186,14 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           );
           if (isEdit) {
             router.back();
+          } else if (source === 'partner') {
+            // Full page navigation (same idiom as login): a soft router.push
+            // here could fail silently on a flaky connection, leaving the form
+            // looking stuck after the success toast ("needs a 2nd click").
+            // Hard navigation can't be dropped and reloads fresh user data.
+            // Keep the loading overlay up until the browser swaps pages.
+            window.location.href = path;
+            return;
           } else {
             router.push(path);
           }

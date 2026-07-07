@@ -21,22 +21,22 @@ export default function LandingV2() {
     <>
       <Hero />
       <Stats />
-      <div id='caregivers'>
+      <div id='caregivers' className='scroll-mt-28'>
         <Caregivers />
       </div>
-      <div id='how-it-works'>
+      <div id='how-it-works' className='scroll-mt-28'>
         <Verified />
       </div>
-      <div id='agencies'>
+      <div id='agencies' className='scroll-mt-28'>
         <Agencies />
       </div>
       <BetaFocus />
       <Testimonials />
-      <div id='credential-network'>
+      <div id='credential-network' className='scroll-mt-28'>
         <ProviderNetwork />
       </div>
       <CtaBanner />
-      <div id='faqs'>
+      <div id='faqs' className='scroll-mt-28'>
         <Faq />
       </div>
       <FinalCta />

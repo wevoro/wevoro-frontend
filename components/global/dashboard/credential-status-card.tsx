@@ -80,6 +80,10 @@ interface CredentialStatusCardProps {
   onUpdateVerification?: () => void;
   onRemove?: () => void;
   index?: number;
+  // SCRUM-63: agency view reuses this exact card as a read-only, subtraction-based
+  // variant of the caregiver card — same structure/styling/copy, minus the
+  // caregiver-only elements (Verified-by-Wevoro line, three-dot menu, editability).
+  readOnly?: boolean;
 }
 
 const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
@@ -87,6 +91,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
   onUpdateVerification,
   onRemove,
   index = 0,
+  readOnly = false,
 }) => {
   const doc = credential.document;
   const state = credential.state;
@@ -126,8 +131,12 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
       className={`relative rounded-2xl border overflow-hidden ${colors.border} ${colors.bg} shadow-sm hover:shadow-md transition-shadow`}
     >
       <div className='p-5'>
-        {/* Top row: verification info + expiration countdown + menu */}
-        <div className='flex items-start justify-between mb-3'>
+        {/* Top row: verification info + expiration countdown + menu.
+            readOnly (agency): drop the "Verified by Wevoro on…" line and the
+            three-dot menu — only the expiration countdown remains. */}
+        {(!readOnly || (isVerified && expiration.hasExpiration)) && (
+        <div className={`flex items-start ${readOnly ? 'justify-end' : 'justify-between'} mb-3`}>
+          {!readOnly && (
           <p className='text-xs text-gray-400'>
             {isVerified
               ? `Verified by Wevoro on ${formatDate(doc?.reviewedAt)}`
@@ -135,6 +144,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
               ? `Uploaded on ${formatDate(doc?.createdAt)}`
               : `Rejected — please re-upload`}
           </p>
+          )}
           <div className='flex items-center gap-2'>
             {/* Expiration countdown (reference design style) */}
             {isVerified && expiration.hasExpiration && (
@@ -154,7 +164,8 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
                 <span className='text-[10px] text-gray-400'>min</span>
               </div>
             )}
-            {/* Three-dot menu */}
+            {/* Three-dot menu (caregiver-only) */}
+            {!readOnly && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className='w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors'>
@@ -181,8 +192,10 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            )}
           </div>
         </div>
+        )}
 
         {/* Credential name + badge */}
         <div className='flex items-center gap-3 mb-2'>
@@ -244,8 +257,8 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
               <MoveUpRight className='w-3 h-3' />
             </Button>
           </a>
-          {/* Re-upload for rejected */}
-          {isRejected && (
+          {/* Re-upload for rejected (caregiver-only) */}
+          {!readOnly && isRejected && (
             <Button
               variant='default'
               size='sm'
@@ -256,8 +269,8 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
               Re-upload
             </Button>
           )}
-          {/* Update for pending */}
-          {isPending && (
+          {/* Update for pending (caregiver-only) */}
+          {!readOnly && isPending && (
             <Button
               variant='outline'
               size='sm'

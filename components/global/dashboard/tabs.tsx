@@ -33,17 +33,22 @@ const Tabs: React.FC = () => {
 
   // SCRUM-88: in credentialing mode the agency Offers tab replaces the
   // scheduling-era "Onboardings" submissions view (same /partner/onboardings
-  // route, repurposed body + sub-tabs).
-  const tabItemsPartner = [
-    { label: 'Profile', href: '/partner/profile' },
-    { label: 'Pros', href: '/partner/pros' },
-    {
-      label: credentialing
-        ? 'Offers'
-        : `Onboardings (${offers?.length || 0})`,
-      href: '/partner/onboardings',
-    },
-  ];
+  // route, repurposed body + sub-tabs). The legacy "Pros" (browse caregivers)
+  // tab belongs to the scheduling era and is removed from agency nav — the
+  // credentialing agency journey is Profile -> Offers only (client request).
+  const tabItemsPartner = credentialing
+    ? [
+        { label: 'Profile', href: '/partner/profile' },
+        { label: 'Offers', href: '/partner/onboardings' },
+      ]
+    : [
+        { label: 'Profile', href: '/partner/profile' },
+        { label: 'Pros', href: '/partner/pros' },
+        {
+          label: `Onboardings (${offers?.length || 0})`,
+          href: '/partner/onboardings',
+        },
+      ];
   const tabItems = user?.role === 'pro' ? tabItemsPro : tabItemsPartner;
   return (
     <div className='px-4 p-6 md:p-8 bg-white md:rounded-[16px]'>

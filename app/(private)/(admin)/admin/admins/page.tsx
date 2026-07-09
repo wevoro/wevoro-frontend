@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -68,11 +68,6 @@ const AdminsPage = () => {
   useEffect(() => {
     if (notSuperAdmin) router.replace('/admin');
   }, [notSuperAdmin, router]);
-
-  const setupLink = useMemo(() => {
-    if (typeof window === 'undefined') return '/super-setup';
-    return `${window.location.origin}/super-setup`;
-  }, []);
 
   const handlePromote = async () => {
     const email = promoteEmail.trim().toLowerCase();
@@ -306,30 +301,6 @@ const AdminsPage = () => {
             </table>
           </div>
         )}
-      </div>
-
-      {/* Self-serve setup link */}
-      <div className='bg-white rounded-2xl border border-gray-100 p-6'>
-        <h3 className='text-base font-semibold text-gray-900 mb-1'>
-          Super admin setup link
-        </h3>
-        <p className='text-sm text-gray-500 mb-3'>
-          Share this link with someone who should create their own super admin
-          account. They&apos;ll need the setup key to complete it.
-        </p>
-        <div className='flex items-center justify-between bg-[#f9f9f9] rounded-lg px-4 h-11'>
-          <span className='text-sm text-gray-700 truncate'>{setupLink}</span>
-          <Button
-            variant='outline'
-            className='h-8 rounded-lg text-xs'
-            onClick={() => {
-              navigator.clipboard.writeText(setupLink);
-              toast.success('Link copied');
-            }}
-          >
-            Copy
-          </Button>
-        </div>
       </div>
 
       {/* Permissions dialog */}

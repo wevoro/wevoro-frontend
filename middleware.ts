@@ -29,16 +29,29 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith('/admin') &&
     !req.nextUrl.pathname.startsWith('/admin/login');
 
+  // Admin panel admits both admin and super_admin.
+  const adminRoles = ['admin', 'super_admin'];
+  const isAdminUser = adminRoles.includes(isAuthenticatedUser.role);
+
+  // Super Admin panel: /admin/admins is restricted to super_admin only.
+  const isSuperAdminRoute = req.nextUrl.pathname.startsWith('/admin/admins');
+
   // Redirect unauthenticated users or non-admin users trying to access protected routes
   if (
     (!isAuthenticatedUser.email && isProtected) ||
-    (isAdminRoute && isAuthenticatedUser.role !== 'admin')
+    (isAdminRoute && !isAdminUser)
   ) {
     if (isAdminRoute) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     } else {
       return NextResponse.redirect(new URL('/', req.url));
     }
+  }
+
+  // A non-super-admin (plain admin) trying to open the admins management page
+  // is bounced to the admin dashboard.
+  if (isSuperAdminRoute && isAuthenticatedUser.role !== 'super_admin') {
+    return NextResponse.redirect(new URL('/admin', req.url));
   }
 
   return NextResponse.next();

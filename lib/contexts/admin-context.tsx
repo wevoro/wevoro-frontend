@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  getAdmins,
   getFeedbacks,
   getQaFeedbacks,
   getQaUsers,
@@ -13,7 +14,8 @@ import { useSearchParams, usePathname } from 'next/navigation';
 interface User {
   _id: string;
   email: string;
-  role: 'pro' | 'partner' | 'admin';
+  role: 'pro' | 'partner' | 'admin' | 'super_admin';
+  permissions?: string[];
   [key: string]: any;
 }
 
@@ -29,6 +31,11 @@ interface AdminContextValue {
   isUsersLoading: boolean;
   pros: User[];
   partners: User[];
+
+  // Super Admin panel: admins list
+  admins: User[];
+  refetchAdmins: () => void;
+  isAdminsLoading: boolean;
 
   // QA Users (conditional based on env)
   qaUsers: User[];
@@ -83,6 +90,21 @@ export function AdminProvider({ children }: AdminProviderProps) {
     refetchOnWindowFocus: false,
     // refetchOnMount: false,
     staleTime: 60 * 1000,
+  });
+
+  // Super Admin panel: admins list (super_admin-only endpoint; only fetched on
+  // admin pages — a non-super-admin request just 403s and yields []).
+  const {
+    refetch: refetchAdmins,
+    data: admins = [],
+    isLoading: isAdminsLoading,
+  } = useQuery({
+    queryKey: ['admins'],
+    queryFn: async () => (await getAdmins()) || [],
+    enabled: isAdminPage,
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000,
+    retry: false,
   });
 
   // QA Users (only fetched when env=qa)
@@ -163,6 +185,11 @@ export function AdminProvider({ children }: AdminProviderProps) {
       pros,
       partners,
 
+      // Admins (super admin panel)
+      admins,
+      refetchAdmins,
+      isAdminsLoading,
+
       // QA Users
       qaUsers,
       qaPros,
@@ -188,6 +215,9 @@ export function AdminProvider({ children }: AdminProviderProps) {
       isUsersLoading,
       pros,
       partners,
+      admins,
+      refetchAdmins,
+      isAdminsLoading,
       qaUsers,
       qaPros,
       qaPartners,

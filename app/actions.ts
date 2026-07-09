@@ -36,6 +36,61 @@ export async function getUsers() {
     return null;
   }
 }
+// Super Admin panel: list all admins + super_admins with their permissions.
+export async function getAdmins() {
+  try {
+    const response = await api.get(`/user/admins`);
+    return response.data.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+// Super Admin panel: promote a user to admin / demote an admin (super_admin only).
+export async function updateAdminRole(id: string, role: string) {
+  try {
+    const response = await api.patch(`/user/role/${id}`, { role });
+    return { success: true, data: response.data.data };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to update role',
+    };
+  }
+}
+
+// Super Admin panel: set granular permissions on an admin (super_admin only).
+export async function setAdminPermissions(id: string, permissions: string[]) {
+  try {
+    const response = await api.patch(`/user/permissions/${id}`, {
+      permissions,
+    });
+    return { success: true, data: response.data.data };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to update permissions',
+    };
+  }
+}
+
+// Super Admin panel: self-serve super-admin creation via the keyed setup link.
+export async function superSetup(payload: {
+  email: string;
+  password: string;
+  setupKey: string;
+}) {
+  try {
+    const response = await api.post(`/user/super-setup`, payload);
+    return { success: true, message: response.data.message };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Setup failed',
+    };
+  }
+}
+
 export async function getQaUsers() {
   try {
     const response = await api.get(

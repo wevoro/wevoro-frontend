@@ -9,7 +9,8 @@ import { useEffect } from 'react';
 interface User {
   _id: string;
   email: string;
-  role: 'pro' | 'partner' | 'admin';
+  role: 'pro' | 'partner' | 'admin' | 'super_admin';
+  permissions?: string[];
   status: string;
   completionPercentage?: number;
   coverImage?: string;

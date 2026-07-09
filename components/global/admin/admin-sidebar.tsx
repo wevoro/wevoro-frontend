@@ -17,10 +17,12 @@ import {
   FileBadge,
   LayoutDashboardIcon,
   MessageCircleQuestion,
+  ShieldCheck,
 } from 'lucide-react';
 import Logo from '../logo';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useUserContext } from '@/lib/contexts';
 
 const items = [
   {
@@ -52,9 +54,22 @@ const items = [
   },
 ];
 
+// Super Admin panel: visible only to super_admin.
+const superAdminItems = [
+  {
+    title: 'Admins',
+    url: '/admin/admins',
+    icon: ShieldCheck,
+  },
+];
+
 export function AdminSidebar() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+  const { user } = useUserContext();
+
+  const navItems =
+    user?.role === 'super_admin' ? [...items, ...superAdminItems] : items;
 
   return (
     <Sidebar>
@@ -65,7 +80,7 @@ export function AdminSidebar() {
         <SidebarGroup className='p-0'>
           <SidebarGroupContent>
             <SidebarMenu className='list-none pl-0'>
-              {items.map((item) => {
+              {navItems.map((item: any) => {
                 const isActive = pathname === item.url;
                 return (
                   <SidebarMenuItem

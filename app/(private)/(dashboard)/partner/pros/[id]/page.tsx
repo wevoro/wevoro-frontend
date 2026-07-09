@@ -23,7 +23,11 @@ const ProFromPartner = async ({ params }: { params: { id: string } }) => {
 
   return (
     <div className='flex flex-col gap-8'>
+      {/* SCRUM-63/82: section order mirrors the caregiver profile —
+          Personal → Professional → Skills → GCHEXS → Credentials Status → Documents */}
       <PersonalInformation proUser={user} />
+      <ProfessionalInformation proUser={user} />
+      <Skills proUser={user} />
       {/* SCRUM-66: GCHEXS Flag (read-only for agencies) */}
       <GchexsSection isEditable={false} userData={user} />
       <AgencyCredentialStatus userId={user._id} />
@@ -31,8 +35,6 @@ const ProFromPartner = async ({ params }: { params: { id: string } }) => {
       <div className='flex justify-end'>
         <DownloadPackageButton caregiverId={user._id} caregiverName={caregiverName} />
       </div>
-      <ProfessionalInformation proUser={user} />
-      <Skills proUser={user} />
       <Documents proUser={user} />
     </div>
   );

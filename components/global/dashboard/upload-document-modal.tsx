@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { isValidFileType, isValidFileSize } from '@/utils/download';
+import {
+  isValidFileType,
+  isValidFileSize,
+  MAX_UPLOAD_MB,
+} from '@/utils/download';
 import {
   Dialog,
   DialogContent,
@@ -43,6 +47,11 @@ const NON_MEDICAL_DOCUMENT_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
+// SCRUM-97: name the actual size so caregivers know how far over they are,
+// rather than just being told the upload was rejected.
+const tooLargeMessage = (file: File) =>
+  `This file is ${(file.size / 1024 / 1024).toFixed(1)}MB. Please upload a file under ${MAX_UPLOAD_MB}MB.`;
+
 interface Document {
   _id: string;
   title: string;
@@ -67,6 +76,8 @@ interface UploadDocumentModalProps {
 
 const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   children,
+  open: openProp,
+  onOpenChange,
   category,
   documentType: defaultDocumentType,
   defaultTitle,
@@ -74,7 +85,18 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   document, // Existing document for editing
 }) => {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState<boolean>(false);
+  // Supports both usages: uncontrolled (children act as the DialogTrigger, e.g.
+  // the credentials panel) and controlled via `open`/`onOpenChange` (e.g. the
+  // Rejected row's Re-upload CTA, which has no trigger child). These props were
+  // declared but never read, so every controlled caller silently no-opped —
+  // clicking Re-upload did nothing.
+  const [uncontrolledOpen, setUncontrolledOpen] = useState<boolean>(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    if (!isControlled) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   // SCRUM-61: Add More defaults Category to Non-Medical for the streamlined common case.
   const initialCategory = category || (addMore ? 'non_medical' : '');
   const [formData, setFormData] = useState({
@@ -159,9 +181,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         toast.error('Invalid file type. Please upload a JPEG, PNG, or PDF file.');
         return;
       }
-      // Validate file size (3MB max)
       if (!isValidFileSize(droppedFile)) {
-        toast.error('File size must be less than 3MB');
+        toast.error(tooLargeMessage(droppedFile));
         return;
       }
       setFormData((prev) => ({ ...prev, file: droppedFile }));
@@ -176,9 +197,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         toast.error('Invalid file type. Please upload a JPEG, PNG, or PDF file.');
         return;
       }
-      // Validate file size (3MB max)
       if (!isValidFileSize(selectedFile)) {
-        toast.error('File size must be less than 3MB');
+        toast.error(tooLargeMessage(selectedFile));
         return;
       }
       setFormData((prev) => ({ ...prev, file: selectedFile }));
@@ -390,7 +410,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                     Upload from your computer
                   </p>
                   <p className='text-xs md:text-sm text-muted-foreground'>
-                    jpeg, png, pdf formats, up to 3MB.
+                    jpeg, png, pdf formats, up to {MAX_UPLOAD_MB}MB.
                   </p>
                 </div>
               )}

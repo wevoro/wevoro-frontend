@@ -131,10 +131,14 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
 
   const onSubmit = async (data: any) => {
     try {
+      // `id` is null on the credentialing share-link journey (that flow passes
+      // ?proId=, while auth-context reads ?id=), which sent new agencies to
+      // /partner/pros/null -> redirect -> the old Available Caregivers list.
+      // Only take the caregiver-profile branch when we actually have an id.
       const path =
         source === 'pro'
           ? '/pro/onboard/professional-info'
-          : querySuffix
+          : querySuffix && id
             ? `/partner/pros/${id}?s=true`
             : '/partner/profile?onboarded=true';
       if (!isDirty && !isEdit && !from) {

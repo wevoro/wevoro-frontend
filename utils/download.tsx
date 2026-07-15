@@ -59,8 +59,17 @@ export const isValidFileType = (file: File): boolean => {
 };
 
 /**
- * Validates file size (max 3MB).
+ * Validates file size (max 10MB).
+ *
+ * SCRUM-97: raised from 3MB — unmodified smartphone photos are typically 3–8MB,
+ * so caregivers were being forced to upload screenshots of their credentials
+ * instead of the photos themselves.
  */
-export const isValidFileSize = (file: File, maxMB: number = 3): boolean => {
+export const MAX_UPLOAD_MB = 10;
+
+export const isValidFileSize = (
+  file: File,
+  maxMB: number = MAX_UPLOAD_MB
+): boolean => {
   return file.size <= maxMB * 1024 * 1024;
 };

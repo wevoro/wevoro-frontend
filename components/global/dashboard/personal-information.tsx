@@ -79,7 +79,10 @@ const PersonalInformation = ({
               <div className='flex flex-col gap-1.5 md:gap-2.5'>
                 <SectionTitle text='Date of Birth' />
                 <SectionDescription
-                  text={moment(dateOfBirth).format('MMMM Do YYYY')}
+                  // SCRUM-96: dateOfBirth is a date-only value stored at UTC
+                  // midnight, so it must be read back in UTC. moment()'s default
+                  // local mode renders the previous day in UTC-negative zones.
+                  text={moment.utc(dateOfBirth).format('MMMM Do YYYY')}
                   from={from}
                 />
               </div>

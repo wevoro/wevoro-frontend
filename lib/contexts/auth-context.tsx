@@ -146,9 +146,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
               ? '/pro/profile'
               : '/pro/onboard/personal-info?autofill=true';
 
+          // Same null-`id` guard as the onboarding redirect: the share-link
+          // journey passes ?proId=, not ?id=, so `id` is null there.
           const partnerPath =
             completionPercentage > 50
-              ? querySuffix
+              ? querySuffix && id
                 ? `/partner/pros/${id}?s=true`
                 : '/partner/profile'
               : `/partner/onboard/personal-info${querySuffix}`;

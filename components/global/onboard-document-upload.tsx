@@ -10,6 +10,7 @@ import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { Button } from '../ui/button';
 import { CloudUpload } from 'lucide-react';
 import { useUserContext } from '@/lib/contexts';
+import { MAX_UPLOAD_MB } from '@/utils/download';
 import {
   REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
   getCredentialLabel,
@@ -30,10 +31,13 @@ const OnboardDocumentUpload = forwardRef(() => {
       category: c.category,
       documentType: c.documentType,
       defaultTitle: label,
+      // SCRUM-97: both hints previously understated the real cap (enforced by
+      // isValidFileSize), which is what pushed caregivers into uploading
+      // screenshots instead of photos of their credentials.
       hint:
         c.category === 'medical'
-          ? 'doc or pdf formats, up to 5MB.'
-          : 'jpeg, png, pdf formats, up to 2MB.',
+          ? `doc or pdf formats, up to ${MAX_UPLOAD_MB}MB.`
+          : `jpeg, png, pdf formats, up to ${MAX_UPLOAD_MB}MB.`,
     };
   });
 

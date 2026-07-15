@@ -19,7 +19,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const isPartnerOnboarded = useSearchParams().get('onboarded') === 'true';
   const router = useRouter();
   const [profileModalDismissed, setProfileModalDismissed] = useState(false);
-  const { data: documents } = useDocuments();
+  const { data: documents, isPending: documentsLoading } = useDocuments();
 
   useEffect(() => {
     if (!user?.completionPercentage && user?.role === 'pro') {
@@ -38,7 +38,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
 
   // BUG-03: Only show modal if there are actionable credentials (not_uploaded or rejected)
   const hasActionableCredentials = useMemo(() => {
-    if (!documents) return true; // Still loading, show modal as fallback
+    if (!documents) return false; // Unknown until loaded — see SCRUM-94 below.
     return REQUIRED_CREDENTIALS.some((c) => {
       const doc = (documents ?? []).find((d: any) => d.documentType === c.documentType);
       if (!doc) return true; // not_uploaded → actionable
@@ -47,9 +47,14 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     });
   }, [documents]);
 
+  // SCRUM-94 (Symptom B): wait for the credential query before the modal's first
+  // paint. It used to open while `documents` was still undefined, and the modal
+  // reads that same undefined list — so every credential looked not-uploaded and
+  // it flashed all 5 for ~1-2s before resolving to the real subset.
   const showCompleteProfileModal =
     user?.role === 'pro' &&
     (user?.completionPercentage ?? 0) < 100 &&
+    !documentsLoading &&
     hasActionableCredentials &&
     !profileModalDismissed;
 

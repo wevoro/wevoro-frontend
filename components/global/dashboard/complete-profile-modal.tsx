@@ -7,6 +7,7 @@ import UploadDocumentModal from './upload-document-modal';
 import { Button } from '@/components/ui/button';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { useUserContext } from '@/lib/contexts';
+import { MAX_UPLOAD_MB } from '@/utils/download';
 import {
   REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
   getCredentialLabel,
@@ -124,10 +125,11 @@ function RequiredCredentialRows() {
     <>
       {REQUIRED_CREDENTIALS_BASE.map((c) => {
         const label = getCredentialLabel(c, role);
+        // SCRUM-97: sizes track the single enforced limit (isValidFileSize).
         const hint =
           c.category === 'medical'
-            ? 'doc or pdf formats, up to 5MB.'
-            : 'jpeg, png, pdf formats, up to 2MB.';
+            ? `doc or pdf formats, up to ${MAX_UPLOAD_MB}MB.`
+            : `jpeg, png, pdf formats, up to ${MAX_UPLOAD_MB}MB.`;
         const doc = (documents ?? []).find((d: any) => d.documentType === c.documentType);
         return (
           <CredentialRow

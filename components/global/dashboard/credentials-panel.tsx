@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { useUserContext } from '@/lib/contexts';
+import { MAX_UPLOAD_MB } from '@/utils/download';
 import {
   REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
   getCredentialLabel,
@@ -25,9 +26,12 @@ interface Document {
 }
 
 // SCRUM-60: 5-credential list with role-driven label resolved at view time.
+// SCRUM-97: sizes track the single enforced limit (isValidFileSize). These hints
+// used to advertise 2MB/5MB while the real cap was 3MB — the understated numbers
+// are what pushed caregivers into uploading screenshots of their credentials.
 const HINT_BY_CATEGORY: Record<string, string> = {
-  non_medical: 'jpeg, png, pdf formats, up to 2MB.',
-  medical: 'doc or pdf formats, up to 5MB.',
+  non_medical: `jpeg, png, pdf formats, up to ${MAX_UPLOAD_MB}MB.`,
+  medical: `doc or pdf formats, up to ${MAX_UPLOAD_MB}MB.`,
 };
 
 function formatDate(dateStr?: string) {

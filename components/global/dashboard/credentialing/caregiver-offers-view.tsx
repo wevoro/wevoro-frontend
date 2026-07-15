@@ -50,7 +50,7 @@ const CaregiverOffersView: React.FC = () => {
   );
 
   const initialTab: SubTab =
-    searchParams.get('tab') === 'submitted' ? 'submitted' : 'received';
+    searchParams.get('tab') === 'received' ? 'received' : 'submitted';
   const [subTab, setSubTab] = useState<SubTab>(initialTab);
   useEffect(() => {
     const t = searchParams.get('tab');
@@ -92,8 +92,8 @@ const CaregiverOffersView: React.FC = () => {
 
       {/* Sub-tabs */}
       <div className='flex items-center gap-8 border-b border-gray-100 dark:border-neutral-800 mb-6'>
-        {renderSubTab('received', 'Received', received.length)}
         {renderSubTab('submitted', 'Submitted', submitted.length)}
+        {renderSubTab('received', 'Received', received.length)}
       </div>
 
       {/* Body */}

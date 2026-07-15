@@ -2,8 +2,18 @@ import { getAllAvailablePros } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Clock, FileText, MapPin, MoveUpRight, ShieldCheck, Users, XCircle } from 'lucide-react';
 import React from 'react';
+import { redirect } from 'next/navigation';
+import { isCredentialingMode } from '@/lib/credentialing';
 
 const PartnerPros = async () => {
+  // SCRUM-88: the scheduling-era Available Caregivers surface must not render at
+  // all in credentialing mode. Removing the "Pros" nav tab left this route live
+  // and still reachable by direct link or redirect, so gate the route itself.
+  // Returning before the fetch also keeps caregiver data from being queried.
+  if (isCredentialingMode()) {
+    redirect('/partner/onboardings');
+  }
+
   let pros: any[] = [];
   try {
     pros = (await getAllAvailablePros()) || [];

@@ -26,6 +26,9 @@ export const statusIcons = {
 
 export const adminStatusMap = {
   block: 'blocked',
+  // 'unblocked' is an intent, not a stored status — the API resolves it back to
+  // whatever the user's status was before they were blocked.
+  unblock: 'unblocked',
   reject: 'rejected',
   approve: 'approved',
   remove: 'removed',

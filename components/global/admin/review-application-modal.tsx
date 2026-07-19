@@ -6,6 +6,7 @@ import {
   Pencil,
   Trash2,
   UserX,
+  UserCheck,
   X,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -225,7 +226,19 @@ export function ReviewApplicationModal({
                     </Button>
                   </AdminEditUserModal>
 
-                  {localData?.status !== 'blocked' && (
+                  {/* Blocked accounts previously showed no control at all here,
+                      leaving no way back. Offer the inverse action instead. */}
+                  {localData?.status === 'blocked' ? (
+                    <AdminAlertModal alertType='unblock' data={localData}>
+                      <Button
+                        variant='outline'
+                        className='w-full rounded-lg inline-flex items-center gap-2'
+                      >
+                        <UserCheck className='size-4' />
+                        Unblock
+                      </Button>
+                    </AdminAlertModal>
+                  ) : (
                     <AdminAlertModal alertType='block' data={localData}>
                       <Button
                         variant='outline'

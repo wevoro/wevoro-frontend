@@ -99,7 +99,7 @@ export default function AdminAlertModal({
 }: {
   open?: boolean;
   setOpen?: (open: boolean) => void;
-  alertType?: 'block' | 'remove' | 'approve' | 'reject';
+  alertType?: 'block' | 'unblock' | 'remove' | 'approve' | 'reject';
   data?: any;
   children?: React.ReactNode;
 }) {
@@ -143,31 +143,38 @@ export default function AdminAlertModal({
   const title =
     alertType === 'block'
       ? 'Blocking the user?'
-      : alertType === 'remove'
-        ? 'Removing the user?'
-        : alertType === 'approve'
-          ? 'Approving application?'
-          : 'Rejecting application?';
+      : alertType === 'unblock'
+        ? 'Unblocking the user?'
+        : alertType === 'remove'
+          ? 'Removing the user?'
+          : alertType === 'approve'
+            ? 'Approving application?'
+            : 'Rejecting application?';
 
   const description =
     alertType === 'block'
       ? 'You are about to block the user from logging to his account. The user will be notified through his registered email that his account has been blocked by the admin. <strong>Would you like to proceed?</strong>'
-      : alertType === 'remove'
-        ? 'You are about to remove the user from the platform. The user will be notified through his registered email that his account has been deleted by the admin. <strong>Would you like to proceed?</strong>'
-        : alertType === 'approve'
-          ? 'You are about to approve the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
-          : alertType === 'reject'
-            ? 'You are about to reject the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
-            : '';
+      : alertType === 'unblock'
+        ? 'You are about to restore this user’s access. They will be returned to the status they held before the block, and notified by email that they can log in again. <strong>Would you like to proceed?</strong>'
+        : alertType === 'remove'
+          ? 'You are about to remove the user from the platform. The user will be notified through his registered email that his account has been deleted by the admin. <strong>Would you like to proceed?</strong>'
+          : alertType === 'approve'
+            ? 'You are about to approve the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
+            : alertType === 'reject'
+              ? 'You are about to reject the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
+              : '';
 
   const placeholder =
     alertType === 'block'
       ? 'Explain the reasons for the block. The user will be emailed by those notes..'
-      : alertType === 'reject'
-        ? 'Explain the reasons for rejecting the application. The user will be emailed by those notes..'
-        : '';
+      : alertType === 'unblock'
+        ? 'Optional note to the user, included in the email..'
+        : alertType === 'reject'
+          ? 'Explain the reasons for rejecting the application. The user will be emailed by those notes..'
+          : '';
 
-  const showTextArea = alertType === 'block' || alertType === 'reject';
+  const showTextArea =
+    alertType === 'block' || alertType === 'unblock' || alertType === 'reject';
   const hasBlockingCredentials =
     isProApproval && missingReviews !== null && missingReviews.length > 0;
 

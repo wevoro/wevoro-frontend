@@ -204,18 +204,21 @@ export default function AdminAlertModal({
         setMissingReviews(null);
       } else {
         setIsLoading(false);
+        // Show what actually failed. A blanket "Please try again" gave the admin
+        // no way to tell a permission problem from a server error.
         toast({
           variant: 'destructive',
           title: 'Uh oh! Something went wrong.',
-          description: 'Please try again.',
+          description:
+            responseData?.message || 'Please try again.',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false);
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: 'Please try again.',
+        description: error?.message || 'Please try again.',
       });
     }
   };

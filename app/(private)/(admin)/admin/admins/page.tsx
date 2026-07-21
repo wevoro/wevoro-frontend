@@ -271,18 +271,24 @@ const AdminsPage = () => {
                         {renderPermsSummary(admin)}
                       </td>
                       <td className='py-4 pr-0 text-right'>
-                        {isSuper ? (
+                        {isSelf ? (
+                          // You can never remove yourself — this is what keeps at
+                          // least one super admin on the platform.
                           <span className='text-xs text-gray-400'>—</span>
                         ) : (
                           <div className='flex items-center justify-end gap-2'>
-                            <Button
-                              variant='outline'
-                              className='h-9 rounded-lg gap-1.5 text-xs'
-                              onClick={() => openPermissions(admin)}
-                            >
-                              <Settings2 className='w-3.5 h-3.5' />
-                              Permissions
-                            </Button>
+                            {/* Permissions only apply to regular admins; super
+                                admins already have full access. */}
+                            {!isSuper && (
+                              <Button
+                                variant='outline'
+                                className='h-9 rounded-lg gap-1.5 text-xs'
+                                onClick={() => openPermissions(admin)}
+                              >
+                                <Settings2 className='w-3.5 h-3.5' />
+                                Permissions
+                              </Button>
+                            )}
                             <Button
                               variant='outline'
                               className='h-9 rounded-lg gap-1.5 text-xs text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600'
@@ -362,10 +368,25 @@ const AdminsPage = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove admin access?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {demoteTarget?.role === 'super_admin'
+                ? 'Remove super admin?'
+                : 'Remove admin access?'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {demoteTarget?.email} will lose access to the admin panel and be
-              returned to a normal account. You can promote them again anytime.
+              {demoteTarget?.role === 'super_admin' ? (
+                <>
+                  {demoteTarget?.email} will lose super-admin access, including
+                  the ability to manage admins, and be returned to a normal
+                  account. You can promote them again anytime.
+                </>
+              ) : (
+                <>
+                  {demoteTarget?.email} will lose access to the admin panel and
+                  be returned to a normal account. You can promote them again
+                  anytime.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

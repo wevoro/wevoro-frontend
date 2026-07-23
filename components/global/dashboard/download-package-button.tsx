@@ -4,6 +4,7 @@ import { Download, Package, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { isSharingEnabled } from '@/lib/credentialing';
+import { EVENTS, track } from '@/lib/analytics';
 
 interface DownloadPackageButtonProps {
   caregiverId: string;
@@ -39,6 +40,16 @@ const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
 
       // Download each file
       const docs = data.data;
+
+      // "Viewed" == the agency actually pulled the pack. Fired after the
+      // fetch succeeds and only when documents came back, so an empty or
+      // failed pack is not counted as a view. caregiverId is included so the
+      // share funnel can be joined caregiver-side; no name or PII is sent.
+      track(EVENTS.CREDENTIAL_PACK_VIEWED, {
+        caregiverId,
+        documentCount: docs.length,
+      });
+
       toast.success(`Downloading ${docs.length} documents for ${caregiverName}`);
 
       // Open each document URL for download

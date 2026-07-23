@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 import { useAuthContext } from '@/lib/contexts';
+import { EVENTS, track } from '@/lib/analytics';
 
 interface GoogleLoginProps {
   source: string;
@@ -46,16 +47,28 @@ export default function GoogleLogin({ source }: GoogleLoginProps) {
 
         console.log({ completionPercentage });
 
+        // Google sign-in doubles as signup, so only count it when the backend
+        // says this call created the account. Without this the event would
+        // also fire on every subsequent Google login.
+        if (source === 'partner' && responseData.isNewUser) {
+          track(EVENTS.AGENCY_ACCOUNT_CREATED, {
+            method: 'google',
+            viaShareLink: !!querySuffix,
+          });
+        }
+
         const proPath =
           completionPercentage > 0
             ? '/pro/profile'
             : '/pro/onboard/personal-info';
 
-        const partnerPath =
-          completionPercentage > 0
-            ? querySuffix
-              ? `/partner/pros/${id}?s=true`
-              : '/partner/profile'
+        // Mirrors handleLogin in auth-context. `id` now resolves ?proId= too,
+        // and is null-checked here — previously a share-link Google signup
+        // routed to the literal path /partner/pros/null.
+        const partnerPath = id
+          ? `/partner/pros/${id}?s=true`
+          : completionPercentage > 0
+            ? '/partner/profile'
             : `/partner/onboard/personal-info${querySuffix}`;
 
         source === 'pro'

@@ -21,17 +21,24 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const [profileModalDismissed, setProfileModalDismissed] = useState(false);
   const { data: documents, isPending: documentsLoading } = useDocuments();
 
+  // Agency onboarding streamlining: an agency arriving from a caregiver share
+  // link must reach the credential pack without being pushed through the
+  // onboarding wizard first. Its own profile details are deferred to the point
+  // of hire rather than gating first view.
+  const isViewingCaregiver = pathname.startsWith('/partner/pros/');
+
   useEffect(() => {
     if (!user?.completionPercentage && user?.role === 'pro') {
       return router.push('/pro/onboard/personal-info');
     } else if (
       !user?.completionPercentage &&
       user?.role === 'partner' &&
-      !isPartnerOnboarded
+      !isPartnerOnboarded &&
+      !isViewingCaregiver
     ) {
       return router.push('/partner/onboard/personal-info');
     }
-  }, [user]);
+  }, [user, isViewingCaregiver]);
 
   const isAccountPage =
     pathname.includes('notifications') || pathname.includes('settings');

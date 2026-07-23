@@ -14,13 +14,16 @@ export async function POST(req: Request) {
     });
 
     if (response.status === 200) {
-      const { accessToken, refreshToken, completionPercentage } =
+      const { accessToken, refreshToken, completionPercentage, isNewUser } =
         response.data?.data;
 
       const res = NextResponse.json({
         status: 200,
         message: 'Login successful',
         completionPercentage,
+        // Google sign-in creates the account on first use; the backend flags
+        // which calls actually created one so the client can count signups.
+        isNewUser,
       });
 
          res.cookies.set('accessToken', accessToken, {

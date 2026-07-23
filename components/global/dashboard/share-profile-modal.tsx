@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Copy, Share2, Mail, MessageSquare, Check, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EVENTS, track } from '@/lib/analytics';
 
 interface ShareProfileModalProps {
   shareLink: string;
@@ -22,10 +23,15 @@ interface ShareProfileModalProps {
 const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, children }) => {
   const [copied, setCopied] = useState(false);
 
+  // The shareId itself is minted at signup, so "generated" here means the
+  // caregiver actively handed the link out. `method` splits copy vs SMS vs
+  // email so we can see which channel caregivers actually use. Tracked only
+  // after the action succeeds — a failed clipboard write is not a share.
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareLink);
       setCopied(true);
+      track(EVENTS.SHARE_LINK_GENERATED, { method: 'copy' });
       toast.success('Link copied to clipboard!', { position: 'top-center' });
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -37,6 +43,7 @@ const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, childr
     const message = encodeURIComponent(
       `Check out my caregiver profile on Wevoro: ${shareLink}`
     );
+    track(EVENTS.SHARE_LINK_GENERATED, { method: 'sms' });
     window.open(`sms:?body=${message}`, '_blank');
   };
 
@@ -45,6 +52,7 @@ const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, childr
     const body = encodeURIComponent(
       `Hi,\n\nI'd like to share my verified caregiver profile with you on Wevoro.\n\nView my profile here: ${shareLink}\n\nBest regards`
     );
+    track(EVENTS.SHARE_LINK_GENERATED, { method: 'email' });
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 

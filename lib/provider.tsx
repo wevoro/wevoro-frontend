@@ -11,6 +11,7 @@ import {
   UIProvider,
   UserProvider,
 } from './contexts';
+import AnalyticsProvider from './analytics-provider';
 
 // export const queryClient = new QueryClient();
 export default function Provider({ children }: any) {
@@ -30,6 +31,8 @@ export default function Provider({ children }: any) {
   return (
     <QueryClientProvider client={queryClient}>
       <UserProvider>
+        {/* Inside UserProvider: AnalyticsProvider reads useUserContext(). */}
+        <AnalyticsProvider />
         <AdminProvider>
           <AuthProvider>
             <UIProvider>

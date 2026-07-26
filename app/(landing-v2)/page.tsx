@@ -9,6 +9,7 @@ import ProviderNetwork from '@/components/global/landing/v2/provider-network';
 import CtaBanner from '@/components/global/landing/v2/cta-banner';
 import Faq from '@/components/global/landing/v2/faq';
 import FinalCta from '@/components/global/landing/v2/final-cta';
+import Reveal from '@/components/global/landing/v2/reveal';
 
 export const metadata = {
   title: 'Wevoro — One Verified Credential Profile',
@@ -19,6 +20,9 @@ export const metadata = {
 export default function LandingV2() {
   return (
     <>
+      {/* Sections below reveal their own header + cards (staggered) via <Reveal>
+          internally. The single-block sections (cta / faq / final) are wrapped
+          here so they reveal as one block. Hero stays static (above the fold). */}
       <Hero />
       <Stats />
       <div id='caregivers' className='scroll-mt-28'>
@@ -35,11 +39,17 @@ export default function LandingV2() {
       <div id='credential-network' className='scroll-mt-28'>
         <ProviderNetwork />
       </div>
-      <CtaBanner />
+      <Reveal>
+        <CtaBanner />
+      </Reveal>
       <div id='faqs' className='scroll-mt-28'>
-        <Faq />
+        <Reveal>
+          <Faq />
+        </Reveal>
       </div>
-      <FinalCta />
+      <Reveal>
+        <FinalCta />
+      </Reveal>
     </>
   );
 }

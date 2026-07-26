@@ -1,5 +1,6 @@
 import { Building2, FileText, Share2, Zap } from 'lucide-react';
 import { Bound, Serif } from './shared';
+import Reveal from './reveal';
 
 const cards = [
   {
@@ -29,7 +30,7 @@ export default function BetaFocus() {
     <section className='bg-primary'>
       <Bound className='py-20 lg:py-24'>
         <div className='grid gap-6 lg:grid-cols-2 lg:items-end'>
-          <div>
+          <Reveal>
             <span className='text-xs font-semibold uppercase tracking-[1.2px] text-[#bbf8dc]'>
               Beta Focus
             </span>
@@ -38,17 +39,20 @@ export default function BetaFocus() {
               <br />
               <Serif>Done right.</Serif>
             </h2>
-          </div>
-          <p className='text-sm leading-[1.7] text-white/90 lg:pb-2'>
-            Our beta focuses entirely on making credential sharing seamless for
-            caregivers and agencies. Everything else comes after we nail this.
-          </p>
+          </Reveal>
+          <Reveal>
+            <p className='text-sm leading-[1.7] text-white/90 lg:pb-2'>
+              Our beta focuses entirely on making credential sharing seamless for
+              caregivers and agencies. Everything else comes after we nail this.
+            </p>
+          </Reveal>
         </div>
 
         <div className='mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4'>
-          {cards.map(({ icon: Icon, title, text }) => (
-            <div
+          {cards.map(({ icon: Icon, title, text }, i) => (
+            <Reveal
               key={title}
+              delay={i * 100}
               className='rounded-2xl border border-white/10 bg-white/[0.08] p-6'
             >
               <span className='flex size-11 items-center justify-center rounded-xl bg-white'>
@@ -56,7 +60,7 @@ export default function BetaFocus() {
               </span>
               <h3 className='mt-5 text-base font-semibold text-white'>{title}</h3>
               <p className='mt-2 text-xs leading-[1.7] text-white/80'>{text}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Bound>

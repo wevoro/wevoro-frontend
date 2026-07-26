@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Bound, Eyebrow, HAIRLINE, Serif } from './shared';
+import Reveal from './reveal';
 
 const items = [
   'CNA / HHA License',
@@ -17,7 +18,7 @@ export default function Verified() {
     <section className='bg-[#f4f9f6]/30'>
       <Bound className='py-20 lg:py-24'>
         <div className='grid items-start gap-10 lg:grid-cols-2 lg:gap-16'>
-          <div>
+          <Reveal>
             <Eyebrow>What Gets Verified</Eyebrow>
             <h2 className='mt-4 text-[30px] font-bold leading-[1.1] tracking-[-0.9px] text-tertiary lg:text-[36px]'>
               Everything an agency
@@ -35,12 +36,13 @@ export default function Verified() {
             >
               Start uploading credentials
             </Link>
-          </div>
+          </Reveal>
 
           <div className='grid gap-3 sm:grid-cols-2'>
-            {items.map((it) => (
-              <div
+            {items.map((it, i) => (
+              <Reveal
                 key={it}
+                delay={i * 80}
                 className={cn(
                   'flex items-center gap-3 rounded-[14px] border bg-white p-4',
                   HAIRLINE
@@ -48,7 +50,7 @@ export default function Verified() {
               >
                 <CircleCheck className='size-4 shrink-0 text-primary' />
                 <span className='text-sm font-medium text-tertiary'>{it}</span>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>

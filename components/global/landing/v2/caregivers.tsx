@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { MoveRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Bound, Eyebrow, HAIRLINE, Serif } from './shared';
+import { Bound, Eyebrow, Serif } from './shared';
+import Reveal from './reveal';
 
 const steps = [
   {
@@ -25,17 +25,26 @@ export default function Caregivers() {
   return (
     <section className='bg-white'>
       <Bound className='py-20 lg:py-24'>
-        <Eyebrow>For Caregivers</Eyebrow>
-        <h2 className='mt-4 text-[36px] font-bold leading-[1.15] tracking-[-1.2px] text-tertiary lg:text-[48px]'>
-          Your credentials.
-          <br />
-          <Serif>Your career.</Serif>
-        </h2>
+        <Reveal>
+          <Eyebrow>For Caregivers</Eyebrow>
+          <h2 className='mt-4 text-[36px] font-bold leading-[1.15] tracking-[-1.2px] text-tertiary lg:text-[48px]'>
+            Your credentials.
+            <br />
+            <Serif>Your career.</Serif>
+          </h2>
+        </Reveal>
 
         <div className='mt-16 grid gap-x-8 gap-y-12 md:grid-cols-3'>
-          {steps.map((s) => (
-            <div key={s.n} className='group relative flex flex-col pt-8'>
-              <span className={cn('absolute left-0 top-0 h-px w-full', `bg-[#1a5c38]/[0.12]`)} />
+          {steps.map((s, i) => (
+            <Reveal
+              key={s.n}
+              delay={i * 100}
+              className='group relative flex flex-col pt-8'
+            >
+              {/* Faint base rule that sits under the green hover line. */}
+              <span className='absolute left-0 top-0 h-px w-full bg-[#1a5c38]/[0.12]' />
+              {/* Green line: fills only while THIS card is hovered, retracts on
+                  hover out (grows from the left via w-0 -> group-hover:w-full). */}
               <span className='absolute left-0 top-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full' />
               <span className='font-mono text-xs text-muted-foreground'>
                 {s.n}
@@ -46,17 +55,19 @@ export default function Caregivers() {
               <p className='mt-3 text-sm leading-[1.6] text-muted-foreground'>
                 {s.text}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
 
-        <Link
-          href='/pro/signup'
-          className='group mt-12 inline-flex items-center gap-2 text-sm font-semibold text-primary'
-        >
-          Create your free profile
-          <MoveRight className='size-4 transition-transform group-hover:translate-x-1' />
-        </Link>
+        <Reveal className='mt-12'>
+          <Link
+            href='/pro/signup'
+            className='group inline-flex items-center gap-2 text-sm font-semibold text-primary'
+          >
+            Create your free profile
+            <MoveRight className='size-4 transition-transform group-hover:translate-x-1' />
+          </Link>
+        </Reveal>
       </Bound>
     </section>
   );

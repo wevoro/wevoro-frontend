@@ -1,6 +1,7 @@
 import { BadgeCheck, Clock, FileText, Shield, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Bound, HAIRLINE, Serif } from './shared';
+import Reveal from './reveal';
 
 const cards = [
   {
@@ -26,7 +27,7 @@ export default function ProviderNetwork() {
     <section className='bg-white'>
       <Bound className='py-20 lg:py-24'>
         <div className='grid items-center gap-12 lg:grid-cols-2 lg:gap-16'>
-          <div>
+          <Reveal>
             <span className='inline-flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5 text-xs font-semibold text-[#2e7d52]'>
               <Clock className='size-3.5' /> Coming After Beta
             </span>
@@ -43,12 +44,13 @@ export default function ProviderNetwork() {
               provider at a discounted rate. The future of credentialing, not
               just storing it.
             </p>
-          </div>
+          </Reveal>
 
           <div className='grid gap-5 sm:grid-cols-2'>
-            {cards.map(({ icon: Icon, title, sub }) => (
-              <div
+            {cards.map(({ icon: Icon, title, sub }, i) => (
+              <Reveal
                 key={title}
+                delay={i * 100}
                 className={cn('rounded-2xl border bg-white p-6', HAIRLINE)}
               >
                 <Icon className='size-6 text-primary' />
@@ -56,7 +58,7 @@ export default function ProviderNetwork() {
                   {title}
                 </h3>
                 <p className='mt-1 text-xs text-muted-foreground'>{sub}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>

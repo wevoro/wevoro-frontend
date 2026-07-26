@@ -84,11 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isOtpResend, setIsOtpResend] = useState(false);
   const [isResendOTPLoading, setIsResendOTPLoading] = useState(false);
 
-  // The caregiver share link sends ?proId=, every other journey sends ?id=.
-  // Reading both here fixes the mismatch once, for every consumer of `id`
-  // (login redirect, Google login, onboarding redirect) instead of patching
-  // each call site separately.
-  const id = searchParams.get('id') ?? searchParams.get('proId');
+  const id = searchParams.get('id');
   const shouldStorePro = searchParams.get('s') === 'true';
   // SCRUM-87/88: caregiver share-link attribution. Agencies arrive at signup via
   // /p/[shareId] -> /partner/signup?shareId=...; capture it so the backend can
@@ -154,16 +150,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
               ? '/pro/profile'
               : '/pro/onboard/personal-info?autofill=true';
 
-          // Agency onboarding streamlining: an agency that arrived from a
-          // caregiver share link goes straight to that caregiver's credential
-          // pack, regardless of how much of its own profile is filled in.
-          // Profile completion is deferred to the point of hire, not first
-          // view. Only agencies with no caregiver in context still see the
-          // onboarding wizard.
-          const partnerPath = id
-            ? `/partner/pros/${id}?s=true`
-            : completionPercentage > 50
-              ? '/partner/profile'
+          // Same null-`id` guard as the onboarding redirect: the share-link
+          // journey passes ?proId=, not ?id=, so `id` is null there.
+          const partnerPath =
+            completionPercentage > 50
+              ? querySuffix && id
+                ? `/partner/pros/${id}?s=true`
+                : '/partner/profile'
               : `/partner/onboard/personal-info${querySuffix}`;
 
           if (source === 'pro') window.location.href = proPath;
@@ -208,16 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             method: 'password',
             viaShareLink: !!shareId,
           });
-          // Agency onboarding streamlining: sign the agency in immediately
-          // instead of bouncing it to /partner/login to retype the credentials
-          // it just chose. This removes a whole step from the share-link
-          // journey. handleLogin owns the post-auth redirect, so the agency
-          // lands on the caregiver's credential pack.
-          await handleLogin(
-            { email: data.email, password: data.password },
-            source
-          );
-          return;
+          router.push(`/partner/login${querySuffix}`);
         }
         toast.success(responseData.message || 'Signup successful', {
           position: 'top-center',
@@ -231,9 +215,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       }
     },
-    // shareId was already read in the body but missing from the deps — a stale
-    // closure would drop share-link attribution on a client-side param change.
-    [router, querySuffix, shareId, handleLogin]
+    // shareId feeds the AGENCY_ACCOUNT_CREATED tracking event, so it must be in
+    // the deps to avoid a stale closure dropping share-link attribution.
+    [router, querySuffix, shareId]
   );
 
   const handleForgotPassword = useCallback(

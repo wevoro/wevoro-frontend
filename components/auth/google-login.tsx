@@ -62,13 +62,11 @@ export default function GoogleLogin({ source }: GoogleLoginProps) {
             ? '/pro/profile'
             : '/pro/onboard/personal-info';
 
-        // Mirrors handleLogin in auth-context. `id` now resolves ?proId= too,
-        // and is null-checked here — previously a share-link Google signup
-        // routed to the literal path /partner/pros/null.
-        const partnerPath = id
-          ? `/partner/pros/${id}?s=true`
-          : completionPercentage > 0
-            ? '/partner/profile'
+        const partnerPath =
+          completionPercentage > 0
+            ? querySuffix
+              ? `/partner/pros/${id}?s=true`
+              : '/partner/profile'
             : `/partner/onboard/personal-info${querySuffix}`;
 
         source === 'pro'

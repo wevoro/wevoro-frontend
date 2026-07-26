@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Bound, HAIRLINE } from './shared';
+import Reveal from './reveal';
 
 const stats = [
   {
@@ -25,8 +26,9 @@ export default function Stats() {
       <Bound className='py-16'>
         <div className='grid gap-8 sm:grid-cols-3 sm:gap-0'>
           {stats.map((s, i) => (
-            <div
+            <Reveal
               key={s.value}
+              delay={i * 100}
               className={cn(
                 'flex flex-col',
                 i > 0 && 'sm:pl-8',
@@ -46,7 +48,7 @@ export default function Stats() {
               <p className='mt-3 max-w-[396px] text-sm leading-[1.6] text-muted-foreground'>
                 {s.text}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Bound>

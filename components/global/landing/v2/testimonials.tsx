@@ -1,6 +1,7 @@
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Bound, Eyebrow, HAIRLINE } from './shared';
+import Reveal from './reveal';
 
 const reviews = [
   {
@@ -21,13 +22,14 @@ export default function Testimonials() {
   return (
     <section className='bg-white'>
       <Bound className='py-20 lg:py-24'>
-        <div className='text-center'>
+        <Reveal className='text-center'>
           <Eyebrow>Early Feedback</Eyebrow>
-        </div>
+        </Reveal>
         <div className='mt-10 grid gap-6 md:grid-cols-2'>
-          {reviews.map((r) => (
-            <div
+          {reviews.map((r, i) => (
+            <Reveal
               key={r.name}
+              delay={i * 100}
               className={cn('rounded-2xl border bg-white p-8', HAIRLINE)}
             >
               <div className='flex gap-1'>
@@ -40,7 +42,7 @@ export default function Testimonials() {
               </p>
               <p className='mt-6 text-sm font-semibold text-tertiary'>{r.name}</p>
               <p className='text-xs text-muted-foreground'>{r.role}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Bound>

@@ -14,14 +14,17 @@ export default function Hero() {
         <div className='grid items-center gap-12 lg:grid-cols-2 lg:gap-16'>
           {/* Left column */}
           <div className='flex flex-col items-start'>
-            <span className='inline-flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5'>
+            <span className='hero-in inline-flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5'>
               <span className='size-1.5 rounded-full bg-[#2e7d52]' />
               <span className='text-xs font-semibold uppercase tracking-[0.6px] text-[#2e7d52]'>
                 Now in Beta
               </span>
             </span>
 
-            <h1 className='mt-6 text-[clamp(30px,calc(5vw_-_10px),60px)] font-bold leading-[1.05] tracking-[-1.5px] text-tertiary'>
+            <h1
+              className='hero-in mt-6 text-[clamp(30px,calc(5vw_-_10px),60px)] font-bold leading-[1.05] tracking-[-1.5px] text-tertiary'
+              style={{ animationDelay: '90ms' }}
+            >
               One Verified
               <br />
               <Serif className='text-primary'>Credential Profile.</Serif>
@@ -29,13 +32,19 @@ export default function Hero() {
               Endless Opportunities.
             </h1>
 
-            <p className='mt-8 max-w-[512px] text-base leading-[1.6] text-muted-foreground sm:text-lg'>
+            <p
+              className='hero-in mt-8 max-w-[512px] text-base leading-[1.6] text-muted-foreground sm:text-lg'
+              style={{ animationDelay: '180ms' }}
+            >
               Caregivers build a single, verified credential profile. Agencies
               access it instantly. The 21-day document collection process becomes
               a thing of the past.
             </p>
 
-            <div className='mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row'>
+            <div
+              className='hero-in mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row'
+              style={{ animationDelay: '270ms' }}
+            >
               <Link
                 href='/pro/signup'
                 className='inline-flex h-[50px] items-center justify-center gap-2 rounded-[14px] bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/90'
@@ -53,7 +62,10 @@ export default function Hero() {
               </Link>
             </div>
 
-            <div className='mt-10 flex flex-wrap items-center gap-x-6 gap-y-3'>
+            <div
+              className='hero-in mt-10 flex flex-wrap items-center gap-x-6 gap-y-3'
+              style={{ animationDelay: '360ms' }}
+            >
               {trust.map((t) => (
                 <span
                   key={t}
@@ -83,10 +95,10 @@ export default function Hero() {
               <div className='absolute inset-0 bg-[linear-gradient(to_top,rgba(26,92,56,0.3)_0%,transparent_50%,rgba(187,248,220,0.1)_100%)]' />
             </div>
 
-            {/* Live readiness card */}
+            {/* Live readiness card — drifts in from the right on load. */}
             <div
               className={cn(
-                'absolute left-0 top-[20%] hidden w-44 flex-col rounded-2xl border bg-white p-4 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.12)] md:flex lg:-left-6',
+                'hero-card-reveal absolute left-0 top-[20%] hidden w-44 flex-col rounded-2xl border bg-white p-4 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.12)] md:flex lg:-left-6',
                 HAIRLINE
               )}
             >

@@ -18,6 +18,11 @@ export default async function LandingV2Layout({
       className={`${dmSans.variable} ${newsreader.variable}`}
       style={{ fontFamily: 'var(--font-dm-sans)' }}
     >
+      {/* No-JS / pre-hydration fallback: if the reveal observer never runs,
+          make sure all revealed content is visible (SEO + no-JS users). */}
+      <noscript>
+        <style>{`.reveal{opacity:1 !important;transform:none !important;}`}</style>
+      </noscript>
       <Navbar environmentType={environmentType} />
       <div className='mt-16'>{children}</div>
       <Footer />

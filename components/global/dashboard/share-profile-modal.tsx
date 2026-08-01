@@ -50,7 +50,7 @@ const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, childr
   const handleShareEmail = () => {
     const subject = encodeURIComponent('View my Wevoro caregiver profile');
     const body = encodeURIComponent(
-      `Hi,\n\nI'd like to share my verified caregiver profile with you on Wevoro.\n\nView my profile here: ${shareLink}\n\nBest regards`
+      `Hi,\n\nI'd like to share my confirmed caregiver profile with you on Wevoro.\n\nView my profile here: ${shareLink}\n\nBest regards`
     );
     track(EVENTS.SHARE_LINK_GENERATED, { method: 'email' });
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
@@ -125,7 +125,7 @@ const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, childr
           {/* Explanatory text */}
           <p className='text-xs text-gray-400 text-center leading-relaxed'>
             Share this link with an agency to invite them to view your profile and connect on Wevoro.
-            Agencies who sign up through your link will be able to see your verified credentials.
+            Agencies who sign up through your link will be able to see your confirmed credentials.
           </p>
         </div>
       </DialogContent>

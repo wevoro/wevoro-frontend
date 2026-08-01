@@ -126,7 +126,7 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
             <div className='flex items-center justify-center gap-2'>
               <ShieldCheck className='w-5 h-5 text-emerald-500' />
               <span className='text-sm font-semibold text-gray-700'>
-                {verifiedCount} of {totalCount} credentials verified
+                {verifiedCount} of {totalCount} credentials confirmed
               </span>
             </div>
             {/* Progress bar */}

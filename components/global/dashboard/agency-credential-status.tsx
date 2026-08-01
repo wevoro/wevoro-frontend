@@ -17,7 +17,7 @@ interface AgencyCredentialStatusProps {
  * (credential-status-section.tsx): identical container, header, badges, card
  * structure, status bands, expiration countdown and copy — it reuses the same
  * CredentialStatusCard in `readOnly` mode, which removes only the caregiver-only
- * elements (the "Verified by Wevoro on …" line, the three-dot menu, and the
+ * elements (the "Confirmed by Wevoro on …" line, the three-dot menu, and the
  * edit/re-upload actions).
  */
 const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
@@ -73,7 +73,7 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
             <div className='flex items-center gap-1.5'>
               {verifiedCount > 0 && (
                 <span className='text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium'>
-                  {verifiedCount} verified
+                  {verifiedCount} confirmed
                 </span>
               )}
               {pendingCount > 0 && (

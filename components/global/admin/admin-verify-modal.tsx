@@ -81,14 +81,14 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
       });
       const data = await res.json();
       if (data.status === 200) {
-        toast.success(`${credentialLabel} verified successfully!`);
+        toast.success(`${credentialLabel} confirmed successfully!`);
         onSuccess(data.data);
         onOpenChange(false);
       } else {
-        toast.error(data.message || 'Verification failed');
+        toast.error(data.message || 'Confirmation failed');
       }
     } catch {
-      toast.error('Verification failed. Please try again.');
+      toast.error('Confirmation failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
             <div className='w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center'>
               <ShieldCheck className='w-5 h-5 text-emerald-600' />
             </div>
-            <DialogTitle>Verify {credentialLabel}</DialogTitle>
+            <DialogTitle>Confirm {credentialLabel}</DialogTitle>
           </div>
         </DialogHeader>
 
@@ -163,7 +163,7 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
           </Button>
           <Button onClick={handleSubmit} disabled={loading} className='gap-2'>
             <ShieldCheck className='w-4 h-4' />
-            {loading ? 'Verifying...' : 'Verify Credential'}
+            {loading ? 'Confirming...' : 'Confirm Credential'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -115,7 +115,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
 
   // Status badge config
   const statusConfig = isVerified
-    ? { icon: <ShieldCheck className='w-3.5 h-3.5' />, text: 'VERIFIED', bg: 'bg-emerald-100 text-emerald-700' }
+    ? { icon: <ShieldCheck className='w-3.5 h-3.5' />, text: 'CONFIRMED', bg: 'bg-emerald-100 text-emerald-700' }
     : isRejected
     ? { icon: <AlertCircle className='w-3.5 h-3.5' />, text: 'REJECTED', bg: 'bg-red-100 text-red-700' }
     : { icon: <Hourglass className='w-3.5 h-3.5' />, text: 'PENDING', bg: 'bg-amber-100 text-amber-700' };
@@ -132,14 +132,14 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
     >
       <div className='p-5'>
         {/* Top row: verification info + expiration countdown + menu.
-            readOnly (agency): drop the "Verified by Wevoro on…" line and the
+            readOnly (agency): drop the "Confirmed by Wevoro on…" line and the
             three-dot menu — only the expiration countdown remains. */}
         {(!readOnly || (isVerified && expiration.hasExpiration)) && (
         <div className={`flex items-start ${readOnly ? 'justify-end' : 'justify-between'} mb-3`}>
           {!readOnly && (
           <p className='text-xs text-gray-400'>
             {isVerified
-              ? `Verified by Wevoro on ${formatDate(doc?.reviewedAt)}`
+              ? `Confirmed by Wevoro on ${formatDate(doc?.reviewedAt)}`
               : isPending
               ? `Uploaded on ${formatDate(doc?.createdAt)}`
               : `Rejected — please re-upload`}
@@ -182,7 +182,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
                   ) : (
                     <>
                       <RefreshCw className='w-4 h-4' />
-                      Update Verification
+                      Update Confirmation
                     </>
                   )}
                 </DropdownMenuItem>

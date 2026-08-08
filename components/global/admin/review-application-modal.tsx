@@ -32,6 +32,24 @@ import AdminCredentials from './admin-credentials';
 import DownloadAuditTrail from './download-audit-trail';
 import { toast } from 'sonner';
 
+// SCRUM-99 (Phase 4): human-readable labels for the CPR providers an agency
+// accepts (stored as codes on personalInfo.acceptedCprProviders).
+const CPR_LABELS: Record<string, string> = {
+  red_cross: 'American Red Cross',
+  aha: 'American Heart Association',
+  hsi: 'Health & Safety Institute',
+  any: 'Any accredited provider',
+};
+
+function InfoField({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className='flex flex-col gap-1'>
+      <span className='text-sm text-muted-foreground'>{label}</span>
+      <span className='font-medium'>{value?.trim() ? value : 'N/A'}</span>
+    </div>
+  );
+}
+
 function BackgroundChecks({
   data,
   onStatusChange,
@@ -261,49 +279,95 @@ export function ReviewApplicationModal({
                 </div>
               )}
 
-              {/* Partner verification info */}
-              {from === 'partner' && localData?.partnerVerification && (
-                <div className='flex flex-col gap-4'>
-                  <h2 className='text-lg font-semibold'>
-                    Verification Information
-                  </h2>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                    <div className='flex flex-col gap-1'>
-                      <span className='text-sm text-muted-foreground'>
-                        State License / Certification Number *
-                      </span>
-                      <span className='font-medium'>
-                        {localData.partnerVerification.licenseNumber || 'N/A'}
-                      </span>
-                    </div>
-                    <div className='flex flex-col gap-1'>
-                      <span className='text-sm text-muted-foreground'>
-                        EIN (Employer Identification Number) *
-                      </span>
-                      <span className='font-medium'>
-                        {localData.partnerVerification.ein || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                  {localData.partnerVerification.licenseFile && (
-                    <div className='flex items-center gap-3 p-4 border rounded-lg bg-gray-50'>
-                      <div className='flex items-center justify-center w-10 h-10 bg-red-100 rounded'>
-                        <span className='text-[10px] font-bold text-red-600'>
-                          PDF
-                        </span>
-                      </div>
-                      <div className='flex-1'>
-                        <p className='text-sm font-medium'>License Document</p>
-                      </div>
+              {/* SCRUM-99 (Phase 4): agency verification is a lookup, not an EIN.
+                  Confirm these four fields against the Georgia Home Care Provider
+                  Registry + the Secretary of State business search, then Approve
+                  to mark the agency Confirmed (which unlocks the sensitive tier). */}
+              {from === 'partner' && (
+                <div className='flex flex-col gap-4 border border-gray-200 rounded-2xl p-5'>
+                  <div>
+                    <h2 className='text-lg font-semibold'>Verify this agency</h2>
+                    <p className='text-sm text-muted-foreground mt-1'>
+                      Confirm the details below against the{' '}
                       <a
-                        href={localData.partnerVerification.licenseFile}
+                        href='https://dch.georgia.gov/hfrd'
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='inline-flex items-center gap-2 text-green-600 text-sm font-medium hover:underline'
+                        className='text-primary underline underline-offset-2'
                       >
-                        <MoveUpRight className='size-4' />
-                        Download
-                      </a>
+                        Georgia Home Care Provider Registry
+                      </a>{' '}
+                      and the{' '}
+                      <a
+                        href='https://ecorp.sos.ga.gov/BusinessSearch'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-primary underline underline-offset-2'
+                      >
+                        Secretary of State
+                      </a>{' '}
+                      business search. Approving marks the agency{' '}
+                      <strong>Confirmed</strong> and unlocks sensitive credentials.
+                    </p>
+                  </div>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    <InfoField
+                      label='Contact Name'
+                      value={`${localData?.personalInfo?.firstName || ''} ${
+                        localData?.personalInfo?.lastName || ''
+                      }`.trim()}
+                    />
+                    <InfoField
+                      label='Agency Name'
+                      value={localData?.personalInfo?.companyName}
+                    />
+                    <InfoField
+                      label='City'
+                      value={localData?.personalInfo?.address?.city}
+                    />
+                    <InfoField
+                      label='State'
+                      value={localData?.personalInfo?.address?.state}
+                    />
+                  </div>
+                  {Array.isArray(
+                    localData?.personalInfo?.acceptedCprProviders
+                  ) &&
+                    localData.personalInfo.acceptedCprProviders.length > 0 && (
+                      <InfoField
+                        label='CPR providers accepted'
+                        value={localData.personalInfo.acceptedCprProviders
+                          .map((c: string) => CPR_LABELS[c] || c)
+                          .join(', ')}
+                      />
+                    )}
+
+                  {/* Legacy accounts that submitted the old license/EIN form still
+                      show that document, but it is no longer the basis for
+                      verification. */}
+                  {localData?.partnerVerification && (
+                    <div className='flex flex-col gap-3 pt-1 border-t border-gray-100'>
+                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3'>
+                        <InfoField
+                          label='State License / Certification #'
+                          value={localData.partnerVerification.licenseNumber}
+                        />
+                        <InfoField
+                          label='EIN (legacy)'
+                          value={localData.partnerVerification.ein}
+                        />
+                      </div>
+                      {localData.partnerVerification.licenseFile && (
+                        <a
+                          href={localData.partnerVerification.licenseFile}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center gap-2 text-green-600 text-sm font-medium hover:underline'
+                        >
+                          <MoveUpRight className='size-4' />
+                          License Document
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>

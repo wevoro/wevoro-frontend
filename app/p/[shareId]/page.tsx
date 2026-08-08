@@ -142,28 +142,32 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
           </div>
 
           {/* CTA buttons */}
+          {/* SCRUM-99: passwordless is the primary path — an agency enters its
+              email, gets a code, and views this caregiver's general credentials
+              with no password and no signup form (Flow 2). The password signup
+              stays available as a secondary option. */}
           <div className='flex flex-col gap-3'>
-            <Link href={`/partner/signup?shareId=${shareId}&proId=${proUser._id}&s=true`}>
+            <Link href={`/partner/access?shareId=${shareId}&proId=${proUser._id}&s=true`}>
               <Button
                 className='w-full h-12 rounded-xl text-base font-semibold gap-2'
               >
-                Sign up to view full profile
+                Continue with email to view profile
                 <ArrowRight className='w-4 h-4' />
               </Button>
             </Link>
-            <Link href={`/partner/login?shareId=${shareId}&proId=${proUser._id}&s=true`}>
+            <Link href={`/partner/signup?shareId=${shareId}&proId=${proUser._id}&s=true`}>
               <Button
                 variant='outline'
                 className='w-full h-12 rounded-xl text-base font-semibold'
               >
-                Already have an account? Sign in
+                Prefer a password? Sign up
               </Button>
             </Link>
           </div>
 
           {/* Footer text */}
           <p className='text-xs text-gray-400 mt-4 leading-relaxed'>
-            Sign up on Wevoro to view full credentials, documents, and connect directly with verified caregivers.
+            Enter your email to view this caregiver&apos;s credentials — no password needed. Get verified to unlock sensitive documents.
           </p>
         </div>
       </div>

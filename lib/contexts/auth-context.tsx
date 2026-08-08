@@ -92,6 +92,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isResendOTPLoading, setIsResendOTPLoading] = useState(false);
 
   const id = searchParams.get('id');
+  // SCRUM-99: the caregiver share journey passes ?proId= (not ?id=). Treat either
+  // as "the caregiver this agency came to view" so passwordless Flow 2 lands on
+  // that caregiver's pack instead of the onboarding form.
+  const proId = searchParams.get('proId');
   const shouldStorePro = searchParams.get('s') === 'true';
   // SCRUM-87/88: caregiver share-link attribution. Agencies arrive at signup via
   // /p/[shareId] -> /partner/signup?shareId=...; capture it so the backend can
@@ -179,11 +183,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (responseData.status === 200) {
         const completionPercentage = responseData.completionPercentage;
         toast.success('Logged in successfully', { position: 'top-center' });
-        const partnerPath = id
-          ? `/partner/pros/${id}?s=true`
+        // Flow 2 (arrived via a caregiver's share link): land on that caregiver's
+        // pack — a Non-confirmed agency can view general credentials there, no
+        // completion form required. Flow 1 (direct /partner/access): a new agency
+        // goes to the short "Complete your agency account" form; a returning,
+        // already-completed agency goes straight to their dashboard.
+        const caregiverTarget = id || proId;
+        const partnerPath = caregiverTarget
+          ? `/partner/pros/${caregiverTarget}?s=true`
           : completionPercentage > 50
             ? '/partner/profile'
-            : `/partner/onboard/personal-info${querySuffix}`;
+            : `/partner/complete${querySuffix}`;
         window.location.href = partnerPath;
         return;
       }
@@ -191,7 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         position: 'top-center',
       });
     },
-    [id, querySuffix]
+    [id, proId, querySuffix]
   );
 
   const handleLogin = useCallback(

@@ -85,7 +85,8 @@ export default function Hero() {
                 src='/hero-caregiver.jpg'
                 alt='Verified caregiver building their credential profile'
                 fill
-                className='object-cover object-[70%_center]'
+                quality={90}
+                className='object-cover object-center'
                 sizes='(max-width: 1024px) 90vw, 45vw'
                 priority
               />

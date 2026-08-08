@@ -48,6 +48,13 @@ interface AuthContextValue {
   logOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;
 
+  // SCRUM-99: passwordless agency login (email + emailed code)
+  handleRequestCode: (
+    email: string,
+    source: string
+  ) => Promise<boolean>;
+  handleVerifyCode: (email: string, otp: string, source: string) => Promise<void>;
+
   // Loading states
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -118,6 +125,74 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
     router.push('/logout');
   }, [router]);
+
+  // SCRUM-99: passwordless agency login — step 1, request an emailed code.
+  // Creates the account on first use (Flow 2 = email only), then the caregiver
+  // can be told a code is on the way. Returns true on success.
+  const handleRequestCode = useCallback(
+    async (email: string, source: string): Promise<boolean> => {
+      const response = await fetch('/api/auth/request-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          role: source,
+          sourceShareId:
+            source === 'partner' ? shareId || undefined : undefined,
+        }),
+      });
+      const responseData: any = await response.json();
+      if (responseData.status === 200) {
+        if (responseData.otpExpiry) {
+          window.localStorage.setItem('otpExpiry', responseData.otpExpiry);
+        }
+        // Fire once, at the moment the account is actually created.
+        if (responseData.isNewUser) {
+          track(EVENTS.AGENCY_ACCOUNT_CREATED, {
+            method: 'email_code',
+            viaShareLink: !!shareId,
+          });
+        }
+        toast.success('We sent a login code to your email.', {
+          position: 'top-center',
+        });
+        return true;
+      }
+      toast.error(responseData.message || 'Could not send the code', {
+        position: 'top-center',
+      });
+      return false;
+    },
+    [shareId]
+  );
+
+  // SCRUM-99: passwordless agency login — step 2, verify the code and land in a
+  // session. Routes like a partner login (share-link -> caregiver pack).
+  const handleVerifyCode = useCallback(
+    async (email: string, otp: string, _source: string) => {
+      const response = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      });
+      const responseData: any = await response.json();
+      if (responseData.status === 200) {
+        const completionPercentage = responseData.completionPercentage;
+        toast.success('Logged in successfully', { position: 'top-center' });
+        const partnerPath = id
+          ? `/partner/pros/${id}?s=true`
+          : completionPercentage > 50
+            ? '/partner/profile'
+            : `/partner/onboard/personal-info${querySuffix}`;
+        window.location.href = partnerPath;
+        return;
+      }
+      toast.error(responseData.message || 'Invalid or expired code', {
+        position: 'top-center',
+      });
+    },
+    [id, querySuffix]
+  );
 
   const handleLogin = useCallback(
     async (data: { email: string; password: string }, source: string) => {
@@ -360,6 +435,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logInWithGoogle,
       logOut,
       deleteAccount,
+      handleRequestCode,
+      handleVerifyCode,
       isLoading,
       setIsLoading,
       isOtpResend,
@@ -379,6 +456,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logInWithGoogle,
       logOut,
       deleteAccount,
+      handleRequestCode,
+      handleVerifyCode,
       isLoading,
       isOtpResend,
       isResendOTPLoading,

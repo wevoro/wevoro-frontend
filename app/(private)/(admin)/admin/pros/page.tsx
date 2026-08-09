@@ -71,8 +71,12 @@ export default function ProsPage() {
         pro?.email?.toLowerCase().includes(globalFilter.toLowerCase()))
   );
 
-  const sortedPros =
-    sortFilter === 'newest' ? filteredPros.reverse() : filteredPros;
+  // Real date sort by most recent activity (was a fragile array .reverse()).
+  const sortedPros = [...filteredPros].sort((a: any, b: any) => {
+    const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
+    const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+    return sortFilter === 'newest' ? db - da : da - db;
+  });
 
   // const handleStatusFilter = (value: string) => {
   //   setStatusFilter(value);
@@ -139,7 +143,7 @@ export default function ProsPage() {
         columns={proColumns}
         data={sortedPros}
         pageIndex={page ? parseInt(page) - 1 : 0}
-        pageSize={pageSize ? parseInt(pageSize) : 6}
+        pageSize={pageSize ? parseInt(pageSize) : 10}
         onPaginationChange={handlePaginationChange}
       />
     </div>

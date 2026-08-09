@@ -1,9 +1,10 @@
-import PartnerLogin from "@/components/global/partner-login";
-import { getPartnerLoginData } from "@/app/actions";
-import { WaitlistGuard } from "@/components/global/waitlist-guard";
+import { redirect } from 'next/navigation';
 
-export const dynamic = "force-dynamic";
-export default async function PartnerLoginPage() {
-  const loginData = await getPartnerLoginData();
-  return WaitlistGuard(<PartnerLogin {...loginData} />);
+// SCRUM-99 "New Login Method": agencies are passwordless (email + emailed code).
+// The old email+password login is retired — send everyone to the passwordless
+// two-column "Welcome back" sign-in.
+export const dynamic = 'force-dynamic';
+
+export default function PartnerLoginPage() {
+  redirect('/partner/access?mode=signin');
 }

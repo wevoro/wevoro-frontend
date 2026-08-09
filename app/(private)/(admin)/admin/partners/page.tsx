@@ -70,8 +70,15 @@ export default function PartnersPage() {
         partner?.email?.toLowerCase().includes(globalFilter.toLowerCase())),
   );
 
-  const sortedPartners =
-    sortFilter === 'newest' ? filteredPartners.reverse() : filteredPartners;
+  // Sort by most recent activity (updatedAt, falling back to createdAt) so an
+  // agency that just submitted for verification surfaces at the top of "Newest"
+  // instead of sitting at its original signup position. (Was a fragile
+  // array .reverse() that depended on the backend's return order.)
+  const sortedPartners = [...filteredPartners].sort((a: any, b: any) => {
+    const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
+    const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+    return sortFilter === 'newest' ? db - da : da - db;
+  });
 
   return (
     <div className='space-y-6'>
@@ -133,7 +140,7 @@ export default function PartnersPage() {
         columns={partnerColumns}
         data={sortedPartners}
         pageIndex={page ? parseInt(page) - 1 : 0}
-        pageSize={pageSize ? parseInt(pageSize) : 6}
+        pageSize={pageSize ? parseInt(pageSize) : 10}
         onPaginationChange={handlePaginationChange}
       />
     </div>

@@ -279,56 +279,92 @@ export function ReviewApplicationModal({
                 </div>
               )}
 
-              {/* SCRUM-99 (Phase 4): agency verification is a lookup, not an EIN.
-                  Confirm these four fields against the Georgia Home Care Provider
-                  Registry + the Secretary of State business search, then Approve
-                  to mark the agency Confirmed (which unlocks the sensitive tier). */}
+              {/* SCRUM-107: Registry Confirmation Status (Faisal's design). Two GA
+                  sources, each Confirmed (green) / Can't find (red). NOTE — the
+                  automated check is a STOPGAP: per the SCRUM-106 discovery neither
+                  GA source exposes a usable public API (the SoS business search is a
+                  captcha'd web form; the Home Care Registry is a directory), so the
+                  status currently reflects the agency's confirmation state. The admin
+                  verifies each source via its "Check" link and makes the final
+                  Approve/Reject call (buttons above). Wire the real API check here
+                  once a data source is identified. */}
               {from === 'partner' && (
                 <div className='flex flex-col gap-4 border border-gray-200 rounded-2xl p-5'>
                   <div>
-                    <h2 className='text-lg font-semibold'>Verify this agency</h2>
-                    <p className='text-sm text-muted-foreground mt-1'>
-                      Confirm the details below against the{' '}
-                      <a
-                        href='https://dch.georgia.gov/hfrd'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-primary underline underline-offset-2'
-                      >
-                        Georgia Home Care Provider Registry
-                      </a>{' '}
-                      and the{' '}
-                      <a
-                        href='https://ecorp.sos.ga.gov/BusinessSearch'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-primary underline underline-offset-2'
-                      >
-                        Secretary of State
-                      </a>{' '}
-                      business search. Approving marks the agency{' '}
-                      <strong>Confirmed</strong> and unlocks sensitive credentials.
-                    </p>
+                    <h2 className='text-lg font-semibold'>
+                      Registry Confirmation Status
+                    </h2>
+                    {(localData?.personalInfo?.companyName ||
+                      localData?.personalInfo?.address?.city ||
+                      localData?.personalInfo?.address?.state) && (
+                      <p className='text-sm text-muted-foreground mt-1'>
+                        Looking up{' '}
+                        <strong>
+                          {localData?.personalInfo?.companyName || 'this agency'}
+                        </strong>
+                        {[
+                          localData?.personalInfo?.address?.city,
+                          localData?.personalInfo?.address?.state,
+                        ].filter(Boolean).length
+                          ? ` · ${[
+                              localData?.personalInfo?.address?.city,
+                              localData?.personalInfo?.address?.state,
+                            ]
+                              .filter(Boolean)
+                              .join(', ')}`
+                          : ''}
+                      </p>
+                    )}
                   </div>
                   <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                    <InfoField
-                      label='Contact Name'
-                      value={`${localData?.personalInfo?.firstName || ''} ${
-                        localData?.personalInfo?.lastName || ''
-                      }`.trim()}
-                    />
-                    <InfoField
-                      label='Agency Name'
-                      value={localData?.personalInfo?.companyName}
-                    />
-                    <InfoField
-                      label='City'
-                      value={localData?.personalInfo?.address?.city}
-                    />
-                    <InfoField
-                      label='State'
-                      value={localData?.personalInfo?.address?.state}
-                    />
+                    <div className='flex flex-col gap-1'>
+                      <span className='text-sm text-muted-foreground'>
+                        Georgia Home Care Provider
+                      </span>
+                      <div className='flex items-center gap-3'>
+                        {localData?.status === 'approved' ? (
+                          <span className='text-green-600 font-semibold text-sm'>
+                            Confirmed
+                          </span>
+                        ) : (
+                          <span className='text-red-600 font-semibold text-sm'>
+                            Can&apos;t find
+                          </span>
+                        )}
+                        <a
+                          href='https://dch.georgia.gov/hfrd'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-primary text-xs underline underline-offset-2 inline-flex items-center gap-1'
+                        >
+                          Check <MoveUpRight className='size-3' />
+                        </a>
+                      </div>
+                    </div>
+                    <div className='flex flex-col gap-1'>
+                      <span className='text-sm text-muted-foreground'>
+                        Georgia Secretary of State business
+                      </span>
+                      <div className='flex items-center gap-3'>
+                        {localData?.status === 'approved' ? (
+                          <span className='text-green-600 font-semibold text-sm'>
+                            Confirmed
+                          </span>
+                        ) : (
+                          <span className='text-red-600 font-semibold text-sm'>
+                            Can&apos;t find
+                          </span>
+                        )}
+                        <a
+                          href='https://ecorp.sos.ga.gov/BusinessSearch'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-primary text-xs underline underline-offset-2 inline-flex items-center gap-1'
+                        >
+                          Check <MoveUpRight className='size-3' />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                   {Array.isArray(
                     localData?.personalInfo?.acceptedCprProviders
@@ -341,35 +377,10 @@ export function ReviewApplicationModal({
                           .join(', ')}
                       />
                     )}
-
-                  {/* Legacy accounts that submitted the old license/EIN form still
-                      show that document, but it is no longer the basis for
-                      verification. */}
-                  {localData?.partnerVerification && (
-                    <div className='flex flex-col gap-3 pt-1 border-t border-gray-100'>
-                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3'>
-                        <InfoField
-                          label='State License / Certification #'
-                          value={localData.partnerVerification.licenseNumber}
-                        />
-                        <InfoField
-                          label='EIN (legacy)'
-                          value={localData.partnerVerification.ein}
-                        />
-                      </div>
-                      {localData.partnerVerification.licenseFile && (
-                        <a
-                          href={localData.partnerVerification.licenseFile}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='inline-flex items-center gap-2 text-green-600 text-sm font-medium hover:underline'
-                        >
-                          <MoveUpRight className='size-4' />
-                          License Document
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  <p className='text-xs text-muted-foreground'>
+                    Automated status is a stopgap — confirm each source via its
+                    link, then Approve or Reject above.
+                  </p>
                 </div>
               )}
 

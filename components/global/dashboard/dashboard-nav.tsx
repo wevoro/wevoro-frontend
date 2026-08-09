@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Bell, Settings, Menu } from 'lucide-react';
+import { Bell, Settings, Menu, LogOut, User } from 'lucide-react';
+import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+// SCRUM-205: avatar dropdown (top-right) so Sign Out is reachable from any
+// authenticated screen — same component on the caregiver and agency surfaces.
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import Logo from '../logo';
 import { useParams, usePathname } from 'next/navigation';
 import { useUserContext } from '@/lib/contexts';
@@ -73,18 +84,55 @@ export default function DashboardNav() {
                 </NavItem>
               ))}
 
-              <Button
-                href={`${path}/profile`}
-                variant='ghost'
-                size='icon'
-                className='rounded-full w-10 h-10 lg:w-16 lg:h-16'
-              >
-                <img
-                  src={user?.personalInfo?.image || '/dummy-profile-pic.jpg'}
-                  alt='User'
-                  className='rounded-full w-full h-full object-cover'
-                />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    aria-label='Account menu'
+                    className='rounded-full w-10 h-10 lg:w-16 lg:h-16 p-0 overflow-hidden'
+                  >
+                    <img
+                      src={user?.personalInfo?.image || '/dummy-profile-pic.jpg'}
+                      alt='Account'
+                      className='rounded-full w-full h-full object-cover'
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end' className='w-56'>
+                  <DropdownMenuLabel className='truncate'>
+                    {user?.personalInfo?.firstName
+                      ? `${user.personalInfo.firstName} ${user.personalInfo.lastName || ''}`.trim()
+                      : user?.email || 'My account'}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`${path}/profile`}
+                      className='cursor-pointer flex items-center gap-2'
+                    >
+                      <User className='h-4 w-4' /> Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`${path}/settings`}
+                      className='cursor-pointer flex items-center gap-2'
+                    >
+                      <Settings className='h-4 w-4' /> Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href='/logout'
+                      className='cursor-pointer flex items-center gap-2 text-red-600 focus:text-red-600'
+                    >
+                      <LogOut className='h-4 w-4' /> Sign Out
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <NavItem
@@ -132,6 +180,15 @@ export default function DashboardNav() {
                       {item.label}
                     </NavItem>
                   ))}
+                  {/* SCRUM-205: Sign Out reachable from the mobile menu too. */}
+                  <NavItem
+                    href='/logout'
+                    icon={<LogOut className='h-5 w-5 md:h-4 md:w-4 lg:h-6 lg:w-6' />}
+                    pathName={pathName}
+                    className='text-red-600'
+                  >
+                    Sign Out
+                  </NavItem>
                 </>
               ) : (
                 <NavItem

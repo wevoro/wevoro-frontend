@@ -148,10 +148,34 @@ export function ReviewApplicationModal({
 }: any) {
   const [localData, setLocalData] = useState(data);
 
-  // Keep localData in sync when data prop changes (e.g. parent refetch)
-  if (data?._id !== localData?._id) {
+  // Keep localData in sync when the data prop changes — including a STATUS change
+  // after an Approve/Reject refetch, not only a different _id. Without the status
+  // check the header kept showing Approve/Reject after the admin already approved.
+  if (data?._id !== localData?._id || data?.status !== localData?.status) {
     setLocalData(data);
   }
+
+  // Once a decision is made, show the outcome badge instead of Approve/Reject.
+  const decisionBadge = (
+    {
+      approved: {
+        label: 'Approved',
+        cls: 'text-green-700 bg-green-50 border-green-200',
+      },
+      rejected: {
+        label: 'Rejected',
+        cls: 'text-red-700 bg-red-50 border-red-200',
+      },
+      blocked: {
+        label: 'Blocked',
+        cls: 'text-gray-700 bg-gray-100 border-gray-300',
+      },
+      removed: {
+        label: 'Removed',
+        cls: 'text-gray-700 bg-gray-100 border-gray-300',
+      },
+    } as Record<string, { label: string; cls: string }>
+  )[localData?.status];
 
   const jobTitle =
     localData?.professionalInfo?.experience?.[0]?.jobTitle ?? '';
@@ -196,8 +220,8 @@ export function ReviewApplicationModal({
                 </div>
 
                 <div className='flex flex-wrap flex-row sm:flex-col gap-2 sm:gap-3'>
-                  {(localData?.status === 'pending' ||
-                    localData?.status === 'in-review') && (
+                  {localData?.status === 'pending' ||
+                  localData?.status === 'in-review' ? (
                     <div className='flex flex-row items-center gap-2'>
                       <AdminAlertModal alertType='approve' data={localData}>
                         <Button
@@ -218,6 +242,19 @@ export function ReviewApplicationModal({
                         </Button>
                       </AdminAlertModal>
                     </div>
+                  ) : (
+                    decisionBadge && (
+                      <div
+                        className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold ${decisionBadge.cls}`}
+                      >
+                        {localData?.status === 'approved' ? (
+                          <Check className='size-4' />
+                        ) : (
+                          <X className='size-4' />
+                        )}
+                        {decisionBadge.label}
+                      </div>
+                    )
                   )}
                   <MessageModal data={localData}>
                     <Button

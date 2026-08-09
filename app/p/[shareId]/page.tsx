@@ -126,7 +126,8 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
             <div className='flex items-center justify-center gap-2'>
               <ShieldCheck className='w-5 h-5 text-emerald-500' />
               <span className='text-sm font-semibold text-gray-700'>
-                {verifiedCount} of {totalCount} credentials confirmed
+                {/* SCRUM-99: confirmed can never exceed the total (was showing e.g. "7 of 5"). */}
+                {Math.min(verifiedCount, totalCount)} of {totalCount} credentials confirmed
               </span>
             </div>
             {/* Progress bar */}
@@ -134,7 +135,7 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
               <div
                 className='h-full rounded-full transition-all duration-500'
                 style={{
-                  width: `${(verifiedCount / totalCount) * 100}%`,
+                  width: `${(Math.min(verifiedCount, totalCount) / totalCount) * 100}%`,
                   background: 'linear-gradient(90deg, #22c55e, #16a34a)',
                 }}
               />
@@ -142,32 +143,32 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
           </div>
 
           {/* CTA buttons */}
-          {/* SCRUM-99: passwordless is the primary path — an agency enters its
-              email, gets a code, and views this caregiver's general credentials
-              with no password and no signup form (Flow 2). The password signup
-              stays available as a secondary option. */}
+          {/* SCRUM-99: both options are passwordless per Faisal's design — a new
+              agency uses "Continue with company email", a returning one uses
+              "Already have an account? Sign in". Both go to the email + code flow
+              (create-or-sign-in); no password path from the share preview. */}
           <div className='flex flex-col gap-3'>
             <Link href={`/partner/access?shareId=${shareId}&proId=${proUser._id}&s=true`}>
               <Button
                 className='w-full h-12 rounded-xl text-base font-semibold gap-2'
               >
-                Continue with email to view profile
+                Continue with company email
                 <ArrowRight className='w-4 h-4' />
               </Button>
             </Link>
-            <Link href={`/partner/signup?shareId=${shareId}&proId=${proUser._id}&s=true`}>
+            <Link href={`/partner/access?shareId=${shareId}&proId=${proUser._id}&s=true&mode=signin`}>
               <Button
                 variant='outline'
                 className='w-full h-12 rounded-xl text-base font-semibold'
               >
-                Prefer a password? Sign up
+                Already have an account? Sign in
               </Button>
             </Link>
           </div>
 
           {/* Footer text */}
           <p className='text-xs text-gray-400 mt-4 leading-relaxed'>
-            Enter your email to view this caregiver&apos;s credentials — no password needed. Get verified to unlock sensitive documents.
+            Use your company email now — no password needed. Complete your agency account only when you need full access.
           </p>
         </div>
       </div>

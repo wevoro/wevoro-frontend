@@ -4,7 +4,21 @@ import { NextResponse } from 'next/server';
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { documentId, reviewStatus, credentialIdNumber, credentialIssueDate, credentialExpirationDate, issuingOrganization, rejectionReason } = body;
+    const {
+      documentId,
+      reviewStatus,
+      credentialIdNumber,
+      credentialIssueDate,
+      credentialExpirationDate,
+      issuingOrganization,
+      rejectionReason,
+      // SCRUM-109
+      rejectionReasonCode,
+      requestReplacement,
+      aiSuggestedReason,
+      adminAgreedWithAi,
+      hasNoExpiration,
+    } = body;
 
     if (!documentId || !reviewStatus) {
       return NextResponse.json(
@@ -20,6 +34,11 @@ export async function PATCH(req: Request) {
       credentialExpirationDate,
       issuingOrganization,
       rejectionReason,
+      rejectionReasonCode,
+      requestReplacement,
+      aiSuggestedReason,
+      adminAgreedWithAi,
+      hasNoExpiration,
     });
 
     if (response.status === 200) {

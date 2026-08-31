@@ -70,9 +70,11 @@ const ProfileImage = ({
             alt='Profile'
             className='rounded-full w-full h-full object-cover p-1 bg-white transition-opacity group-hover:opacity-75'
           />
-          <div className='absolute inset-0 rounded-full flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all'>
-            <Camera className='md:h-8 md:w-8 h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity' />
-          </div>
+          <div className='absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 transition-all' />
+          {/* Design: a persistent dark badge sits at the avatar's bottom-right. */}
+          <span className='absolute bottom-1 right-1 flex size-8 md:size-14 items-center justify-center rounded-full bg-[#1C1C1C] transition-colors group-hover:bg-black'>
+            <Camera className='h-4 w-4 md:h-6 md:w-6 text-white' />
+          </span>
         </label>
       ) : (
         <img

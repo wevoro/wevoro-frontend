@@ -84,6 +84,16 @@ export interface CredentialDocument {
   credentialExpirationDate?: string;
   issuingOrganization?: string;
   rejectionReason?: string;
+  /** SCRUM-109: category behind the caregiver-facing rejection message. */
+  rejectionReasonCode?: string;
+  /** SCRUM-109: admin asked for a replacement upload. */
+  replacementRequested?: boolean;
+  /** SCRUM-109: confirmed with no fixed renewal date. */
+  hasNoExpiration?: boolean;
+  /** SCRUM-109/110: WeVoro's own generated credential ID (vs the provider's). */
+  wevoroCredentialId?: string;
+  /** Drives the globe / padlock icon on the caregiver-facing card. */
+  privacy?: 'public' | 'private';
   createdAt: string;
   updatedAt: string;
   category: string;

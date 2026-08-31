@@ -4,8 +4,8 @@ export const fileIcons: Record<string, string> = {
   pdf: '/file.svg',
   doc: '/doc.svg',
   docx: '/doc.svg',
-  jpg: '/image.svg',
-  jpeg: '/image.svg',
+  jpg: '/jpeg.svg',
+  jpeg: '/jpeg.svg',
   png: '/image.svg',
   svg: '/image.svg',
 };

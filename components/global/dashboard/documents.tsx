@@ -44,6 +44,14 @@ import { REQUIRED_CREDENTIALS } from '@/lib/credential-config';
 // the supporting-Documents section. The Credentials Status section owns those.
 const CREDENTIAL_DOCUMENT_TYPES = REQUIRED_CREDENTIALS.map((c) => c.documentType);
 
+// Design meta line: "Non Medical . ( 2.1 MB ) C...jpeg"
+const formatFileSize = (bytes?: number) => {
+  if (!bytes || bytes < 0) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 interface Document {
   _id: string;
   title: string;
@@ -54,6 +62,7 @@ interface Document {
   consent: boolean;
   category: string;
   documentType: string;
+  fileSize?: number;
 }
 
 const Documents: React.FC<{ proUser?: any; from?: string }> = ({
@@ -112,6 +121,8 @@ const EachDocument = ({
   document: any;
   refetchDocuments: () => void;
 }) => {
+  const fileName = document.url?.split('/').pop()?.split('?')[0] || '';
+
   return (
     <DocumentViewer documents={document} title='View Document'>
       <div className='flex flex-col gap-6 justify-between p-4 md:p-6 border rounded-[24px] w-full cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all'>
@@ -148,8 +159,10 @@ const EachDocument = ({
           <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
             {document.title}
           </p>
-          <p className='text-xs sm:text-sm font-medium text-muted-foreground'>
-            {document.category === 'medical' ? 'Medical' : 'Non-Medical'}
+          <p className='text-xs sm:text-sm font-medium text-muted-foreground truncate'>
+            {document.category === 'medical' ? 'Medical' : 'Non Medical'}
+            {document.fileSize ? ` . ( ${formatFileSize(document.fileSize)} )` : ''}
+            {fileName ? ` ${fileName}` : ''}
           </p>
         </div>
       </div>
@@ -175,7 +188,7 @@ const UploadDocumentButton = ({
           hasDocumets ? 'h-full' : 'h-[186px]',
         )}
       >
-        <p className='md:size-10 size-8 rounded-full bg-green-600 flex items-center justify-center hover:bg-green-700 transition-colors'>
+        <p className='md:size-10 size-8 rounded-full bg-[#008000] flex items-center justify-center hover:bg-[#026a02] transition-colors'>
           <Plus className='w-5 h-5 text-white' strokeWidth={2.5} />
         </p>
       </Button>

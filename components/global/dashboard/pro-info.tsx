@@ -1,9 +1,11 @@
-import { Button } from '@/components/ui/button';
-import { Share2 } from 'lucide-react';
+import moment from 'moment';
+import { CheckCircle2 } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+
 import React from 'react';
 import ProfileName from './profile-name';
-import ShareProfileModal from './share-profile-modal';
-import { isSharingEnabled } from '@/lib/credentialing';
+import CopyApplyLink from './copy-apply-link';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
   const personalInfo = user?.personalInfo;
@@ -14,64 +16,68 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
       ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
       : 'N/A';
 
+  // Figma "10. Profile": profession sits directly under the name (e.g. "CNA")
+  const profession = user?.professionalInfo?.role;
+
+  // Figma "CNA profile - Preview mode": a viewer sees a BACKGROUND CHECKED
+  // pill beside the profession. The caregiver's own profile design omits it.
+  const isBackgroundChecked =
+    user?.professionalInfo?.gchexsStatus === 'yes' &&
+    (isProProfileFromPartner || isPublicProPage);
+
+  // No backend "rising" flag yet — treat accounts newer than 30 days as rising.
+  const isRising =
+    !!user?.createdAt && moment().diff(moment(user.createdAt), 'days') < 30;
+
+  // Figma: the Copy Link column starts level with the NAME (design y=79),
+  // not the pill row above it (y=40), so offset it when pills are present.
+  const hasStatusPills = role === 'pro' && (isRising || !!user?.isRecentlyActive);
+
   const shareLink = typeof window !== 'undefined'
     ? `${window.location.origin}/p/${user?.shareId || user?._id}`
     : `/p/${user?.shareId || user?._id}`;
 
   return (
-    <div className='flex flex-col gap-1 sm:gap-3 w-full'>
-      <ProfileName
-        name={name}
-        role={role}
-        status={status}
-        isRecentlyActive={user?.isRecentlyActive}
-        fromSpecialPage={isProProfileFromPartner || isPublicProPage}
-      />
-      <div className='flex justify-between lg:flex-row flex-col sm:gap-6 gap-3'>
-        <div className='flex-1 flex flex-col sm:gap-3 gap-1'>
-          <p className='text-base sm:text-xl text-[#3A4742] font-medium'>
-          </p>
-
-          {!isProProfileFromPartner && !isPublicProPage && (
-            <div className='flex items-start sm:items-center sm:flex-row flex-col'>
-              <span className='text-sm text-[#6d6d6d] mr-6'>
-                Profile Completion
-              </span>
-              <div className='flex items-center'>
-                <div className='w-[185px] h-2 bg-[#FAFAFA] rounded-full overflow-hidden'>
-                  <div
-                    className='h-full'
-                    style={{
-                      width: `${user?.completionPercentage}%`,
-                      background:
-                        'linear-gradient(90deg, #33B55B 0%, #008000 100%)',
-                    }}
-                  ></div>
-                </div>
-                <span className='text-sm text-[#3A4742] font-medium ml-2'>
-                  {user?.completionPercentage}%
-                </span>
-              </div>
+    <div className='flex justify-between lg:flex-row flex-col gap-3 sm:gap-6 w-full'>
+      <div className='flex-1 flex flex-col gap-1 sm:gap-3'>
+        <ProfileName
+          name={name}
+          role={role}
+          status={status}
+          isRecentlyActive={user?.isRecentlyActive}
+          isRising={isRising}
+          fromSpecialPage={isProProfileFromPartner || isPublicProPage}
+        />
+        <div className='flex flex-col sm:gap-3 gap-1'>
+          {profession && (
+            <div className='flex flex-wrap items-center gap-2'>
+              <p className='text-base sm:text-xl text-[#3A4742] font-medium'>
+                {profession}
+              </p>
+              {isBackgroundChecked && (
+                <>
+                  <span className='text-[#3A4742]'>.</span>
+                  <span className='flex items-center gap-2 rounded-lg bg-[#F9F9FA] px-3 py-1.5 text-xs font-medium text-[#3A4742]'>
+                    <CheckCircle2 className='w-4 h-4 fill-[#008000] text-white' />
+                    BACKGROUND CHECKED
+                  </span>
+                </>
+              )}
             </div>
           )}
+
         </div>
-        {isSharingEnabled() && !isProProfileFromPartner && !isPublicProPage && (
-          <div className='flex flex-col gap-3'>
-            <p className='text-sm sm:text-base font-semibold text-tertiary'>
-              Share Profile with Agencies
-            </p>
-            <ShareProfileModal shareLink={shareLink}>
-              <Button
-                className='w-fit gap-2 rounded-xl h-11 px-6'
-                variant='default'
-              >
-                <Share2 className='w-4 h-4' />
-                Share Profile
-              </Button>
-            </ShareProfileModal>
-          </div>
-        )}
       </div>
+      {!isProProfileFromPartner && !isPublicProPage && (
+        <div
+          className={cn(
+            'flex flex-col gap-4 w-full lg:max-w-[561px]',
+            hasStatusPills && 'lg:mt-10',
+          )}
+        >
+          <CopyApplyLink link={shareLink} />
+        </div>
+      )}
     </div>
   );
 };

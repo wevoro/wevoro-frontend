@@ -60,6 +60,7 @@ interface Document {
   privacy: string;
   url: string;
   consent: boolean;
+  reviewStatus?: 'pending' | 'approved' | 'rejected';
 }
 
 interface UploadDocumentModalProps {
@@ -115,6 +116,11 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditMode = !!document;
+  // A rejected credential is only cleared by a NEW file — the backend leaves the
+  // verdict alone on a metadata-only edit. Submitting with "Current file will be
+  // kept" therefore reported success while the credential stayed rejected and
+  // the Completing Profile modal kept asking for a re-upload.
+  const requiresNewFile = isEditMode && document?.reviewStatus === 'rejected';
 
   // Pre-populate form when editing
   useEffect(() => {
@@ -221,9 +227,14 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    // For edit mode, file is optional (keeps existing if not changed)
-    if (!isEditMode && !formData.file) {
-      toast.error('Please select a file to upload');
+    // For edit mode, file is optional (keeps existing if not changed) — except
+    // on a rejected credential, where the existing file is the rejected one.
+    if (!formData.file && (!isEditMode || requiresNewFile)) {
+      toast.error(
+        requiresNewFile
+          ? 'This document was rejected — please select a new file to replace it.'
+          : 'Please select a file to upload',
+      );
       return;
     }
 
@@ -287,7 +298,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     formData.documentType &&
     formData.title &&
     (isMedicalCategory ? formData.consent : true) &&
-    (isEditMode || formData.file); // File required only for create
+    (isEditMode && !requiresNewFile ? true : !!formData.file); // new file required on create + rejected re-upload
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -393,6 +404,15 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                   </p>
                   <p className='text-base md:text-lg text-muted-foreground'>
                     Click or drag to replace
+                  </p>
+                </div>
+              ) : requiresNewFile ? (
+                <div className='text-center'>
+                  <p className='text-base font-medium text-red-500'>
+                    A new file is required
+                  </p>
+                  <p className='text-base md:text-lg text-muted-foreground'>
+                    Click or drag to replace the rejected document
                   </p>
                 </div>
               ) : isEditMode && document ? (

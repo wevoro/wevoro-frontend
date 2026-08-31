@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import { ShieldCheck, ShieldX, Eye, HelpCircle } from 'lucide-react';
+import moment from 'moment';
+import { ShieldX, HelpCircle } from 'lucide-react';
 import type { GchexsStatus } from '@/app/types/types';
 
 interface GchexsFlagProps {
@@ -9,6 +10,8 @@ interface GchexsFlagProps {
   isEditable?: boolean;
   onEdit?: () => void;
   showPrompt?: boolean;
+  /** professionalInfo.gchexsUpdatedAt — design shows "Completed on <date>". */
+  completedAt?: string;
 }
 
 /**
@@ -27,6 +30,7 @@ const GchexsFlag: React.FC<GchexsFlagProps> = ({
   isEditable = false,
   onEdit,
   showPrompt = false,
+  completedAt,
 }) => {
   if (status === 'not_set') {
     if (!showPrompt) return null;
@@ -51,31 +55,36 @@ const GchexsFlag: React.FC<GchexsFlagProps> = ({
 
   if (status === 'yes') {
     return (
-      <div className='inline-flex items-center gap-1.5'>
-        <div className='inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1'>
-          <ShieldCheck className='size-3.5 text-emerald-600' />
-          <span className='text-[11px] font-semibold text-emerald-700'>
-            GCHEXS Completed{!documentUrl && ' (Self-Reported)'}
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+        <p className='text-sm md:text-base text-[#5E6864]'>
+          Have you completed Georgia&apos;s GCHEXS fingerprinting?{' '}
+          <span className='text-[#008000]'>
+            GCHEXS Completed
+            {completedAt && ` on ${moment(completedAt).format('MMM D, YYYY')}`}
+            {!documentUrl && ' (Self-Reported)'}
           </span>
-          {documentUrl && (
-            <a
-              href={documentUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-600 hover:text-emerald-800 ml-1'
-            >
-              <Eye className='size-3' />
-              View
-            </a>
-          )}
-        </div>
-        {isEditable && onEdit && (
-          <button
-            onClick={onEdit}
-            className='text-[10px] text-gray-400 hover:text-gray-600 underline'
-          >
-            Edit
-          </button>
+        </p>
+        {(documentUrl || (isEditable && onEdit)) && (
+          <div className='flex items-center gap-3 flex-shrink-0'>
+            {documentUrl && (
+              <a
+                href={documentUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='inline-flex items-center justify-center h-[37px] px-4 rounded-lg border border-[#DFE2E0] bg-white text-sm font-medium text-[#008000] hover:bg-gray-50'
+              >
+                View
+              </a>
+            )}
+            {isEditable && onEdit && (
+              <button
+                onClick={onEdit}
+                className='inline-flex items-center justify-center h-[37px] px-4 rounded-lg border border-[#DFE2E0] bg-white text-sm font-medium text-[#1C1C1C] hover:bg-gray-50'
+              >
+                Edit
+              </button>
+            )}
+          </div>
         )}
       </div>
     );

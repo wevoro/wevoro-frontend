@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import GchexsFlag from './gchexs-flag';
 import GchexsEditModal from './gchexs-edit-modal';
+import Title from '../title';
 import { useUserContext } from '@/lib/contexts';
 import type { GchexsStatus } from '@/app/types/types';
 
@@ -25,11 +26,13 @@ const GchexsSection: React.FC<GchexsSectionProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [gchexsStatus, setGchexsStatus] = useState<GchexsStatus>('not_set');
   const [gchexsDocUrl, setGchexsDocUrl] = useState<string | undefined>();
+  const [gchexsUpdatedAt, setGchexsUpdatedAt] = useState<string | undefined>();
 
   useEffect(() => {
     if (data?.professionalInfo?.gchexsStatus) {
       setGchexsStatus(data.professionalInfo.gchexsStatus);
       setGchexsDocUrl(data.professionalInfo.gchexsDocumentUrl);
+      setGchexsUpdatedAt(data.professionalInfo.gchexsUpdatedAt);
     }
   }, [data]);
 
@@ -82,10 +85,12 @@ const GchexsSection: React.FC<GchexsSectionProps> = ({
   };
 
   return (
-    <div className='mt-2'>
+    <div className='px-4 p-6 md:p-8 bg-white md:rounded-[16px]'>
+      <Title text='Background check' className='mb-2 !text-lg md:!text-2xl' />
       <GchexsFlag
         status={gchexsStatus}
         documentUrl={gchexsStatus === 'yes' ? gchexsDocUrl : undefined}
+        completedAt={gchexsUpdatedAt}
         isEditable={isEditable}
         onEdit={() => setIsEditModalOpen(true)}
         showPrompt={isEditable && gchexsStatus === 'not_set'}

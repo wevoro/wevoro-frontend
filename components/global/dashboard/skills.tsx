@@ -23,7 +23,7 @@ const Skills: React.FC<{ proUser?: any }> = ({ proUser }) => {
           {skills.map((skill: string, index: number) => (
             <Button
               key={index}
-              className='bg-accent text-tertiary text-xs md:text-lg h-8 md:h-12'
+              className='bg-accent text-tertiary text-xs md:text-lg h-8 md:h-12 rounded-xl'
               variant='ghost'
             >
               {skill}

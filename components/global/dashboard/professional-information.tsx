@@ -8,7 +8,6 @@ import {
   BriefcaseBusiness,
   GraduationCap,
   IdCard,
-  Link,
   Link2,
   MoveUpRight,
 } from 'lucide-react';
@@ -52,7 +51,7 @@ export default function ProfessionalInformation({
       {!noData ? (
         <div className='space-y-6'>
           {education?.length > 0 && education[0]?.institution && (
-            <div className='border-b pb-6 flex flex-col gap-5 w-full'>
+            <div className='pb-6 flex flex-col gap-5 w-full'>
               <SectionTitle
                 text='Education'
                 className='!text-lg md:!text-2xl'
@@ -63,7 +62,7 @@ export default function ProfessionalInformation({
             </div>
           )}
           {experience?.length > 0 && experience[0]?.jobTitle && (
-            <div className='border-b pb-6 flex flex-col gap-5'>
+            <div className='pb-6 flex flex-col gap-5'>
               <SectionTitle
                 text='Experience'
                 className='!text-lg md:!text-2xl'
@@ -180,35 +179,36 @@ const CertificationItem = ({
             className='font-semibold !text-base md:!text-2xl'
             text={title}
           />
-          {credentialUrl && (
-            <Button target='_blank' href={credentialUrl} variant='special'>
-              <Link className='size-4 mr-2' />
-            </Button>
-          )}
         </div>
         <SectionDescription
           text={institution}
           className='!text-sm md:!text-lg font-medium'
         />
         <div className='grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-6'>
-          <SectionDescription
-            text={`Issue Date: ${moment(issueDate).format('MMM DD, YYYY')}`}
-            className='!text-sm md:!text-base text-[#595959] font-normal'
-          />
+          <p className='text-sm md:text-base font-normal text-tertiary'>
+            Issue Date:{' '}
+            <span className='text-muted-foreground'>
+              {moment(issueDate).format('MMMM DD, YYYY')}
+            </span>
+          </p>
           {expireDate && (
-            <SectionDescription
-              text={`Expire Date: ${moment(expireDate).format('MMM DD, YYYY')}`}
-              className='!text-sm md:!text-base text-[#595959] font-normal'
-            />
+            <p className='text-sm md:text-base font-normal text-tertiary'>
+              Expire Date:{' '}
+              <span className='text-muted-foreground'>
+                {moment(expireDate).format('MMMM DD, YYYY')}
+              </span>
+            </p>
           )}
         </div>
-        <SectionDescription
-          text={`Credential ID: ${credentialId}`}
-          className='!text-sm md:!text-base text-[#595959] font-normal'
-        />
-        {certificateFile && (
+        <p className='text-sm md:text-base font-normal text-tertiary'>
+          Credential ID:{' '}
+          <span className='text-muted-foreground'>{credentialId}</span>
+        </p>
+        {(certificateFile || credentialUrl) && (
           <Button
-            onClick={() => window.open(certificateFile, '_blank')}
+            onClick={() =>
+              window.open(certificateFile || credentialUrl, '_blank')
+            }
             variant='outline'
             className='h-10 md:h-12 rounded-[12px] w-fit mt-4 text-xs md:text-base'
           >
@@ -279,7 +279,7 @@ const ExperienceItem = ({
         {duration && (
           <SectionDescription
             text={duration}
-            className='!text-sm md:!text-base text-[#595959] font-normal'
+            className='!text-sm md:!text-base text-muted-foreground font-normal'
           />
         )}
 

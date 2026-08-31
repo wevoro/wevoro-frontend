@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronUp, ChevronDown, CloudUpload, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UploadDocumentModal from './upload-document-modal';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -23,6 +23,7 @@ interface Document {
   category: string;
   documentType: string;
   reviewStatus?: string;
+  credentialExpirationDate?: string;
 }
 
 // SCRUM-60: 5-credential list with role-driven label resolved at view time.
@@ -33,6 +34,18 @@ const HINT_BY_CATEGORY: Record<string, string> = {
   non_medical: `jpeg, png, pdf formats, up to ${MAX_UPLOAD_MB}MB.`,
   medical: `doc or pdf formats, up to ${MAX_UPLOAD_MB}MB.`,
 };
+
+// Red supporting line appears inside the same 30-day band credential-status-card
+// treats as expiring.
+const EXPIRY_WARNING_DAYS = 30;
+
+function daysUntilExpiry(dateStr?: string) {
+  if (!dateStr) return null;
+  const diffMs = new Date(dateStr).getTime() - Date.now();
+  if (Number.isNaN(diffMs) || diffMs <= 0) return null;
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return days <= EXPIRY_WARNING_DAYS ? days : null;
+}
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return '';
@@ -103,11 +116,7 @@ const CredentialsPanel: React.FC = () => {
           className='w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors'
           aria-label={collapsed ? 'Expand credentials' : 'Collapse credentials'}
         >
-          {collapsed ? (
-            <ChevronUp className='w-5 h-5 text-gray-400' />
-          ) : (
-            <X className='w-5 h-5 text-gray-500' />
-          )}
+          <ChevronUp className='w-5 h-5 text-gray-400' />
         </button>
       </div>
 
@@ -116,10 +125,13 @@ const CredentialsPanel: React.FC = () => {
           {/* Profile Completion — single row */}
           <div className='flex items-center gap-3 shrink-0'>
             <span className='text-sm text-gray-500 shrink-0'>Profile Completion</span>
-            <div className='flex-1 h-2 bg-gray-200 rounded-full overflow-hidden'>
+            <div className='flex-1 h-2 bg-[#FAFAFA] rounded-full overflow-hidden'>
               <div
-                className='h-2 bg-primary rounded-full transition-all duration-500'
-                style={{ width: `${completion}%` }}
+                className='h-2 rounded-full transition-all duration-500'
+                style={{
+                  width: `${completion}%`,
+                  background: 'linear-gradient(90deg, #33B55B 0%, #008000 100%)',
+                }}
               />
             </div>
             <span className='text-sm font-bold text-gray-900 shrink-0'>
@@ -135,12 +147,18 @@ const CredentialsPanel: React.FC = () => {
             {requiredCredentials.map((cred) => {
               const doc = uploadedByType[cred.key];
               const isReviewed = doc?.reviewStatus === 'approved';
+              const expiringDays = daysUntilExpiry(doc?.credentialExpirationDate);
 
               return (
                 <div
                   key={cred.key}
                   className='flex flex-col rounded-2xl'
-                  style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '14px 14px 20px' }}
+                  style={{
+                    backgroundColor: doc ? '#FFFFFF' : '#F5F6F7',
+                    border: doc ? '1px solid #DFE2E0' : undefined,
+                    gap: 12,
+                    padding: '14px 14px 20px',
+                  }}
                 >
                   {doc ? (
                     /* Uploaded state */
@@ -148,8 +166,8 @@ const CredentialsPanel: React.FC = () => {
                       <div
                         className='flex items-center justify-between rounded-xl px-3 sm:px-4 py-2.5 sm:py-3'
                         style={{
-                          backgroundColor: '#fff',
-                          border: '1px solid #E5E7EB',
+                          backgroundColor: '#F9F9FA',
+                          border: '1px solid #6C6C6C',
                         }}
                       >
                         <div className='flex items-center gap-2'>
@@ -160,17 +178,17 @@ const CredentialsPanel: React.FC = () => {
                               </svg>
                             </span>
                           ) : (
-                            <span className='w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0'>
-                              <svg width='11' height='8' viewBox='0 0 11 8' fill='none'>
-                                <path d='M1 3.5L4 6.5L10 1' stroke='#9CA3AF' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'/>
+                            <span className='w-5 h-5 rounded-full bg-[#FF9500] flex items-center justify-center shrink-0'>
+                              <svg width='11' height='11' viewBox='0 0 12 12' fill='none'>
+                                <path d='M6 3.2V6L8 7.4' stroke='white' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round'/>
                               </svg>
                             </span>
                           )}
                           <span
                             className='text-xs sm:text-sm font-medium'
-                            style={{ color: isReviewed ? '#1A7A3C' : '#6B7280' }}
+                            style={{ color: isReviewed ? '#1A7A3C' : '#FF9500' }}
                           >
-                            {isReviewed ? 'Reviewed' : 'Pending review'}
+                            {isReviewed ? 'Reviewed' : 'Pending'}
                           </span>
                         </div>
                         {isReviewed && doc.reviewedAt && (
@@ -178,10 +196,22 @@ const CredentialsPanel: React.FC = () => {
                             {formatDate(doc.reviewedAt)}
                           </span>
                         )}
+                        {!isReviewed && doc.createdAt && (
+                          <span className='text-xs text-[#3A4742]'>
+                            Submitted on {formatDate(doc.createdAt)}
+                          </span>
+                        )}
                       </div>
                       <div>
                         <p className='font-bold text-gray-900 text-sm mb-1'>{cred.label}</p>
-                        <p className='text-xs text-gray-400 truncate mb-0.5'>{doc.title}</p>
+                        {expiringDays !== null ? (
+                          <p className='text-xs mb-0.5' style={{ color: '#EC685C' }}>
+                            Expires in less than{' '}
+                            <span className='font-bold'>{expiringDays} days</span>
+                          </p>
+                        ) : (
+                          <p className='text-xs text-gray-400 truncate mb-0.5'>{doc.title}</p>
+                        )}
                       </div>
                     </>
                   ) : (
@@ -198,7 +228,7 @@ const CredentialsPanel: React.FC = () => {
                       >
                         <Button
                           variant='outline'
-                          className='w-fit gap-2 rounded-xl border-gray-300 bg-white text-gray-800 hover:border-primary hover:text-primary text-sm h-10 px-4'
+                          className='w-fit gap-2 rounded-xl border-[#1C1C1C] bg-white text-gray-800 hover:border-primary hover:text-primary text-sm h-10 px-4'
                         >
                           <CloudUpload className='w-4 h-4' />
                           Upload
@@ -215,11 +245,16 @@ const CredentialsPanel: React.FC = () => {
               <div
                 key={doc._id}
                 className='flex flex-col rounded-2xl'
-                style={{ backgroundColor: '#F5F6F7', gap: 12, padding: '14px 14px 20px' }}
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #DFE2E0',
+                  gap: 12,
+                  padding: '14px 14px 20px',
+                }}
               >
                 <div
                   className='flex items-center justify-between rounded-xl px-3 sm:px-4 py-2.5 sm:py-3'
-                  style={{ backgroundColor: '#fff', border: '1px solid #E5E7EB' }}
+                  style={{ backgroundColor: '#F9F9FA', border: '1px solid #6C6C6C' }}
                 >
                   <div className='flex items-center gap-2'>
                     <span className='w-5 h-5 rounded-full bg-[#1A7A3C] flex items-center justify-center shrink-0'>

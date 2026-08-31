@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { BadgeCheck, Dot, Info } from 'lucide-react';
+import { BadgeCheck, Dot, Info, Zap } from 'lucide-react';
 import React from 'react';
 import PartnerVerificationModal from './partner-verification-modal';
 
@@ -101,6 +101,7 @@ const ProfileName = ({
   fromSpecialPage,
   role,
   isRecentlyActive,
+  isRising,
   partnerVerification,
 }: {
   name?: string;
@@ -108,6 +109,7 @@ const ProfileName = ({
   fromSpecialPage?: boolean;
   role?: string;
   isRecentlyActive?: boolean;
+  isRising?: boolean;
   partnerVerification?: {
     licenseNumber?: string;
     ein?: string;
@@ -118,16 +120,31 @@ const ProfileName = ({
   // console.log('🚀 ~ ProfileName ~ status:', status);
   return (
     <>
-      {role === 'pro' && isRecentlyActive && (
-        <StatusTooltip
-          trigger={
-            <div className='flex items-center text-xs font-medium text-[#33B55B] border-[#33B55B] border bg-[#33B55B]/5 rounded-full w-max pl-2 pr-4 h-[30px]'>
-              <Dot className='stroke-[6]' /> RECENTLY ACTIVE
-            </div>
-          }
-          title='Recently Active!'
-          description='You have earned the badge. Continue being online to keep this badge on, and to encourage companies and agencies to reach out to you!'
-        />
+      {role === 'pro' && (isRising || isRecentlyActive) && (
+        <div className='flex items-center gap-2.5 flex-wrap'>
+          {isRising && (
+            <StatusTooltip
+              trigger={
+                <div className='flex items-center gap-1 text-xs font-medium text-white bg-[#008000] rounded-full w-max px-3 h-[30px]'>
+                  <Zap className='w-3.5 h-3.5 fill-white' /> RISING (NEW)
+                </div>
+              }
+              title='Rising (New)'
+              description='You are new to Wevoro and currently highlighted to agencies. Complete your profile to keep the momentum going!'
+            />
+          )}
+          {isRecentlyActive && (
+            <StatusTooltip
+              trigger={
+                <div className='flex items-center text-xs font-medium text-[#33B55B] border-[#33B55B] border bg-[#EAF7EE] rounded-full w-max pl-2 pr-4 h-[30px]'>
+                  <Dot className='stroke-[6]' /> RECENTLY ACTIVE
+                </div>
+              }
+              title='Recently Active!'
+              description='You have earned the badge. Continue being online to keep this badge on, and to encourage companies and agencies to reach out to you!'
+            />
+          )}
+        </div>
       )}
       <h1 className='text-xl sm:text-2xl font-semibold flex items-center gap-2'>
         {name || 'N/A'}
@@ -137,6 +154,19 @@ const ProfileName = ({
             <span className='text-sm text-muted-foreground font-light'>
               Pending
             </span>
+          </span>
+        )}
+        {status === 'in-review' && role === 'pro' && (
+          <span className='flex items-center gap-1 text-[#FF9500]'>
+            <BadgeCheck className='w-7 h-7 fill-[#e0e2e1] text-white' />
+            <ReviewIcon />
+            <span className='text-sm font-light'>In Review</span>
+
+            <StatusTooltip
+              trigger={<QuestionMarkIcon />}
+              title='In Review'
+              description='Your profile has been submitted and is currently being reviewed by the admin. You will be notified once a decision is made.'
+            />
           </span>
         )}
         {status === 'in-review' && role === 'partner' && (

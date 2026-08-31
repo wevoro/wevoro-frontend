@@ -95,8 +95,20 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className='hover:bg-transparent'>
                 {headerGroup.headers.map((header) => {
+                  // The Actions column sticks to the right edge. Wide rows
+                  // (long phone numbers/emails) used to push it out of the
+                  // horizontally scrolling table, so the review button looked
+                  // missing on pending rows.
+                  const isActions = header.column.id === 'actions';
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className={
+                        isActions
+                          ? 'sticky right-0 z-20 bg-white shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.08)]'
+                          : undefined
+                      }
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -116,13 +128,29 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
-                className='hover:bg-transparent'
+                // Design: rows still awaiting a decision sit on a grey band so
+                // they stand out from the ones already dealt with.
+                className={`h-[78px] border-b border-[#DFE2E0] hover:bg-transparent ${
+                  (row.original as any)?.status === 'pending' ? 'bg-[#F9F9FA]' : 'bg-white'
+                }`}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const isActions = cell.column.id === 'actions';
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      className={
+                        isActions
+                          ? // bg-inherit so the sticky cell picks up the row's
+                            // own background (white, or grey when pending).
+                            'sticky right-0 z-10 bg-inherit shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.08)]'
+                          : undefined
+                      }
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           ) : (

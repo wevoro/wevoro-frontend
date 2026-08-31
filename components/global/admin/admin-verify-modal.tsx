@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,6 +25,7 @@ interface AdminVerifyModalProps {
     credentialIssueDate?: string;
     credentialExpirationDate?: string;
     issuingOrganization?: string;
+    hasNoExpiration?: boolean;
   };
   onSuccess: (data: any) => void;
 }
@@ -49,17 +51,27 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
     credentialExpirationDate: toDateInputValue(existingData?.credentialExpirationDate) || '',
     issuingOrganization: existingData?.issuingOrganization || '',
   });
+  // SCRUM-109: "Reviewed, no fixed renewal" — some credentials genuinely have
+  // no expiry (PCA written exam / practical sign-off, GCHEXS). Before this,
+  // admins had to invent a date to get the form to submit.
+  const [hasNoExpiration, setHasNoExpiration] = useState(
+    existingData?.hasNoExpiration === true
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!form.credentialIdNumber.trim()) newErrors.credentialIdNumber = 'Required';
+    // Credential ID is optional — TB tests and some CPR Tier 2 providers don't
+    // print one, and a blank is a valid "reviewed, none provided" state.
     if (!form.credentialIssueDate) newErrors.credentialIssueDate = 'Required';
-    if (!form.credentialExpirationDate) newErrors.credentialExpirationDate = 'Required';
     if (!form.issuingOrganization.trim()) newErrors.issuingOrganization = 'Required';
-    if (form.credentialIssueDate && form.credentialExpirationDate) {
-      if (new Date(form.credentialExpirationDate) <= new Date(form.credentialIssueDate)) {
-        newErrors.credentialExpirationDate = 'Must be later than Issue Date';
+    if (!hasNoExpiration) {
+      if (!form.credentialExpirationDate) {
+        newErrors.credentialExpirationDate = 'Required, or tick "no expiration"';
+      } else if (form.credentialIssueDate) {
+        if (new Date(form.credentialExpirationDate) <= new Date(form.credentialIssueDate)) {
+          newErrors.credentialExpirationDate = 'Must be later than Issue Date';
+        }
       }
     }
     setErrors(newErrors);
@@ -77,6 +89,8 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
           documentId,
           reviewStatus: 'approved',
           ...form,
+          credentialExpirationDate: hasNoExpiration ? undefined : form.credentialExpirationDate,
+          hasNoExpiration,
         }),
       });
       const data = await res.json();
@@ -108,7 +122,9 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
 
         <div className='flex flex-col gap-4 py-2'>
           <div>
-            <Label htmlFor='credentialIdNumber' className='text-sm font-medium'>Credential ID Number *</Label>
+            <Label htmlFor='credentialIdNumber' className='text-sm font-medium'>
+              Credential ID Number <span className='text-gray-400'>(if the document has one)</span>
+            </Label>
             <Input
               id='credentialIdNumber'
               value={form.credentialIdNumber}
@@ -132,17 +148,40 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
               {errors.credentialIssueDate && <p className='text-xs text-red-500 mt-1'>{errors.credentialIssueDate}</p>}
             </div>
             <div>
-              <Label htmlFor='credentialExpirationDate' className='text-sm font-medium'>Expiration Date *</Label>
+              <Label htmlFor='credentialExpirationDate' className='text-sm font-medium'>
+                Expiration Date {!hasNoExpiration && '*'}
+              </Label>
               <Input
                 id='credentialExpirationDate'
                 type='date'
-                value={form.credentialExpirationDate}
+                value={hasNoExpiration ? '' : form.credentialExpirationDate}
+                disabled={hasNoExpiration}
                 onChange={(e) => setForm({ ...form, credentialExpirationDate: e.target.value })}
-                className='mt-1'
+                className='mt-1 disabled:bg-gray-50 disabled:text-gray-400'
               />
               {errors.credentialExpirationDate && <p className='text-xs text-red-500 mt-1'>{errors.credentialExpirationDate}</p>}
             </div>
           </div>
+
+          {/* SCRUM-109: no-expiration state, so admins stop inventing dates. */}
+          <label className='flex cursor-pointer items-start gap-2.5'>
+            <Checkbox
+              checked={hasNoExpiration}
+              onCheckedChange={(v) => {
+                setHasNoExpiration(v === true);
+                setErrors((prev) => ({ ...prev, credentialExpirationDate: '' }));
+              }}
+              className='mt-0.5 data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600'
+            />
+            <span>
+              <span className='block text-sm font-medium text-gray-900'>
+                This credential has no expiration date
+              </span>
+              <span className='block text-xs text-gray-500'>
+                Reviewed, no fixed renewal. It will not appear in expiry reminders.
+              </span>
+            </span>
+          </label>
 
           <div>
             <Label htmlFor='issuingOrganization' className='text-sm font-medium'>Issuing Organization *</Label>

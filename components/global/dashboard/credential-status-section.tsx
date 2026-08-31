@@ -4,12 +4,20 @@ import React, { useState } from 'react';
 import { ChevronUp, ChevronDown, ShieldCheck } from 'lucide-react';
 import { useCredentialStatus } from '@/app/apiHooks/useCredentialStatus';
 import { useUserContext } from '@/lib/contexts';
-import CredentialStatusCard from './credential-status-card';
+import CredentialStatusCard, { resolveCardStatus } from './credential-status-card';
 import RemoveCredentialDialog from './remove-credential-dialog';
 import UploadDocumentModal from './upload-document-modal';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import type { CredentialStatus } from '@/lib/credential-config';
+
+// Design order for this section only — REQUIRED_CREDENTIALS keeps its own order
+// because it also drives the upload and completion flows.
+const DISPLAY_ORDER = ['certifications', 'cpr_test', 'tb_tests', 'driver_license', 'auto_insurance'];
+const displayRank = (key: string) => {
+  const i = DISPLAY_ORDER.indexOf(key);
+  return i === -1 ? DISPLAY_ORDER.length : i;
+};
 
 const CredentialStatusSection: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -19,6 +27,9 @@ const CredentialStatusSection: React.FC = () => {
   const { user } = useUserContext();
   const { data: credentials, refetch } = useCredentialStatus(user?._id);
   const queryClient = useQueryClient();
+  // SCRUM-110: CNA and PCA are mutually exclusive tracks — a PCA profile shows
+  // the two-document PCA group, a CNA profile the single certificate card.
+  const isPca = (user as any)?.professionalInfo?.role === 'PCA';
 
   // Show ALL uploaded credentials (verified, pending, rejected) — not just verified
   const uploadedCredentials = (credentials ?? []).filter(
@@ -27,6 +38,9 @@ const CredentialStatusSection: React.FC = () => {
   const verifiedCount = uploadedCredentials.filter((c: CredentialStatus) => c.state === 'verified').length;
   const pendingCount = uploadedCredentials.filter((c: CredentialStatus) => c.state === 'pending').length;
   const rejectedCount = uploadedCredentials.filter((c: CredentialStatus) => c.state === 'rejected').length;
+  const orderedCredentials = [...uploadedCredentials].sort(
+    (a: CredentialStatus, b: CredentialStatus) => displayRank(a.key) - displayRank(b.key)
+  );
 
   if (uploadedCredentials.length === 0) return null;
 
@@ -69,23 +83,8 @@ const CredentialStatusSection: React.FC = () => {
             <h2 className='text-lg md:text-2xl font-semibold text-tertiary'>
               Credentials Status
             </h2>
-            <div className='flex items-center gap-1.5'>
-              {verifiedCount > 0 && (
-                <span className='text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium'>
-                  {verifiedCount} confirmed
-                </span>
-              )}
-              {pendingCount > 0 && (
-                <span className='text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium'>
-                  {pendingCount} pending
-                </span>
-              )}
-              {rejectedCount > 0 && (
-                <span className='text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium'>
-                  {rejectedCount} rejected
-                </span>
-              )}
-            </div>
+            {/* Design: the heading stands alone — each card carries its own
+                status, so the confirmed/pending/rejected tally is gone. */}
           </div>
           {collapsed ? (
             <ChevronDown className='w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
@@ -96,15 +95,55 @@ const CredentialStatusSection: React.FC = () => {
 
         {!collapsed && (
           <div className='grid gap-4'>
-            {uploadedCredentials.map((cred: CredentialStatus, idx: number) => (
-              <CredentialStatusCard
-                key={cred.key}
-                credential={cred}
-                index={idx}
-                onUpdateVerification={() => setUploadModal({ open: true, credential: cred })}
-                onRemove={() => setRemoveDialog({ open: true, credential: cred })}
-              />
-            ))}
+            {orderedCredentials.map((cred: CredentialStatus, idx: number) => {
+              const card = (titleOverride?: string) => (
+                <CredentialStatusCard
+                  credential={cred}
+                  index={idx}
+                  titleOverride={titleOverride}
+                  onUpdateVerification={() => setUploadModal({ open: true, credential: cred })}
+                  onRemove={() => setRemoveDialog({ open: true, credential: cred })}
+                />
+              );
+
+              // SCRUM-110: the certification credential renders inside a titled
+              // group whose tint follows the weakest status. PCA carries two
+              // documents, CNA one.
+              if (cred.key === 'certifications') {
+                const status = resolveCardStatus(cred);
+                const tint =
+                  status === 'confirmed'
+                    ? 'border-[#BBF8DC] bg-[#F4FDF8]'
+                    : status === 'expiresSoon'
+                      ? 'border-[#FCFFDD] bg-[#FFFDF6]'
+                      : status === 'expired'
+                        ? 'border-[#FCE8E8] bg-[#FEFCFC]'
+                        : 'border-[#DFE2E0] bg-white';
+                return (
+                  <div key={cred.key} className={`rounded-2xl border p-4 ${tint}`}>
+                    <h3 className='mb-3 text-lg md:text-2xl font-semibold text-[#1C1C1C]'>
+                      {isPca ? 'PCA Certifications' : 'CNA Certification'}
+                    </h3>
+                    <div className='grid gap-3'>
+                      {isPca ? (
+                        <>
+                          {card('Written Exam (GACCP)')}
+                          {card('RN / LPN sign-off')}
+                        </>
+                      ) : (
+                        card('CNA Certification')
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <React.Fragment key={cred.key}>
+                  {card(cred.key === 'driver_license' ? 'Driving License' : undefined)}
+                </React.Fragment>
+              );
+            })}
           </div>
         )}
 

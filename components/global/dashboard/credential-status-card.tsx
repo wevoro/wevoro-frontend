@@ -1,9 +1,23 @@
 'use client';
 
+// SCRUM-110: caregiver-facing credential card, rebuilt to the new design.
+// One row per credential: name + status + privacy on the left, the live
+// "Expires On" countdown and the view action on the right, and the extracted
+// fields underneath.
+
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ShieldCheck, MoreVertical, Eye, RefreshCw, Trash2, AlertCircle, Hourglass, CloudUpload, MoveUpRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  MoreVertical,
+  RefreshCw,
+  Trash2,
+  CloudUpload,
+  MoveUpRight,
+  Globe,
+  Lock,
+  Clock,
+  Calendar,
+  Building2,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,14 +29,15 @@ import type { CredentialStatus } from '@/lib/credential-config';
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'N/A';
   return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
+    month: 'long',
     day: 'numeric',
     year: 'numeric',
   });
 }
 
 function getExpirationInfo(expirationDate?: string) {
-  if (!expirationDate) return { band: 'gray' as const, days: 0, hrs: 0, min: 0, expired: false, hasExpiration: false };
+  if (!expirationDate)
+    return { band: 'gray' as const, days: 0, hrs: 0, min: 0, expired: false, hasExpiration: false };
 
   const now = new Date();
   const expDate = new Date(expirationDate);
@@ -34,11 +49,7 @@ function getExpirationInfo(expirationDate?: string) {
   if (diffMs <= 0) {
     return { band: 'red' as const, days: 0, hrs: 0, min: 0, expired: true, hasExpiration: true };
   }
-
-  // BUG-07: Color bands per spec
-  // Green — Verified, 60+ days until expiration
-  // Yellow — Verified, 30-60 days until expiration
-  // Red — Verified, under 30 days or expired
+  // Green 60+ days, yellow 30-60, red under 30.
   let band: 'green' | 'yellow' | 'red' = 'green';
   if (diffDays >= 60) band = 'green';
   else if (diffDays >= 30) band = 'yellow';
@@ -47,243 +58,263 @@ function getExpirationInfo(expirationDate?: string) {
   return { band, days: diffDays, hrs: diffHrs, min: diffMin, expired: false, hasExpiration: true };
 }
 
-// Color configs for each band
-const BAND_COLORS = {
-  green: {
-    border: 'border-gray-200',
-    bg: 'bg-white',
-    countdownText: 'text-emerald-600',
-    countdownBg: 'bg-emerald-50',
-  },
-  yellow: {
-    border: 'border-gray-200',
-    bg: 'bg-white',
-    countdownText: 'text-amber-600',
-    countdownBg: 'bg-amber-50',
-  },
-  red: {
-    border: 'border-gray-200',
-    bg: 'bg-white',
-    countdownText: 'text-red-600',
-    countdownBg: 'bg-red-50',
-  },
-  gray: {
-    border: 'border-gray-200',
-    bg: 'bg-white',
-    countdownText: 'text-gray-500',
-    countdownBg: 'bg-gray-50',
-  },
+/* ------------------------------------------------------------- statuses */
+
+export type CardStatus =
+  | 'confirmed'
+  | 'expiresSoon'
+  | 'expired'
+  | 'notConfirmed'
+  | 'pending';
+
+const STATUS_STYLE: Record<CardStatus, { text: string; cls: string }> = {
+  confirmed: { text: 'Confirmed', cls: 'bg-[#BBF8DC] text-[#008000]' },
+  expiresSoon: { text: 'Expires Soon', cls: 'bg-[#FCFFDD] text-[#FAB607]' },
+  expired: { text: 'Expired', cls: 'bg-[#FDE8E8] text-[#E94435]' },
+  notConfirmed: { text: 'Not confirmed', cls: 'bg-[#FDE8E8] text-[#E94435]' },
+  pending: { text: 'Pending review', cls: 'bg-[#FCFFDD] text-[#FAB607]' },
 };
+
+/** Resolve the badge a credential should carry. Exported so the PCA group can tint itself. */
+export function resolveCardStatus(credential: CredentialStatus): CardStatus {
+  const doc = credential.document;
+  if (credential.state === 'rejected') return 'notConfirmed';
+  if (credential.state !== 'verified') return 'pending';
+  const exp = getExpirationInfo(doc?.credentialExpirationDate);
+  if (!exp.hasExpiration || doc?.hasNoExpiration) return 'confirmed';
+  if (exp.expired) return 'expired';
+  if (exp.band === 'yellow' || exp.band === 'red') return 'expiresSoon';
+  return 'confirmed';
+}
+
+/* --------------------------------------------------- per-credential fields */
+
+interface FieldLabels {
+  issued: string;
+  expiration: string;
+  issuer: string;
+  viewAction: string;
+}
+
+const DEFAULT_FIELD_LABELS: FieldLabels = {
+  issued: 'ISSUED DATE',
+  expiration: 'EXPIRATION DATE',
+  issuer: 'ISSUING ORGANIZATION',
+  viewAction: 'View Credential',
+};
+
+const FIELD_LABELS_BY_KEY: Record<string, Partial<FieldLabels>> = {
+  tb_tests: {
+    issued: 'SERVICE DATE',
+    expiration: 'INITIAL EXPIRATION',
+    issuer: 'CLINIC / LAB',
+    viewAction: 'View Record',
+  },
+  driver_license: { issuer: 'STATE' },
+  auto_insurance: { issuer: 'CARRIER' },
+};
+
+function getFieldLabels(key?: string): FieldLabels {
+  return { ...DEFAULT_FIELD_LABELS, ...(FIELD_LABELS_BY_KEY[key || ''] || {}) };
+}
+
+/** Extra identifier shown inline beside the ID (licence/policy number, TB result). */
+function getInlineExtra(
+  key: string | undefined,
+  doc: CredentialStatus['document']
+): { label: string; value: string; accent?: boolean } | null {
+  if (!doc) return null;
+  if (key === 'driver_license' && doc.credentialIdNumber)
+    return { label: 'LICENSE NUMBER', value: doc.credentialIdNumber };
+  if (key === 'auto_insurance' && doc.credentialIdNumber)
+    return { label: 'POLICY NUMBER', value: doc.credentialIdNumber };
+  if (key === 'tb_tests') return { label: 'INITIAL RESULT', value: 'Negative', accent: true };
+  return null;
+}
+
+/* ------------------------------------------------------------ the card */
 
 interface CredentialStatusCardProps {
   credential: CredentialStatus;
   onUpdateVerification?: () => void;
   onRemove?: () => void;
   index?: number;
-  // SCRUM-63: agency view reuses this exact card as a read-only, subtraction-based
-  // variant of the caregiver card — same structure/styling/copy, minus the
-  // caregiver-only elements (Verified-by-Wevoro line, three-dot menu, editability).
+  /** Agency view: same card, minus the caregiver-only controls. */
   readOnly?: boolean;
+  /** Overrides the card heading (PCA parts render as "Written Exam (GACCP)"). */
+  titleOverride?: string;
 }
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/** Design hides the per-row menu; set true to bring it back. */
+const SHOW_ROW_MENU = false;
 
 const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
   credential,
   onUpdateVerification,
   onRemove,
-  index = 0,
   readOnly = false,
+  titleOverride,
 }) => {
   const doc = credential.document;
-  const state = credential.state;
-  const isVerified = state === 'verified';
-  const isPending = state === 'pending';
-  const isRejected = state === 'rejected';
-
-  const expiration = useMemo(
+  const status = useMemo(() => resolveCardStatus(credential), [credential]);
+  const exp = useMemo(
     () => getExpirationInfo(doc?.credentialExpirationDate),
     [doc?.credentialExpirationDate]
   );
+  const labels = getFieldLabels(credential.key);
+  const extra = getInlineExtra(credential.key, doc);
+  const badge = STATUS_STYLE[status];
+  const isPublic = doc?.privacy === 'public';
 
-  // Determine band color
-  const bandKey = isVerified
-    ? expiration.band
-    : isPending
-    ? 'gray' as const
-    : 'red' as const;
-
-  const colors = BAND_COLORS[bandKey];
-
-  // Status badge config
-  const statusConfig = isVerified
-    ? { icon: <ShieldCheck className='w-3.5 h-3.5' />, text: 'CONFIRMED', bg: 'bg-emerald-100 text-emerald-700' }
-    : isRejected
-    ? { icon: <AlertCircle className='w-3.5 h-3.5' />, text: 'REJECTED', bg: 'bg-red-100 text-red-700' }
-    : { icon: <Hourglass className='w-3.5 h-3.5' />, text: 'PENDING', bg: 'bg-amber-100 text-amber-700' };
-
-  // Two-digit pad for countdown
-  const pad = (n: number) => String(n).padStart(2, '0');
+  // The countdown shows dashes while a credential is still under review, and
+  // for credentials that legitimately never expire.
+  const showCounts = status !== 'pending';
+  const noExpiry = doc?.hasNoExpiration || !exp.hasExpiration;
+  const dash = !showCounts || noExpiry;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.08 }}
-      className={`relative rounded-2xl border overflow-hidden ${colors.border} ${colors.bg} shadow-sm hover:shadow-md transition-shadow`}
-    >
-      <div className='p-5'>
-        {/* Top row: verification info + expiration countdown + menu.
-            readOnly (agency): drop the "Confirmed by Wevoro on…" line and the
-            three-dot menu — only the expiration countdown remains. */}
-        {(!readOnly || (isVerified && expiration.hasExpiration)) && (
-        <div className={`flex items-start ${readOnly ? 'justify-end' : 'justify-between'} mb-3`}>
-          {!readOnly && (
-          <p className='text-xs text-gray-400'>
-            {isVerified
-              ? `Confirmed by Wevoro on ${formatDate(doc?.reviewedAt)}`
-              : isPending
-              ? `Uploaded on ${formatDate(doc?.createdAt)}`
-              : `Rejected — please re-upload`}
-          </p>
+    <div className='rounded-xl border border-[#DFE2E0] bg-white px-5 py-4'>
+      <div className='flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6'>
+        {/* Left: name, status, ids, fields */}
+        <div className='min-w-0 flex-1'>
+          <div className='flex flex-wrap items-center gap-2'>
+            <h3 className='text-base font-semibold leading-6 text-[#1C1C1C]'>
+              {titleOverride || credential.label}
+            </h3>
+            <span
+              className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium leading-[18px] ${badge.cls}`}
+            >
+              {badge.text}
+            </span>
+            <span
+              title={isPublic ? 'Visible to agencies' : 'Private'}
+              className='text-[#6C6C6C]'
+            >
+              {isPublic ? <Globe className='size-4' /> : <Lock className='size-4' />}
+            </span>
+          </div>
+
+          {(doc?.wevoroCredentialId || doc?.credentialIdNumber || extra) && (
+            <div className='mt-1 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-[#6C6C6C]'>
+              {(doc?.wevoroCredentialId || doc?.credentialIdNumber) && (
+                <span>ID: {doc?.wevoroCredentialId || doc?.credentialIdNumber}</span>
+              )}
+              {extra && (
+                <span>
+                  {extra.label}:{' '}
+                  <span className={extra.accent ? 'font-medium text-[#008000]' : 'text-[#1C1C1C]'}>
+                    {extra.value}
+                  </span>
+                </span>
+              )}
+            </div>
           )}
-          <div className='flex items-center gap-2'>
-            {/* Expiration countdown (reference design style) */}
-            {isVerified && expiration.hasExpiration && (
-              <div className='flex items-center gap-1'>
-                <span className='text-xs text-gray-400 mr-1'>Expires On</span>
-                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold ${colors.countdownBg} ${colors.countdownText}`}>
-                  {pad(expiration.days)}
+
+          {doc?.credentialIssueDate && (
+            <div className='mt-2 flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs'>
+              <span className='inline-flex items-center gap-1.5 whitespace-nowrap'>
+                <Clock className='size-3.5 shrink-0 text-[#9E9E9E]' />
+                <span className='uppercase tracking-wide text-[#6C6C6C]'>{labels.issued}</span>
+                <span className='text-[#1C1C1C]'>{formatDate(doc?.credentialIssueDate)}</span>
+              </span>
+              <span className='inline-flex items-center gap-1.5 whitespace-nowrap'>
+                <Calendar className='size-3.5 shrink-0 text-[#9E9E9E]' />
+                <span className='uppercase tracking-wide text-[#6C6C6C]'>{labels.expiration}</span>
+                <span className='text-[#1C1C1C]'>
+                  {noExpiry ? 'No official expiration date' : formatDate(doc?.credentialExpirationDate)}
                 </span>
-                <span className='text-[10px] text-gray-400'>days</span>
-                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold ${colors.countdownBg} ${colors.countdownText}`}>
-                  {pad(expiration.hrs)}
+              </span>
+              {doc?.issuingOrganization && (
+                <span className='inline-flex items-center gap-1.5 whitespace-nowrap'>
+                  <Building2 className='size-3.5 shrink-0 text-[#9E9E9E]' />
+                  <span className='uppercase tracking-wide text-[#6C6C6C]'>{labels.issuer}</span>
+                  <span className='text-[#1C1C1C]'>{doc.issuingOrganization}</span>
                 </span>
-                <span className='text-[10px] text-gray-400'>hrs</span>
-                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold ${colors.countdownBg} ${colors.countdownText}`}>
-                  {pad(expiration.min)}
+              )}
+            </div>
+          )}
+
+          {/* Why it was not confirmed */}
+          {status === 'notConfirmed' && doc?.rejectionReason && (
+            <div className='mt-3 rounded-lg bg-[#FDECEC] px-3 py-2'>
+              <p className='text-xs font-semibold text-[#E94435]'>In-correct Information</p>
+              <p className='mt-0.5 text-xs text-[#E94435]'>{doc.rejectionReason}</p>
+              {doc.replacementRequested && (
+                <p className='mt-1.5 inline-block rounded-full bg-[#FEF3D7] px-2 py-0.5 text-[11px] font-medium text-[#A9700B]'>
+                  Replacement requested
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right: countdown + action */}
+        <div className='flex shrink-0 flex-wrap items-center gap-3'>
+          <div className='flex items-center gap-1.5'>
+            <span className='text-xs text-[#6C6C6C]'>Expires On</span>
+            {[
+              { v: exp.days, u: 'days' },
+              { v: exp.hrs, u: 'hrs' },
+              { v: exp.min, u: 'min' },
+            ].map(({ v, u }) => (
+              <React.Fragment key={u}>
+                <span
+                  className='inline-flex h-7 min-w-[34px] items-center justify-center rounded-md bg-[#F9F9FA] px-1.5 text-sm font-semibold text-[#1C1C1C]'
+                >
+                  {dash ? '–' : u === 'days' ? String(v).padStart(2, '0') : pad(v)}
                 </span>
-                <span className='text-[10px] text-gray-400'>min</span>
-              </div>
-            )}
-            {/* Three-dot menu (caregiver-only) */}
-            {!readOnly && (
+                <span className='text-[11px] text-[#6C6C6C]'>{u}</span>
+              </React.Fragment>
+            ))}
+          </div>
+
+          <a
+            href={doc?.url || '#'}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-[#B0BCB8] bg-white px-3.5 text-[13px] font-medium text-[#1C1C1C] transition-colors hover:bg-gray-50'
+          >
+            {labels.viewAction}
+            <MoveUpRight className='size-3.5' />
+          </a>
+
+          {/* NOTE: the design shows only "View Credential" here, so the
+              three-dot menu is hidden. Re-upload / remove are still reachable
+              from the Credentials side panel and the Completing Profile modal.
+              Flip SHOW_ROW_MENU back to true to restore it inline. */}
+          {SHOW_ROW_MENU && !readOnly && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className='w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors'>
-                  <MoreVertical className='w-4 h-4 text-gray-400' />
+                <button className='flex size-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100'>
+                  <MoreVertical className='size-4 text-[#6C6C6C]' />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align='end' className='w-48'>
-                <DropdownMenuItem onClick={onUpdateVerification} className='gap-2 cursor-pointer'>
-                  {isPending || isRejected ? (
+                <DropdownMenuItem onClick={onUpdateVerification} className='cursor-pointer gap-2'>
+                  {status === 'confirmed' || status === 'expiresSoon' ? (
                     <>
-                      <CloudUpload className='w-4 h-4' />
-                      Re-upload Document
+                      <RefreshCw className='size-4' /> Update Confirmation
                     </>
                   ) : (
                     <>
-                      <RefreshCw className='w-4 h-4' />
-                      Update Confirmation
+                      <CloudUpload className='size-4' /> Re-upload Document
                     </>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onRemove} className='gap-2 cursor-pointer text-red-600 focus:text-red-600'>
-                  <Trash2 className='w-4 h-4' />
-                  Remove
+                <DropdownMenuItem
+                  onClick={onRemove}
+                  className='cursor-pointer gap-2 text-red-600 focus:text-red-600'
+                >
+                  <Trash2 className='size-4' /> Remove
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            )}
-          </div>
-        </div>
-        )}
-
-        {/* Credential name + badge */}
-        <div className='flex items-center gap-3 mb-2'>
-          <h3 className='text-lg font-bold text-gray-900'>{credential.label}</h3>
-          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${statusConfig.bg}`}>
-            {statusConfig.icon}
-            {statusConfig.text}
-          </span>
-        </div>
-
-        {/* Credential ID */}
-        {isVerified && doc?.credentialIdNumber && (
-          <p className='text-xs text-gray-400 mb-3'>ID: {doc.credentialIdNumber}</p>
-        )}
-
-        {/* Rejection reason */}
-        {isRejected && doc?.rejectionReason && (
-          <div className='mb-4 p-3 rounded-xl bg-red-100/50 border border-red-200'>
-            <p className='text-xs font-semibold text-red-700 mb-1'>Rejection Reason:</p>
-            <p className='text-xs text-red-600'>{doc.rejectionReason}</p>
-          </div>
-        )}
-
-        {/* Metadata row (reference design: issued date, expiration date, issuing org) */}
-        {isVerified && (
-          <div className='flex flex-wrap items-center gap-x-6 gap-y-2 mb-4 text-xs text-gray-500'>
-            <div className='flex items-center gap-1.5'>
-              <span className='text-gray-400'>⊕</span>
-              <span className='font-medium uppercase tracking-wider text-[10px] text-gray-400'>ISSUED DATE</span>
-              <span className='text-gray-700 font-medium'>{formatDate(doc?.credentialIssueDate)}</span>
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <span className='text-gray-400'>⊕</span>
-              <span className='font-medium uppercase tracking-wider text-[10px] text-gray-400'>EXPIRATION DATE</span>
-              <span className='text-gray-700 font-medium'>{formatDate(doc?.credentialExpirationDate)}</span>
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <span className='text-gray-400'>⊞</span>
-              <span className='font-medium uppercase tracking-wider text-[10px] text-gray-400'>ISSUING ORGANIZATION</span>
-              <span className='text-gray-700 font-medium'>{doc?.issuingOrganization || 'N/A'}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Pending info */}
-        {isPending && (
-          <p className='text-xs text-amber-600 mb-4'>
-            Your document is being reviewed by the Wevoro team. You&apos;ll be notified once it&apos;s processed.
-          </p>
-        )}
-
-        {/* Action buttons */}
-        <div className='flex justify-end gap-2'>
-          {/* View Credential */}
-          <a href={doc?.url} target='_blank' rel='noopener noreferrer'>
-            <Button variant='outline' size='sm' className='gap-2 rounded-xl'>
-              <Eye className='w-4 h-4' />
-              View Credential
-              <MoveUpRight className='w-3 h-3' />
-            </Button>
-          </a>
-          {/* Re-upload for rejected (caregiver-only) */}
-          {!readOnly && isRejected && (
-            <Button
-              variant='default'
-              size='sm'
-              className='gap-2 rounded-xl'
-              onClick={onUpdateVerification}
-            >
-              <CloudUpload className='w-4 h-4' />
-              Re-upload
-            </Button>
-          )}
-          {/* Update for pending (caregiver-only) */}
-          {!readOnly && isPending && (
-            <Button
-              variant='outline'
-              size='sm'
-              className='gap-2 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50'
-              onClick={onUpdateVerification}
-            >
-              <RefreshCw className='w-4 h-4' />
-              Update
-            </Button>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

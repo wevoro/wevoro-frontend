@@ -17,11 +17,10 @@ import { useAdminContext } from '@/lib/contexts';
 
 export default function ProsPage() {
   // const { pros, qaPros } = useAppContext();
-  const { pros, qaPros } = useAdminContext();
+  const { pros } = useAdminContext();
 
   const searchParams = useSearchParams();
   const status = searchParams.get('status');
-  const env = searchParams.get('env');
   const sort = searchParams.get('sort');
   const page = searchParams.get('page');
   const pageSize = searchParams.get('pageSize');
@@ -30,11 +29,9 @@ export default function ProsPage() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState(status || 'all');
   const [sortFilter, setSortFilter] = useState(sort || 'newest');
-  const [envFilter, setEnvFilter] = useState(env || 'prod');
 
   const handleChangeFilter = (key: string, value: string) => {
     // console.log({ key, value });
-    if (key === 'env') setEnvFilter(value);
     if (key === 'status') setStatusFilter(value);
     if (key === 'sort') setSortFilter(value);
 
@@ -52,9 +49,7 @@ export default function ProsPage() {
     router.push(`/admin/pros?${queryParams.toString()}`);
   };
 
-  const activePros = envFilter === 'qa' ? qaPros : pros;
-
-  const filteredPros = activePros.filter(
+  const filteredPros = pros.filter(
     (pro: any) =>
       (statusFilter === 'all' || pro.status === statusFilter) &&
       (globalFilter === '' ||
@@ -90,7 +85,7 @@ export default function ProsPage() {
 
       <div className='flex flex-col sm:flex-row gap-4'>
         <Input
-          placeholder='Search username...'
+          placeholder='Search username or company..'
           className='w-full sm:max-w-[300px] rounded-[12px] h-12 sm:h-14'
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
@@ -121,19 +116,6 @@ export default function ProsPage() {
             <SelectContent>
               <SelectItem value='newest'>Newest</SelectItem>
               <SelectItem value='oldest'>Oldest</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={envFilter}
-            onValueChange={(value) => handleChangeFilter('env', value)}
-          >
-            <SelectTrigger className='w-full sm:w-[180px] rounded-[12px] h-12 sm:h-14'>
-              <SelectValue placeholder='Env' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='prod'>Prod</SelectItem>
-              <SelectItem value='qa'>QA</SelectItem>
             </SelectContent>
           </Select>
         </div>

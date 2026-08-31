@@ -31,6 +31,12 @@ import { AdminEditUserModal } from './admin-edit-user-modal';
 import AdminCredentials from './admin-credentials';
 import DownloadAuditTrail from './download-audit-trail';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 // SCRUM-99 (Phase 4): human-readable labels for the CPR providers an agency
 // accepts (stored as codes on personalInfo.acceptedCprProviders).
@@ -62,7 +68,9 @@ function BackgroundChecks({
     data?.backgroundCheckStatus ?? 'not_verified'
   );
 
-  const handleUpdate = async (newStatus: 'verified' | 'failed') => {
+  const handleUpdate = async (
+    newStatus: 'verified' | 'failed' | 'not_verified'
+  ) => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/background-check', {
@@ -75,65 +83,126 @@ function BackgroundChecks({
       });
       const result = await res.json();
       if (result.status === 200) {
+        // Wording describes the DECISION, not the outcome of the request.
+        // This previously said "Background check failed" on a green success
+        // toast, which read as if the save itself had errored.
         toast.success(
           newStatus === 'verified'
-            ? 'Background check verified'
-            : 'Background check failed'
+            ? 'Background check approved'
+            : newStatus === 'failed'
+              ? 'Background check rejected'
+              : 'Background check decision cleared'
         );
         setStatus(newStatus);
         onStatusChange(newStatus);
       } else {
-        toast.error(result.message || 'Update failed');
+        toast.error(result.message || 'Could not update the background check');
       }
     } catch {
-      toast.error('Update failed. Please try again.');
+      toast.error('Could not update the background check. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  // SCRUM-109: rebuilt to the design. Pending shows Approve / Reject; once
+  // decided it collapses to a status pill plus the date it was approved.
+  const decided = status === 'verified' || status === 'failed';
+  const approved = status === 'verified';
+  const decidedOn = data?.backgroundCheckUpdatedAt || data?.updatedAt;
+
   return (
-    <div className='border border-gray-200 rounded-2xl p-5'>
-      <h3 className='font-semibold text-gray-900 text-base mb-3'>
-        Background Checks
-      </h3>
-      <div className='flex items-center justify-between gap-4'>
-        <p className='text-sm text-gray-500'>
-          Is this user verified as having passed the background check?{' '}
-          <a
-            href='https://www.checkr.com'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='text-primary underline underline-offset-2'
-          >
-            Verify now
-          </a>
+    <div className='flex flex-col gap-4 rounded-xl border border-[#DFE2E0] bg-white p-5'>
+      <div className='flex flex-col gap-2'>
+        <div className='flex items-center justify-between gap-3'>
+          <h3 className='text-base font-semibold leading-6 text-[#1C1C1C]'>Background check</h3>
+          {decided && (
+            <span
+              className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1.5 text-xs font-medium leading-[18px] ${
+                approved ? 'bg-[#F2F4F3] text-[#008000]' : 'bg-[#FDE8E8] text-[#D14343]'
+              }`}
+            >
+              {approved ? 'Approved' : 'Rejected'}
+            </span>
+          )}
+          {!decided && (
+            <span className='inline-flex shrink-0 items-center rounded-full bg-[#FEF6E7] px-2.5 py-1.5 text-xs font-medium leading-[18px] text-[#A9700B]'>
+              Pending review
+            </span>
+          )}
+        </div>
+        <p className='text-[13px] leading-5 text-[#5E6864]'>
+          {decided
+            ? `The background check was completed manually and ${approved ? 'approved' : 'rejected'} by an admin.`
+            : 'Complete the background check manually, then approve or reject the application.'}
         </p>
-        <div className='flex items-center gap-2 shrink-0'>
+      </div>
+
+      {decided ? (
+        <div className='flex items-center gap-4'>
+          <div className='flex flex-col gap-1'>
+            <span className='text-[11px] font-medium leading-4 text-[#5E6864]'>
+              {approved ? 'APPROVED ON' : 'REJECTED ON'}
+            </span>
+            <span className='text-sm font-medium leading-[21px] text-[#1C1C1C]'>
+              {decidedOn
+                ? new Date(decidedOn).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : '—'}
+            </span>
+          </div>
+          {/* A menu, not a toggle. This button used to flip the decision the
+              instant it was clicked, so opening it to see the options silently
+              turned an approval into a rejection. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type='button'
+                disabled={loading}
+                className='inline-flex h-[38px] w-[47px] items-center justify-center rounded-[10px] border border-[#B0BCB8] bg-white text-[#1C1C1C] transition-colors hover:bg-gray-50 disabled:opacity-60'
+              >
+                •••
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='start' className='w-52'>
+              <DropdownMenuItem
+                onClick={() => handleUpdate(approved ? 'failed' : 'verified')}
+                className='cursor-pointer'
+              >
+                {approved ? 'Change to rejected' : 'Change to approved'}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleUpdate('not_verified')}
+                className='cursor-pointer text-red-600 focus:text-red-600'
+              >
+                Undo decision
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ) : (
+        <div className='flex items-center gap-2.5'>
           <button
+            type='button'
             disabled={loading}
             onClick={() => handleUpdate('verified')}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              status === 'verified'
-                ? 'bg-primary text-white'
-                : 'text-green-500 hover:bg-green-50'
-            }`}
+            className='inline-flex h-[38px] items-center justify-center rounded-[10px] bg-[#008000] px-5 text-[13px] font-medium leading-5 text-white transition-colors hover:bg-[#026a02] disabled:opacity-60'
           >
-            <Check className='w-4 h-4' />
+            Approve
           </button>
           <button
+            type='button'
             disabled={loading}
             onClick={() => handleUpdate('failed')}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              status === 'failed'
-                ? 'bg-red-500 text-white'
-                : 'text-red-400 hover:bg-red-50'
-            }`}
+            className='inline-flex h-[38px] items-center justify-center rounded-[10px] border border-[#E7A6A6] bg-white px-5 text-[13px] font-medium leading-5 text-[#D14343] transition-colors hover:bg-red-50 disabled:opacity-60'
           >
-            <X className='w-4 h-4' />
+            Reject
           </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -223,10 +292,12 @@ export function ReviewApplicationModal({
                   {localData?.status === 'pending' ||
                   localData?.status === 'in-review' ? (
                     <div className='flex flex-row items-center gap-2'>
+                      {/* Design uses a softer green up here than the solid
+                          #008000 on the Background-check button below. */}
                       <AdminAlertModal alertType='approve' data={localData}>
                         <Button
                           variant='default'
-                          className='rounded-lg inline-flex items-center gap-2'
+                          className='rounded-lg inline-flex items-center gap-2 bg-[#8CC891] text-white hover:bg-[#7ABA80]'
                         >
                           <Check className='size-4' />
                           Approve
@@ -235,7 +306,7 @@ export function ReviewApplicationModal({
                       <AdminAlertModal alertType='reject' data={localData}>
                         <Button
                           variant='outline'
-                          className='text-red-600 rounded-lg inline-flex items-center gap-2'
+                          className='rounded-lg inline-flex items-center gap-2 border-[#DFE2E0] text-[#E94435] hover:bg-red-50'
                         >
                           <X className='size-4' />
                           Reject
@@ -268,8 +339,14 @@ export function ReviewApplicationModal({
                 </div>
               </div>
 
-              {/* Edit / Block / Remove row */}
-              {localData?.status !== 'removed' && (
+              {/* Edit / Block / Remove row.
+                  Design: while an application is still awaiting a decision the
+                  header carries only Approve / Reject / Send a message. These
+                  account-management controls appear once it has been decided
+                  (the "Pro Details" view). */}
+              {localData?.status !== 'removed' &&
+                localData?.status !== 'pending' &&
+                localData?.status !== 'in-review' && (
                 <div className='flex flex-row items-center gap-2'>
                   <AdminEditUserModal data={localData}>
                     <Button

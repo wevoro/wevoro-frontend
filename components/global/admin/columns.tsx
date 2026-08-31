@@ -37,6 +37,8 @@ export const proColumns: ColumnDef<any>[] = [
       const firstName = row.original.personalInfo?.firstName || '';
       const lastName = row.original.personalInfo?.lastName || '';
       const image = row.original.personalInfo?.image || '';
+      // SCRUM-110 design: the caregiver's track (CNA / PCA) sits under the name.
+      const role = row.original.professionalInfo?.role || '';
 
       return (
         <div className='flex items-center gap-3'>
@@ -44,14 +46,18 @@ export const proColumns: ColumnDef<any>[] = [
             unoptimized
             src={image || '/dummy-profile-pic.jpg'}
             alt={`${firstName} ${lastName}`}
-            className='rounded-full object-cover size-10'
-            width={40}
-            height={40}
+            className='rounded-full object-cover size-[54px] shrink-0'
+            width={54}
+            height={54}
           />
-
-          <p className='font-medium'>
-            {`${firstName} ${lastName}`.trim() || 'N/A'}
-          </p>
+          <div className='flex flex-col justify-center gap-1'>
+            <p className='text-sm font-medium leading-[21px] text-[#1C1C1C]'>
+              {`${firstName} ${lastName}`.trim() || 'N/A'}
+            </p>
+            {role && (
+              <p className='text-xs font-normal leading-[18px] text-[#6C6C6C]'>{role}</p>
+            )}
+          </div>
         </div>
       );
     },
@@ -80,13 +86,25 @@ export const proColumns: ColumnDef<any>[] = [
         </Button>
       );
     },
+    // Truncated per the design ("example@email...."). Long addresses used to
+    // stretch the table so far that the Status column was pushed underneath
+    // the sticky Actions column.
+    cell: ({ row }) => (
+      <span className='block max-w-[200px] truncate' title={row.original.email || ''}>
+        {row.original.email || 'N/A'}
+      </span>
+    ),
   },
   {
     accessorKey: 'personalInfo.phone',
     header: 'Phone Number',
     cell: ({ row }) => {
       const phone = row.original.personalInfo?.phone || '';
-      return <span>{phone || 'N/A'}</span>;
+      return (
+        <span className='block max-w-[160px] truncate' title={phone}>
+          {phone || 'N/A'}
+        </span>
+      );
     },
   },
   {
@@ -141,57 +159,52 @@ export const proColumns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
 
-      return (
-        <div className='flex items-center gap-2'>
-          {/* Approve / Reject — only for pending */}
-          {status === 'pending' && (
-            <>
-              <AdminAlertModal alertType='approve' data={row.original}>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='text-green-500 hover:text-green-600 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
-                >
-                  <Check className='size-5' strokeWidth={2.5} />
-                </Button>
-              </AdminAlertModal>
-              <AdminAlertModal alertType='reject' data={row.original}>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='text-red-500 hover:text-red-600 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
-                >
-                  <X className='size-5' strokeWidth={2.5} />
-                </Button>
-              </AdminAlertModal>
-            </>
-          )}
+      // Design: a pending row shows only Approve / Reject / Review (48px, white
+      // tiles). Once decided it switches to Edit / Message / Review / More
+      // (44px, grey tiles). Keeping pending at three buttons is also what stops
+      // the row overflowing the scrollable table.
+      const isPending = status === 'pending';
 
-          {/* Always-visible 4 action buttons */}
+      if (isPending) {
+        const tile =
+          'flex size-12 shrink-0 items-center justify-center rounded-xl bg-white hover:bg-gray-50 transition-colors';
+        return (
+          <div className='flex flex-nowrap items-center gap-3'>
+            <AdminAlertModal alertType='approve' data={row.original}>
+              <Button variant='ghost' size='icon' className={`${tile} text-[#008000]`} title='Approve'>
+                <Check className='size-6' strokeWidth={2.5} />
+              </Button>
+            </AdminAlertModal>
+            <AdminAlertModal alertType='reject' data={row.original}>
+              <Button variant='ghost' size='icon' className={`${tile} text-[#E94435]`} title='Reject'>
+                <X className='size-6' strokeWidth={2.5} />
+              </Button>
+            </AdminAlertModal>
+            <ReviewApplicationModal data={row.original}>
+              <Button variant='ghost' size='icon' className={`${tile} text-[#01400F]`} title='Review application'>
+                <CredentialListIcon />
+              </Button>
+            </ReviewApplicationModal>
+          </div>
+        );
+      }
+
+      const tile =
+        'flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#F9F9FA] hover:bg-gray-200 transition-colors text-[#01400F]';
+      return (
+        <div className='flex flex-nowrap items-center gap-3'>
           <AdminEditUserModal data={row.original}>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
-            >
-              <Pencil className='size-4' />
+            <Button variant='ghost' size='icon' className={tile} title='Edit'>
+              <Pencil className='size-5' />
             </Button>
           </AdminEditUserModal>
           <MessageModal data={row.original}>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
-            >
+            <Button variant='ghost' size='icon' className={tile} title='Send a message'>
               <Mail className='size-5' />
             </Button>
           </MessageModal>
           <ReviewApplicationModal data={row.original}>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl size-10'
-            >
+            <Button variant='ghost' size='icon' className={tile} title='Review application'>
               <CredentialListIcon />
             </Button>
           </ReviewApplicationModal>
@@ -265,13 +278,25 @@ export const partnerColumns: ColumnDef<any>[] = [
         </Button>
       );
     },
+    // Truncated per the design ("example@email...."). Long addresses used to
+    // stretch the table so far that the Status column was pushed underneath
+    // the sticky Actions column.
+    cell: ({ row }) => (
+      <span className='block max-w-[200px] truncate' title={row.original.email || ''}>
+        {row.original.email || 'N/A'}
+      </span>
+    ),
   },
   {
     accessorKey: 'personalInfo.phone',
     header: 'Phone Number',
     cell: ({ row }) => {
       const phone = row.original.personalInfo?.phone || '';
-      return <span>{phone || 'N/A'}</span>;
+      return (
+        <span className='block max-w-[160px] truncate' title={phone}>
+          {phone || 'N/A'}
+        </span>
+      );
     },
   },
   {

@@ -34,6 +34,16 @@ const PersonalInformation = ({
   const phone = userData?.personalInfo?.phone;
   const gender = userData?.personalInfo?.gender;
   const address = userData?.personalInfo?.address;
+  // A section heading must never render on its own — hide the block when it
+  // has no fields to show (sparse profiles used to leave a bare "ADDRESS").
+  const hasAddress = !!(
+    address?.street ||
+    address?.city ||
+    address?.state ||
+    address?.zipCode ||
+    address?.country
+  );
+  const hasContactDetails = !!(userData?.email || phone);
   const bio = userData?.personalInfo?.bio;
 
   const noData = !userData?.personalInfo;
@@ -61,7 +71,6 @@ const PersonalInformation = ({
             <SectionDescription
               text={bio || 'N/A'}
               from={from}
-              className='text-sm md:text-base'
             />
           </div>
 
@@ -82,7 +91,7 @@ const PersonalInformation = ({
                   // SCRUM-96: dateOfBirth is a date-only value stored at UTC
                   // midnight, so it must be read back in UTC. moment()'s default
                   // local mode renders the previous day in UTC-negative zones.
-                  text={moment.utc(dateOfBirth).format('MMMM Do YYYY')}
+                  text={moment.utc(dateOfBirth).format('MMM. D, YYYY')}
                   from={from}
                 />
               </div>
@@ -94,7 +103,8 @@ const PersonalInformation = ({
               </div>
             )}
           </div>
-          {isFromPartnerPage && isPartnerApproved && (
+          {hasContactDetails &&
+            ((!proUser && !id) || (isFromPartnerPage && isPartnerApproved)) && (
             <div
               className={cn(
                 'border-b pb-6 flex flex-col gap-5',
@@ -133,23 +143,23 @@ const PersonalInformation = ({
               </div>
             </div>
           )}
-          <div
-            className={cn(
-              'flex flex-col gap-5',
-              isPublicProPage && !user && 'blur-sm',
-            )}
-          >
-            <SectionTitle text='Address' className='uppercase text-[#9E9E9E]' />
+          {hasAddress && (
+            <div
+              className={cn(
+                'flex flex-col gap-5',
+                isPublicProPage && !user && 'blur-sm',
+              )}
+            >
+              <SectionTitle text='Address' className='uppercase text-[#9E9E9E]' />
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               {address?.street && (
                 <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Street Address' />
+                  <SectionTitle text='Street' />
                   <SectionDescription
                     text={
                       isPublicProPage && !user ? '**********' : address?.street
                     }
                     from={from}
-                    className='text-sm md:text-base'
                   />
                 </div>
               )}
@@ -161,7 +171,6 @@ const PersonalInformation = ({
                       isPublicProPage && !user ? '**********' : address?.city
                     }
                     from={from}
-                    className='text-sm md:text-base'
                   />
                 </div>
               )}
@@ -173,19 +182,17 @@ const PersonalInformation = ({
                       isPublicProPage && !user ? '**********' : address?.state
                     }
                     from={from}
-                    className='text-sm md:text-base'
                   />
                 </div>
               )}
               {address?.zipCode && (
                 <div className='flex flex-col gap-1.5 md:gap-2.5'>
-                  <SectionTitle text='Postal/Zip Code' />
+                  <SectionTitle text='Postal/ZIP Code' />
                   <SectionDescription
                     text={
                       isPublicProPage && !user ? '**********' : address?.zipCode
                     }
                     from={from}
-                    className='text-sm md:text-base'
                   />
                 </div>
               )}
@@ -197,12 +204,12 @@ const PersonalInformation = ({
                       isPublicProPage && !user ? '**********' : address?.country
                     }
                     from={from}
-                    className='text-sm md:text-base'
                   />
                 </div>
               )}
             </div>
-          </div>
+            </div>
+          )}
         </div>
       ) : (
         <NoData />

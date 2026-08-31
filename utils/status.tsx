@@ -33,10 +33,11 @@ export const adminStatusMap = {
   approve: 'approved',
   remove: 'removed',
 };
+// SCRUM-104: "Verified" is now "Confirmed" everywhere it faces a user.
 export const adminStatusTexts = {
   blocked: 'Blocked',
-  rejected: 'Unverified',
-  approved: 'Verified',
+  rejected: 'Not confirmed',
+  approved: 'Confirmed',
   removed: 'Removed',
   pending: 'Pending',
   'in-review': 'In Review',
@@ -47,6 +48,6 @@ export const adminStatusColors = {
   rejected: '#9CA3AF',
   approved: '#33B55B',
   removed: '#FF5652',
-  pending: '#FF9500',
-  'in-review': '#FF9500',
+  pending: '#FAB607',
+  'in-review': '#FAB607',
 };

@@ -43,9 +43,20 @@ export async function middleware(req: NextRequest) {
   ) {
     if (isAdminRoute) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
-    } else {
-      return NextResponse.redirect(new URL('/', req.url));
     }
+
+    // SCRUM-108: a caregiver clicking the CTA in a credential alert email is
+    // signed out, so they used to land on the public marketing homepage with
+    // no prompt and no way back to the credential. Send them to the right
+    // login page instead, carrying where they were headed so we can return
+    // them there once they are in.
+    const intended = req.nextUrl.pathname + req.nextUrl.search;
+    const loginPath = req.nextUrl.pathname.startsWith('/partner')
+      ? '/partner/login'
+      : '/pro/login';
+    const to = new URL(loginPath, req.url);
+    to.searchParams.set('redirect', intended);
+    return NextResponse.redirect(to);
   }
 
   // A non-super-admin (plain admin) trying to open the admins management page

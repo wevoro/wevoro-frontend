@@ -70,9 +70,12 @@ const CredentialStatusSection: React.FC = () => {
     }
   };
 
+  // SCRUM-108: every credential alert email deep-links to #credentials;
+  // nothing carried that id, so the CTA dropped the caregiver at the top of
+  // the profile instead of on their credentials.
   return (
     // BUG-05: White background container matching Personal/Professional Information sections
-    <div className='bg-white md:rounded-2xl px-4 p-6 md:p-8'>
+    <div id='credentials' className='bg-white md:rounded-2xl px-4 p-6 md:p-8'>
       <div className='flex flex-col gap-4'>
         {/* BUG-06: Section header — font size matches other section headings */}
         <button

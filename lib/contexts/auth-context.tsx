@@ -244,8 +244,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 : '/partner/profile'
               : `/partner/onboard/personal-info${querySuffix}`;
 
-          if (source === 'pro') window.location.href = proPath;
-          if (source === 'partner') window.location.href = partnerPath;
+          // SCRUM-108: middleware parks the intended destination in ?redirect=
+          // when a signed-out user opens a protected link (e.g. the CTA in a
+          // credential alert email). Honour it, but only same-origin relative
+          // paths, so the param can't be used as an open redirect.
+          const requested =
+            typeof window !== 'undefined'
+              ? new URLSearchParams(window.location.search).get('redirect')
+              : null;
+          const safeRedirect =
+            requested && /^\/(?!\/)/.test(requested) ? requested : null;
+
+          if (source === 'pro') window.location.href = safeRedirect || proPath;
+          if (source === 'partner')
+            window.location.href = safeRedirect || partnerPath;
         }
       }
 

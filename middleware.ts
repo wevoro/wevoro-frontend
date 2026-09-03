@@ -12,7 +12,8 @@ export async function middleware(req: NextRequest) {
   const protectedRoutes = [
     /^\/pro\/onboard\/(personal-info|professional-info|document-upload|completed)$/,
     /^\/pro\/(profile|offers|jobs|notifications|settings)$/,
-    /^\/partner\/(profile|pros|offers|notifications|settings)$/,
+    // SCRUM-117: /partner/documents is the agency signing library.
+    /^\/partner\/(profile|pros|offers|notifications|settings|documents)$/,
     /^\/partner\/pros\/\d+$/, // Matches /partner/pros/:id (numeric)
     /^\/admin$/,
     /^\/admin\/pros$/,

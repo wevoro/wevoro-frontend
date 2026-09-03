@@ -26,6 +26,7 @@ import {
   Loader2,
   X,
   FileText,
+  ArrowRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
@@ -36,6 +37,8 @@ interface ApplyToShiftModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   shift: any;
+  // SCRUM-118: supplied only by call sites that own the Step 2 signing modal.
+  onProceedToSigning?: (packet: any) => void;
 }
 
 interface ResolvedDoc {
@@ -61,6 +64,7 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
   open,
   onOpenChange,
   shift,
+  onProceedToSigning,
 }) => {
   const queryClient = useQueryClient();
   const { data: existingDocs } = useDocuments();
@@ -128,6 +132,21 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
 
   const canSubmit = allFulfilled && consent && !submitting;
 
+  // SCRUM-118: e-signature is optional per agency, so a failure here must never
+  // block an application the backend has already accepted.
+  const startSignaturePacket = async () => {
+    try {
+      const res = await fetch(`/api/esign/offer/${shift._id}`, {
+        method: 'POST',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data ?? null;
+    } catch {
+      return null;
+    }
+  };
+
   const handleConfirmedSubmit = async () => {
     setSubmitting(true);
     try {
@@ -161,9 +180,21 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
       const data = await res.json();
 
       if (data.status === 200 || res.ok) {
+        setConfirmOpen(false);
+
+        // SCRUM-118: hand off to Step 2 when the agency has documents to sign —
+        // the parent closes this modal, so don't end the flow or refetch here.
+        const packet = await startSignaturePacket();
+        const hasPending = packet?.items?.some(
+          (item: any) => item.status === 'pending',
+        );
+        if (hasPending && onProceedToSigning) {
+          onProceedToSigning(packet);
+          return;
+        }
+
         toast.success('Application submitted!');
         queryClient.invalidateQueries({ queryKey: ['offers'] });
-        setConfirmOpen(false);
         onOpenChange(false);
       } else {
         toast.error(data.message || 'Failed to submit application');
@@ -193,8 +224,11 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className='max-w-full sm:max-w-[680px] p-0'>
           <DialogHeader className='px-6 pt-6'>
-            <DialogTitle className='text-xl font-bold text-gray-900'>
+            <DialogTitle className='text-xl font-bold text-gray-900 flex items-center gap-2'>
               Apply to Shift
+              <span className='inline-flex items-center rounded-full bg-[#ECFAF0] px-2.5 py-1 text-xs font-medium text-primary'>
+                Step 1 of 2
+              </span>
             </DialogTitle>
           </DialogHeader>
 
@@ -428,14 +462,17 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                   Cancel
                 </Button>
                 <Button
-                  className='flex-1 h-12 rounded-xl font-semibold'
+                  className='flex-1 h-12 rounded-xl font-semibold gap-2'
                   disabled={!canSubmit}
                   onClick={() => setConfirmOpen(true)}
                 >
                   {submitting ? (
                     <Loader2 className='size-4 animate-spin' />
                   ) : (
-                    'Submit'
+                    <>
+                      Next
+                      <ArrowRight className='size-4' />
+                    </>
                   )}
                 </Button>
               </div>

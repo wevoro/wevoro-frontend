@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import moment from 'moment';
@@ -12,6 +12,7 @@ import {
   Navigation,
   Check,
   FileText,
+  PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,19 +22,49 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ApplyToShiftModal from '@/components/global/dashboard/matching-shifts/apply-to-shift-modal';
+import SignDocumentsModal from '@/components/global/dashboard/esign/sign-documents-modal';
 import ShiftDetailGrid from './shift-detail-grid';
 import NotesPopup from '../../note-popup';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { formatShiftDays, isNightShift } from './helpers';
+import { formatShiftDays, getInitialStatus, isNightShift } from './helpers';
 
 interface ReceivedCardProps {
   offer: any;
 }
 
+interface SigningRow {
+  id: string;
+  title: string;
+  signed: boolean;
+}
+
+// SCRUM-118: once a packet exists it is the source of truth. 'outdated' items were
+// superseded by a newer version of the agency's document and are never signable.
+function toSigningRows(context: any): SigningRow[] {
+  const items = context?.packet?.items;
+  if (items?.length) {
+    return items
+      .filter((item: any) => item.status !== 'outdated')
+      .map((item: any) => ({
+        id: item._id,
+        title: item.title,
+        signed: item.status === 'signed',
+      }));
+  }
+  return (context?.documents ?? []).map((doc: any) => ({
+    id: doc._id,
+    title: doc.title,
+    signed: false,
+  }));
+}
+
 const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
   const queryClient = useQueryClient();
   const [applyOpen, setApplyOpen] = useState(false);
+  const [signOpen, setSignOpen] = useState(false);
+  const [packet, setPacket] = useState<any>(null);
+  const [signingRows, setSigningRows] = useState<SigningRow[]>([]);
 
   const isNew = moment().diff(moment(offer.createdAt), 'hours') < 24;
   const isUrgent = !!offer?.urgent;
@@ -51,6 +82,38 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
     typeof hourlyRate === 'number' ? hourlyRate * hoursPerShift : null;
 
   const night = isNightShift(offer?.timeRange);
+
+  // SCRUM-118: e-signature is opt-in per agency, so a failure or empty response
+  // just means this offer has nothing to sign and the section stays hidden.
+  useEffect(() => {
+    const uiStatus = getInitialStatus(offer);
+    if (uiStatus !== 'received' && uiStatus !== 'pending') return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/esign/offer/${offer._id}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled) setSigningRows(toSigningRows(json?.data));
+      } catch {
+        // Silent — the caregiver simply sees no signing section.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [offer._id]);
+
+  // SCRUM-118: the application is only complete once the packet is signed, so the
+  // success toast and refetch happen here rather than at the end of Step 1.
+  const handleSigningComplete = () => {
+    setSignOpen(false);
+    setPacket(null);
+    toast.success('Application submitted!');
+    queryClient.invalidateQueries({ queryKey: ['offers'] });
+  };
 
   const handleNotInterested = async () => {
     try {
@@ -198,6 +261,34 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
           </div>
         )}
 
+        {/* SCRUM-118: documents the agency requires an e-signature on */}
+        {signingRows.length > 0 && (
+          <div className='rounded-xl border border-gray-200 p-4'>
+            <p className='text-sm font-semibold text-primary mb-2'>
+              Documents to be signed
+            </p>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3'>
+              {signingRows.map((row) => (
+                <div key={row.id} className='flex items-center gap-2'>
+                  <PenLine className='size-4 text-primary shrink-0' />
+                  <span className='min-w-0 truncate text-sm text-[#1C1C1C]'>
+                    {row.title}
+                  </span>
+                  <span
+                    className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      row.signed
+                        ? 'bg-gray-100 text-[#6C6C6C]'
+                        : 'bg-[#ECFAF0] text-primary'
+                    }`}
+                  >
+                    {row.signed ? 'Signed' : 'To sign'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Notes */}
         {offer?.notes && offer.notes.length > 0 && (
           <div className='flex items-center gap-2 text-sm text-gray-600'>
@@ -236,7 +327,21 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
         open={applyOpen}
         onOpenChange={setApplyOpen}
         shift={offer}
+        onProceedToSigning={(startedPacket) => {
+          setApplyOpen(false);
+          setPacket(startedPacket);
+          setSignOpen(true);
+        }}
       />
+
+      {packet && (
+        <SignDocumentsModal
+          open={signOpen}
+          onOpenChange={setSignOpen}
+          packet={packet}
+          onComplete={handleSigningComplete}
+        />
+      )}
     </>
   );
 };

@@ -13,6 +13,9 @@ import {
   ArrowRight,
   UserPlus,
   Download,
+  PenLine,
+  CheckCircle,
+  RefreshCw,
 } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -78,6 +81,25 @@ const NOTIFICATION_CONFIG: Record<
     bgColor: 'bg-emerald-50',
     borderColor: 'border-l-4 border-emerald-500',
     label: 'Credentials Downloaded',
+  },
+  // SCRUM-117/118: e-signature flow
+  esign_reminder: {
+    icon: <PenLine className='size-4 text-amber-600' />,
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-l-4 border-amber-400',
+    label: 'Signature Needed',
+  },
+  esign_completed: {
+    icon: <CheckCircle className='size-4 text-green-600' />,
+    bgColor: 'bg-green-50',
+    borderColor: 'border-l-4 border-green-500',
+    label: 'Signing Complete',
+  },
+  esign_replaced: {
+    icon: <RefreshCw className='size-4 text-amber-700' />,
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-l-4 border-amber-500',
+    label: 'Document Updated',
   },
   general: {
     icon: null,

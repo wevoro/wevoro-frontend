@@ -36,13 +36,17 @@ const Tabs: React.FC = () => {
   // route, repurposed body + sub-tabs). The legacy "Pros" (browse caregivers)
   // tab belongs to the scheduling era and is removed from agency nav — the
   // credentialing agency journey is Profile -> Offers only (client request).
+  // SCRUM-117: agencies manage the CNA/PCA documents caregivers sign on
+  // connection from their own tab, so it sits next to Profile in both modes.
   const tabItemsPartner = credentialing
     ? [
         { label: 'Profile', href: '/partner/profile' },
+        { label: 'Documents', href: '/partner/documents' },
         { label: 'Offers', href: '/partner/onboardings' },
       ]
     : [
         { label: 'Profile', href: '/partner/profile' },
+        { label: 'Documents', href: '/partner/documents' },
         { label: 'Pros', href: '/partner/pros' },
         {
           label: `Onboardings (${offers?.length || 0})`,

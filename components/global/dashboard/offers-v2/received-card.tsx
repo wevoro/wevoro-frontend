@@ -64,6 +64,9 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
   const [applyOpen, setApplyOpen] = useState(false);
   const [signOpen, setSignOpen] = useState(false);
   const [packet, setPacket] = useState<any>(null);
+  const hasUnfinishedPacket =
+    !!packet && packet.status !== 'completed' &&
+    (packet.items ?? []).some((i: any) => i.status === 'pending');
   const [signingRows, setSigningRows] = useState<SigningRow[]>([]);
 
   const isNew = moment().diff(moment(offer.createdAt), 'hours') < 24;
@@ -87,6 +90,8 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
   // just means this offer has nothing to sign and the section stays hidden.
   useEffect(() => {
     const uiStatus = getInitialStatus(offer);
+    // 'pending' here is the post-Step-1 state, which is exactly when an
+    // unfinished packet needs to be picked back up.
     if (uiStatus !== 'received' && uiStatus !== 'pending') return;
 
     let cancelled = false;
@@ -95,7 +100,14 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
         const res = await fetch(`/api/esign/offer/${offer._id}`);
         if (!res.ok) return;
         const json = await res.json();
-        if (!cancelled) setSigningRows(toSigningRows(json?.data));
+        if (cancelled) return;
+        setSigningRows(toSigningRows(json?.data));
+        // SCRUM-118 Scenario 4: a packet that exists but is not finished means
+        // the caregiver got through Step 1 and stopped. Without holding onto it
+        // there is no route back into signing and the resume requirement cannot
+        // be met — the offer stops being 'received' the moment Step 1 submits.
+        const existing = json?.data?.packet;
+        if (existing && existing.status !== 'completed') setPacket(existing);
       } catch {
         // Silent — the caregiver simply sees no signing section.
       }
@@ -309,9 +321,9 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
         <div className='flex gap-3 mt-2'>
           <Button
             className='flex-1 h-12 rounded-xl font-semibold text-base'
-            onClick={() => setApplyOpen(true)}
+            onClick={() => (hasUnfinishedPacket ? setSignOpen(true) : setApplyOpen(true))}
           >
-            Accept
+            {hasUnfinishedPacket ? 'Continue signing' : 'Accept'}
           </Button>
           <Button
             variant='outline'

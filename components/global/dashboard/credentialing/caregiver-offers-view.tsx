@@ -9,6 +9,8 @@ import { useCaregiverEngagements } from '@/app/apiHooks/useCaregiverEngagements'
 import ShareProfileModal from '@/components/global/dashboard/share-profile-modal';
 import { isSharingEnabled } from '@/lib/credentialing';
 import { EngagementCard, EngagementEntry } from './engagement-card';
+// SCRUM-118: signing has no home on this tab otherwise — see the panel's note.
+import DocumentsToSignPanel from '@/components/global/dashboard/esign/documents-to-sign-panel';
 
 type SubTab = 'received' | 'submitted';
 
@@ -89,6 +91,8 @@ const CaregiverOffersView: React.FC = () => {
       <h2 className='text-xl md:text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-6'>
         Offers
       </h2>
+
+      <DocumentsToSignPanel />
 
       {/* Sub-tabs */}
       <div className='flex items-center gap-8 border-b border-gray-100 dark:border-neutral-800 mb-6'>

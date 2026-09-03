@@ -31,9 +31,40 @@ const CaregiverOffersView: React.FC = () => {
   const searchParams = useSearchParams();
   const { data, isLoading } = useCaregiverEngagements();
   const { data: offers = [] } = useOffers();
+  // SCRUM-118: offer ids with a packet that is started but not finished. Step 1
+  // marks the offer responded, so without this the card disappears the moment
+  // signing begins and there is no way back in to finish it.
+  const [unfinishedOfferIds, setUnfinishedOfferIds] = useState<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/esign/my-packets');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (cancelled || !Array.isArray(json?.data)) return;
+        setUnfinishedOfferIds(
+          json.data
+            .filter((p: any) => p.status !== 'completed' && p.pendingCount > 0)
+            .map((p: any) => String(p.offer))
+        );
+      } catch {
+        // Silent: the offer list must still render if this lookup fails.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const pendingOffers = useMemo(
-    () => (offers ?? []).filter((o: any) => o?.status === 'pending' && !o?.proResponded),
-    [offers]
+    () =>
+      (offers ?? []).filter(
+        (o: any) =>
+          (o?.status === 'pending' && !o?.proResponded) ||
+          unfinishedOfferIds.includes(String(o?._id))
+      ),
+    [offers, unfinishedOfferIds]
   );
 
   const received: EngagementEntry[] = useMemo(

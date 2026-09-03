@@ -9,8 +9,11 @@ import { useCaregiverEngagements } from '@/app/apiHooks/useCaregiverEngagements'
 import ShareProfileModal from '@/components/global/dashboard/share-profile-modal';
 import { isSharingEnabled } from '@/lib/credentialing';
 import { EngagementCard, EngagementEntry } from './engagement-card';
-// SCRUM-118: signing has no home on this tab otherwise — see the panel's note.
-import DocumentsToSignPanel from '@/components/global/dashboard/esign/documents-to-sign-panel';
+// SCRUM-118: the approved design puts signing on the offer box, and this tab
+// does not render one in credentialing mode. Reuse the SAME designed card
+// rather than inventing a second surface for it.
+import ReceivedCard from '@/components/global/dashboard/offers-v2/received-card';
+import { useOffers } from '@/app/apiHooks/useOffers';
 
 type SubTab = 'received' | 'submitted';
 
@@ -27,6 +30,11 @@ const CaregiverOffersView: React.FC = () => {
   const { user } = useUserContext();
   const searchParams = useSearchParams();
   const { data, isLoading } = useCaregiverEngagements();
+  const { data: offers = [] } = useOffers();
+  const pendingOffers = useMemo(
+    () => (offers ?? []).filter((o: any) => o?.status === 'pending' && !o?.proResponded),
+    [offers]
+  );
 
   const received: EngagementEntry[] = useMemo(
     () =>
@@ -92,7 +100,14 @@ const CaregiverOffersView: React.FC = () => {
         Offers
       </h2>
 
-      <DocumentsToSignPanel />
+      {/* Offers still awaiting a response, rendered with the approved offer box
+          so "Documents to be signed" and the two-step accept live where Faisal
+          designed them. */}
+      {pendingOffers.map((o: any) => (
+        <div key={o._id} className='mb-5'>
+          <ReceivedCard offer={o} />
+        </div>
+      ))}
 
       {/* Sub-tabs */}
       <div className='flex items-center gap-8 border-b border-gray-100 dark:border-neutral-800 mb-6'>

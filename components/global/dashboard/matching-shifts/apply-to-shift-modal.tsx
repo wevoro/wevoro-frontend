@@ -120,9 +120,12 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
   };
 
   // All requested docs must be either matched OR have a newly selected file.
+  // An offer that requests no files has nothing to fulfil. The old
+  // `requested.length > 0` made that case permanently unsubmittable, which
+  // SCRUM-118 turns from a corner case into a normal one: an agency may want
+  // signatures only and request no uploads at all.
   const allFulfilled = useMemo(
     () =>
-      requested.length > 0 &&
       requested.every((req: any) => {
         const r = resolved[req.title];
         return !!(r?.matched || r?.uploadingFile);
@@ -225,7 +228,7 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
         <DialogContent className='max-w-full sm:max-w-[680px] p-0'>
           <DialogHeader className='px-6 pt-6'>
             <DialogTitle className='text-xl font-bold text-gray-900 flex items-center gap-2'>
-              Apply to Shift
+              Respond to offer
               <span className='inline-flex items-center rounded-full bg-[#ECFAF0] px-2.5 py-1 text-xs font-medium text-primary'>
                 Step 1 of 2
               </span>

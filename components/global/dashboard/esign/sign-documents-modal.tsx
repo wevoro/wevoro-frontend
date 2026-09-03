@@ -315,15 +315,22 @@ export default function SignDocumentsModal({
                   )}
 
                   {showStamp ? (
-                    <div className='mt-6 rounded-[10px] border border-[#008000] bg-[#F1FBF4] p-4'>
-                      <p className='font-serif text-[22px] italic leading-tight text-[#01400F]'>
-                        {stampName}
-                      </p>
-                      <p className='mt-2 text-[11px] text-[#6C6C6C]'>
-                        Signed by {stampName} · powered by WeVoro
-                      </p>
-                      <p className='text-[11px] text-[#6C6C6C]'>{stampTime}</p>
-                      <p className='text-[11px] text-[#6C6C6C]'>Signature ID {stampId}</p>
+                    // The approved stamp is a round seal, not a signature card:
+                    // "Signed by" over the name over the Wevoro wordmark, inside
+                    // a 2px green ring (Figma 10769:1551). Time and signature id
+                    // sit outside it so the seal itself stays clean.
+                    <div className='mt-6 flex items-center gap-4'>
+                      <div className='flex h-[140px] w-[140px] shrink-0 flex-col items-center justify-center rounded-full border-2 border-[#22B14C] bg-white text-center'>
+                        <span className='font-serif text-[11px] text-[#6C6C6C]'>Signed by</span>
+                        <span className='mt-0.5 px-2 text-[15px] font-bold leading-tight text-[#008000]'>
+                          {stampName}
+                        </span>
+                        <span className='mt-1 font-serif text-[13px] text-[#008000]'>Wevoro</span>
+                      </div>
+                      <div className='text-[11px] leading-[17px] text-[#6C6C6C]'>
+                        <p>{stampTime}</p>
+                        <p>Signature ID {stampId}</p>
+                      </div>
                     </div>
                   ) : (
                     <button
@@ -373,7 +380,7 @@ export default function SignDocumentsModal({
                     {submitting ? (
                       <Loader2 className='size-4 animate-spin' />
                     ) : isLastToSign ? (
-                      'Adopt and Sign — Finish'
+                      'Adopt & sign — Submit'
                     ) : (
                       'Adopt & sign — next document'
                     )}

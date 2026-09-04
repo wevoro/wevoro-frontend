@@ -377,6 +377,11 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                     The client is requesting:
                   </p>
 
+                  {/* The frame carries a second, bolder heading under that line. */}
+                  <p className='text-[15px] font-semibold text-[#1C1C1C]'>
+                    Requested Documents
+                  </p>
+
                   <div className='flex flex-col gap-3'>
                     {requested.map((req: any) => {
                       const r = resolved[req.title];
@@ -416,20 +421,20 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                             </div>
                           </div>
 
-                          {isMatched ? (
-                            <span className='text-xs font-medium text-primary shrink-0'>
-                              Matched ✓
-                            </span>
-                          ) : isUploading ? (
-                            <Button
-                              variant='ghost'
-                              size='sm'
+                          {/* A matched row carries no right-hand action in the
+                              design — the green check on the left already says it.
+                              The "Matched ✓" tag was mine. */}
+                          {isMatched ? null : isUploading ? (
+                            // The design puts a bare ✕ on the file row; the
+                            // "Clear" label was mine and is not in the frame.
+                            <button
+                              type='button'
+                              aria-label={`Remove ${req.title}`}
                               onClick={() => clearFile(req.title)}
-                              className='shrink-0 text-gray-500 hover:text-red-500 gap-1'
+                              className='shrink-0 rounded-md p-1 text-[#5E6864] transition-colors hover:text-[#E94435]'
                             >
                               <X className='size-4' />
-                              Clear
-                            </Button>
+                            </button>
                           ) : (
                             <>
                               <input

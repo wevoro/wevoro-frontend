@@ -299,9 +299,16 @@ export default function SignDocumentsModal({
 
                 <div className={isOutdated ? 'pointer-events-none opacity-50' : undefined}>
                   {currentItem?.fileUrl ? (
+                    // #toolbar=0 hides the browser's built-in PDF chrome. Left
+                    // on, it hands the caregiver a text/draw/highlight toolbar
+                    // over a document they are about to sign — edits that are
+                    // never persisted and never part of what gets signed, so the
+                    // screen implies they changed something when they did not.
+                    // It also offers Print and Download, neither of which is in
+                    // the design.
                     <iframe
                       key={currentItem._id}
-                      src={currentItem.fileUrl}
+                      src={`${currentItem.fileUrl}#toolbar=0&navpanes=0&statusbar=0&view=FitH`}
                       title={currentItem.title}
                       onLoad={evaluateScrollGate}
                       className='mt-4 h-[420px] w-full rounded-lg border border-[#DFE2E0]'

@@ -11,13 +11,19 @@ export async function POST(req: Request) {
     const response = await api.post(`/auth/verify-code`, { email, otp });
 
     if (response.status === 200) {
-      const { accessToken, refreshToken, completionPercentage } =
+      const { accessToken, refreshToken, completionPercentage, agencyProfileComplete } =
         response.data?.data;
 
+      // agencyProfileComplete has to be forwarded: it is the only signal that
+      // the agency actually submitted the completion form. Without it the
+      // client falls back to completionPercentage, which scores nine fields
+      // the form never collects, so a completed agency scores 44% and is sent
+      // back to the form on every login.
       const res = NextResponse.json({
         status: 200,
         message: 'Login successful',
         completionPercentage,
+        agencyProfileComplete,
       });
 
       res.cookies.set('accessToken', accessToken, {

@@ -12,13 +12,15 @@ export async function POST(req: Request) {
     });
 
     if (response.status === 200) {
-      const { accessToken, refreshToken, completionPercentage } =
+      const { accessToken, refreshToken, completionPercentage, agencyProfileComplete } =
         response.data?.data;
-      console.log('response.data?.data', response.data?.data);
+      // Same as the passwordless route: without this the agency completion
+      // gate can never clear.
       const res = NextResponse.json({
         status: 200,
         message: 'Login successful',
         completionPercentage,
+        agencyProfileComplete,
       });
 
       res.cookies.set('accessToken', accessToken, {

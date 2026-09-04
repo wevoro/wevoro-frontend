@@ -14,6 +14,7 @@ import {
   FileText,
   PenLine,
   Link as LinkIcon,
+  ArrowUpRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -159,11 +160,11 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
 
   return (
     <>
-      <div className='border border-gray-200 rounded-2xl p-5 md:p-6 flex flex-col gap-4 bg-white'>
+      <div className='flex flex-col items-start gap-4 rounded-[16px] border border-[#DFE2E0] bg-white px-6 py-5'>
         {/* Top row: timestamp + dropdown + rate */}
         <div className='flex items-start justify-between gap-3'>
           <div className='flex flex-col gap-2'>
-            <span className='text-xs text-gray-400'>
+            <span className='text-[13px] leading-4 text-[#5E6864]'>
               {moment(offer.createdAt).fromNow()}
             </span>
             {!credentialing && (
@@ -239,49 +240,49 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
           />
         )}
 
-        {/* Agency row */}
-        <div className='flex items-center justify-between gap-3 bg-gray-50 rounded-xl p-3'>
+        {/* Agency row — spec: #F2F4F3 fill, 16px padding, 12px radius, 44px
+            avatar, 16/19 semibold name over 13/16 company. */}
+        <div className='flex w-full items-center justify-between gap-3 rounded-[12px] bg-[#F2F4F3] p-4'>
           <div className='flex items-center gap-3'>
             <Image
               unoptimized
               src={partnerImage}
               alt={partnerName}
-              width={40}
-              height={40}
-              className='rounded-full object-cover size-10'
+              width={44}
+              height={44}
+              className='size-11 shrink-0 rounded-full object-cover'
             />
-            <div>
-              <p className='text-sm font-semibold text-gray-900'>
+            <div className='flex flex-col gap-0.5'>
+              <p className='text-[16px] font-semibold leading-[19px] text-[#1C1C1C]'>
                 {partnerName}
               </p>
-              <p className='text-xs text-gray-500'>{companyName}</p>
+              <p className='text-[13px] leading-4 text-[#5E6864]'>{companyName}</p>
             </div>
           </div>
           {partner?._id && (
             <Link href={`/pro/partner/${partner._id}`}>
-              <Button
-                variant='outline'
-                size='sm'
-                className='rounded-lg border-primary text-primary hover:bg-primary/5'
-              >
-                {credentialing ? 'View Agency ↗' : 'View Profile ↗'}
-              </Button>
+              <span className='inline-flex h-[39px] items-center gap-2 rounded-[10px] border border-[#DFE2E0] bg-white pl-[18px] pr-4 text-[14px] font-medium leading-[17px] text-[#1C1C1C] transition-colors hover:bg-[#F9FAFA]'>
+                {credentialing ? 'View Agency' : 'View Profile'}
+                <ArrowUpRight className='size-4' strokeWidth={1.2} />
+              </span>
             </Link>
           )}
         </div>
 
         {/* Job Link — the design places it directly under the agency row. */}
         {offer?.jobLink && (
-          <div className='rounded-xl border border-gray-200 p-4'>
-            <div className='flex items-center gap-2 text-sm text-gray-900'>
-              <LinkIcon className='size-4 text-gray-400' />
-              Job Link
+          <div className='w-full rounded-[12px] border border-[#DFE2E0] bg-white px-4 py-3.5'>
+            <div className='flex items-center gap-2'>
+              <LinkIcon className='size-[18px] text-[#5E6864]' strokeWidth={1.35} />
+              <span className='text-[14px] font-medium leading-[17px] text-[#1C1C1C]'>
+                Job Link
+              </span>
             </div>
             <a
               href={offer.jobLink}
               target='_blank'
               rel='noopener noreferrer'
-              className='mt-2 block truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-primary hover:underline'
+              className='mt-2.5 block truncate rounded-lg bg-[#F2F4F3] px-3.5 py-3 text-[13px] leading-4 text-[#008000] hover:underline'
             >
               {offer.jobLink}
             </a>
@@ -290,18 +291,20 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
 
         {/* Requested files */}
         {offer?.documentsNeeded && offer.documentsNeeded.length > 0 && (
-          <div className='rounded-xl border border-gray-200 p-4'>
-            <p className='text-sm font-semibold text-primary mb-2'>
+          <div className='w-full rounded-[12px] border border-[#DFE2E0] bg-white p-4'>
+            <p className='mb-3.5 text-[14px] font-semibold leading-[17px] text-[#008000]'>
               Requested Files
             </p>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2'>
+            <div className='grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2'>
               {offer.documentsNeeded.map((doc: any, i: number) => (
                 <div
                   key={i}
-                  className='flex items-center gap-2 text-sm text-gray-700'
+                  className='flex items-center gap-2.5'
                 >
-                  <Check className='size-4 text-primary shrink-0' />
-                  <span className='truncate'>{doc.title}</span>
+                  <Check className='size-[18px] shrink-0 text-[#008000]' strokeWidth={1.8} />
+                  <span className='truncate text-[14px] font-medium leading-[17px] text-[#1C1C1C]'>
+                    {doc.title}
+                  </span>
                 </div>
               ))}
             </div>
@@ -310,22 +313,22 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
 
         {/* SCRUM-118: documents the agency requires an e-signature on */}
         {signingRows.length > 0 && (
-          <div className='rounded-xl border border-gray-200 p-4'>
-            <p className='text-sm font-semibold text-primary mb-2'>
+          <div className='w-full rounded-[12px] border border-[#DFE2E0] bg-white p-4'>
+            <p className='mb-3.5 text-[14px] font-semibold leading-[17px] text-[#008000]'>
               Documents to be signed
             </p>
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3'>
+            <div className='grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2'>
               {signingRows.map((row) => (
-                <div key={row.id} className='flex items-center gap-2'>
-                  <PenLine className='size-4 text-primary shrink-0' />
-                  <span className='min-w-0 truncate text-sm text-[#1C1C1C]'>
+                <div key={row.id} className='flex items-center gap-2.5'>
+                  <PenLine className='size-4 shrink-0 text-[#008000]' strokeWidth={1.2} />
+                  <span className='min-w-0 flex-1 truncate text-[14px] font-medium leading-[17px] text-[#1C1C1C]'>
                     {row.title}
                   </span>
                   <span
-                    className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    className={`shrink-0 rounded-full py-[3px] pl-2 pr-2.5 text-[11px] font-semibold leading-[13px] ${
                       row.signed
-                        ? 'bg-gray-100 text-[#6C6C6C]'
-                        : 'bg-[#ECFAF0] text-primary'
+                        ? 'bg-[#F2F4F3] text-[#5E6864]'
+                        : 'bg-[#E0FDED] text-[#008000]'
                     }`}
                   >
                     {row.signed ? 'Signed' : 'To sign'}
@@ -338,10 +341,10 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
 
         {/* Notes */}
         {offer?.notes && offer.notes.length > 0 && (
-          <div className='flex items-center gap-2 text-sm text-gray-600'>
+          <div className='flex items-center gap-2.5 text-[14px] leading-[17px] text-[#1C1C1C]'>
             {/* The design draws a plain grey document glyph here, not a tinted
                 tile — the amber chip read as decoration that was not in the frame. */}
-            <FileText className='size-4 shrink-0 text-[#5E6864]' />
+            <FileText className='size-[22px] shrink-0 text-[#5E6864]' strokeWidth={1.47} />
             <span>The agency has left additional notes</span>
             <NotesPopup
               notes={offer.notes}
@@ -353,16 +356,17 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
         )}
 
         {/* Actions */}
-        <div className='flex gap-3 mt-2'>
+        {/* Spec sizes the actions 340px / 220px rather than splitting the row. */}
+        <div className='flex w-full gap-3'>
           <Button
-            className='flex-1 h-12 rounded-xl font-semibold text-base'
+            className='h-12 w-[340px] max-w-[52%] rounded-[10px] bg-[#008000] text-[15px] font-semibold leading-[18px] text-white hover:bg-[#016b01]'
             onClick={() => (hasUnfinishedPacket ? setSignOpen(true) : setApplyOpen(true))}
           >
             {hasUnfinishedPacket ? 'Continue signing' : 'Accept'}
           </Button>
           <Button
             variant='outline'
-            className='flex-1 h-12 rounded-xl font-semibold text-base border-gray-200 text-gray-800 hover:bg-gray-50'
+            className='h-12 w-[220px] max-w-[36%] rounded-[10px] border-[#DFE2E0] bg-white text-[15px] font-medium leading-[18px] text-[#6C6C6C] hover:bg-[#F9FAFA]'
             onClick={handleNotInterested}
           >
             Not Interested

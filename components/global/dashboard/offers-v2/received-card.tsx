@@ -339,9 +339,9 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
         {/* Notes */}
         {offer?.notes && offer.notes.length > 0 && (
           <div className='flex items-center gap-2 text-sm text-gray-600'>
-            <span className='inline-flex w-6 h-6 rounded-md bg-amber-50 items-center justify-center'>
-              <FileText className='size-3.5 text-amber-500' />
-            </span>
+            {/* The design draws a plain grey document glyph here, not a tinted
+                tile — the amber chip read as decoration that was not in the frame. */}
+            <FileText className='size-4 shrink-0 text-[#5E6864]' />
             <span>The agency has left additional notes</span>
             <NotesPopup
               notes={offer.notes}

@@ -72,7 +72,7 @@ const NotesPopup = ({
       <DialogTrigger asChild>
         <button className='inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200'>
           <MessageSquare className='w-4 h-4' />
-          <span>View notes</span>
+          <span>View Notes</span>
         </button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-lg p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl'>

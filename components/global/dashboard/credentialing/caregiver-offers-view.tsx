@@ -134,7 +134,7 @@ const CaregiverOffersView: React.FC = () => {
       {/* Sub-tabs */}
       <div className='flex items-center gap-8 border-b border-gray-100 dark:border-neutral-800 mb-6'>
         {renderSubTab('submitted', 'Submitted', submitted.length)}
-        {renderSubTab('received', 'Received', received.length + pendingOffers.length)}
+        {renderSubTab('received', 'Received', pendingOffers.length)}
       </div>
 
       {/* Body */}
@@ -143,27 +143,20 @@ const CaregiverOffersView: React.FC = () => {
           <Loader2 className='size-6 animate-spin text-primary' />
         </div>
       ) : subTab === 'received' ? (
-        received.length === 0 && pendingOffers.length === 0 ? (
+        pendingOffers.length === 0 ? (
           <div className='py-12 text-center'>
             <p className='text-sm text-gray-500 dark:text-neutral-400 max-w-md mx-auto'>
-              When an agency downloads your credentials, they&apos;ll appear here.
+              When an agency sends you an offer, it&apos;ll appear here.
             </p>
           </div>
         ) : (
           <div className='flex flex-col gap-4'>
-            {/* The Figma frame is "Offer box — Received (caregiver)", so offers
-                awaiting a response belong inside this tab, above the engagement
-                list — not floating above the tab bar. */}
+            {/* The Figma frame is "Offer box — Received (caregiver)": this tab
+                shows offers awaiting a response and nothing else. The SCRUM-87/88
+                "agency downloaded your credentials" engagement cards used to sit
+                here too; they are still rendered under Submitted. */}
             {pendingOffers.map((o: any) => (
               <ReceivedCard key={o._id} offer={o} />
-            ))}
-            {received.map((e) => (
-              <EngagementCard
-                key={e.partyId}
-                entry={e}
-                profileHref={`/pro/partner/${e.partyId}`}
-                profileLabel='View Agency Profile'
-              />
             ))}
           </div>
         )

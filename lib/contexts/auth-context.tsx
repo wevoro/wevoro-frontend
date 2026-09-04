@@ -182,6 +182,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const responseData: any = await response.json();
       if (responseData.status === 200) {
         const completionPercentage = responseData.completionPercentage;
+        const agencyProfileComplete = responseData.agencyProfileComplete;
         toast.success('Logged in successfully', { position: 'top-center' });
         // Flow 2 (arrived via a caregiver's share link): land on that caregiver's
         // pack — a Non-confirmed agency can view general credentials there, no
@@ -189,9 +190,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // goes to the short "Complete your agency account" form; a returning,
         // already-completed agency goes straight to their dashboard.
         const caregiverTarget = id || proId;
+        // Gate on whether the agency actually submitted the completion form.
+        // completionPercentage scores nine fields the form never collects, so a
+        // completed agency scored 44% and was bounced back here every login.
         const partnerPath = caregiverTarget
           ? `/partner/pros/${caregiverTarget}?s=true`
-          : completionPercentage > 50
+          : agencyProfileComplete || completionPercentage > 50
             ? '/partner/profile'
             : `/partner/complete${querySuffix}`;
         window.location.href = partnerPath;
@@ -237,8 +241,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           // Same null-`id` guard as the onboarding redirect: the share-link
           // journey passes ?proId=, not ?id=, so `id` is null there.
+          // Same guard as the passwordless path: an agency that already
+          // submitted the SCRUM-99 form must not be pushed into onboarding.
           const partnerPath =
-            completionPercentage > 50
+            responseData.agencyProfileComplete || completionPercentage > 50
               ? querySuffix && id
                 ? `/partner/pros/${id}?s=true`
                 : '/partner/profile'

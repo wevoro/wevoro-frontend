@@ -46,7 +46,8 @@ const RemoveDocumentDialog: React.FC<RemoveDocumentDialogProps> = ({
       }
 
       onRemoved();
-      toast.success(`${document.title} removed`, {
+      const label = document?.role ? `${document.role} document` : 'Document';
+      toast.success(`${label} removed`, {
         action: {
           label: 'Undo',
           onClick: async () => {
@@ -73,30 +74,32 @@ const RemoveDocumentDialog: React.FC<RemoveDocumentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[560px]'>
+      <DialogContent className='sm:max-w-[560px] gap-5 rounded-2xl p-7 sm:rounded-2xl'>
         <DialogHeader>
-          <DialogTitle className='text-[20px] font-semibold text-[#1C1C1C]'>
-            Remove {document?.title}?
+          <DialogTitle className='text-start text-[20px] font-semibold text-[#1C1C1C]'>
+            Remove this document?
           </DialogTitle>
         </DialogHeader>
 
         <p className='text-[14px] leading-[22px] text-[#6C6C6C]'>
-          New caregivers will no longer receive this document. Anyone already
-          waiting to sign it keeps their copy &mdash; it is not withdrawn.
+          New {document?.role ? `${document.role} ` : ''}caregivers will no
+          longer receive this document to sign when they connect, until you add
+          it again. Documents already awaiting signature will not be withdrawn.
         </p>
 
-        <div className='mt-2 flex items-center justify-end gap-3'>
+        <div className='flex items-center justify-end gap-3'>
           <Button
             variant='outline'
             onClick={() => onOpenChange(false)}
             disabled={removing}
+            className='h-10 rounded-[10px] border-[#DFE2E0] px-5 text-[14px] font-semibold text-[#1C1C1C]'
           >
             Cancel
           </Button>
           <Button
             onClick={handleRemove}
             disabled={removing}
-            className='bg-[#E94435] text-white hover:bg-[#d13b2d]'
+            className='h-10 rounded-[10px] bg-[#E94435] px-5 text-[14px] font-semibold text-white hover:bg-[#d13b2d]'
           >
             {removing ? 'Removing…' : 'Remove document'}
           </Button>

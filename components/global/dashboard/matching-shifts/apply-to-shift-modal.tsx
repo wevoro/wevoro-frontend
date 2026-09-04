@@ -27,11 +27,13 @@ import {
   X,
   FileText,
   ArrowRight,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { useQueryClient } from '@tanstack/react-query';
 import ApplyConfirmDialog from './apply-confirm-dialog';
+import { isCredentialingMode } from '@/lib/credentialing';
 
 interface ApplyToShiftModalProps {
   open: boolean;
@@ -217,6 +219,10 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
   const partnerImage = partner?.personalInfo?.image || '/dummy-profile-pic.jpg';
   const isNight = shift?.shiftType === 'night';
 
+  // SCRUM-118: Step 1 in the approved design (Figma 10594:3949) shows Job Link
+  // + the agency, then the requested documents. No date, rate or shift grid —
+  // in credentialing mode there is nothing behind those fields to show.
+  const credentialing = isCredentialingMode();
   const hourlyRate = shift?.hourlyRate ?? shift?.rate ?? '—';
   const hoursPerShift = shift?.hoursPerShift ?? 6;
   const totalPerShift =
@@ -241,13 +247,15 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
               <div className='border border-gray-200 rounded-2xl p-5 flex flex-col gap-4'>
                 <div className='flex items-start justify-between'>
                   <div className='flex flex-col gap-2'>
-                    <div className='inline-flex items-center gap-2 text-base font-semibold text-gray-900'>
-                      <Calendar className='size-5 text-gray-400' />
-                      {shift?.startingDate
-                        ? moment(shift.startingDate).format('dddd, MMM DD')
-                        : 'Date TBD'}
-                    </div>
-                    <div className='inline-flex items-center gap-2 text-xs text-gray-500'>
+                    {!credentialing && (
+                      <div className='inline-flex items-center gap-2 text-base font-semibold text-gray-900'>
+                        <Calendar className='size-5 text-gray-400' />
+                        {shift?.startingDate
+                          ? moment(shift.startingDate).format('dddd, MMM DD')
+                          : 'Date TBD'}
+                      </div>
+                    )}
+                    <div className={`items-center gap-2 text-xs text-gray-500 ${credentialing ? 'hidden' : 'inline-flex'}`}>
                       <span className='inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md'>
                         {isNight ? (
                           <Moon className='size-3' />
@@ -264,7 +272,7 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                       )}
                     </div>
                   </div>
-                  <div className='text-right'>
+                  <div className={credentialing ? 'hidden' : 'text-right'}>
                     <p className='text-2xl font-bold text-gray-900'>
                       ${hourlyRate}
                       <span className='text-sm font-normal text-gray-500'>
@@ -278,7 +286,7 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                   </div>
                 </div>
 
-                <div className='grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3'>
+                <div className={`grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3 ${credentialing ? 'hidden' : 'grid'}`}>
                   <div>
                     <p className='text-xs text-gray-400 uppercase mb-1 flex items-center gap-1'>
                       <Clock className='size-3' /> Shift Days
@@ -312,6 +320,23 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                     </p>
                   </div>
                 </div>
+
+                {shift?.jobLink && (
+                  <div className='rounded-xl border border-gray-200 p-4'>
+                    <div className='flex items-center gap-2 text-sm text-gray-900'>
+                      <LinkIcon className='size-4 text-gray-400' />
+                      Job Link
+                    </div>
+                    <a
+                      href={shift.jobLink}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='mt-2 block truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-primary hover:underline'
+                    >
+                      {shift.jobLink}
+                    </a>
+                  </div>
+                )}
 
                 <div className='flex items-center justify-between gap-3 bg-gray-50 rounded-xl p-3'>
                   <div className='flex items-center gap-3'>

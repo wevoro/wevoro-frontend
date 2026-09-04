@@ -4,12 +4,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Loader2, X } from 'lucide-react';
+import { AlertTriangle, Check, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatFileSize } from './format';
 import { validateEsignFile } from './upload-documents-modal';
@@ -20,6 +19,14 @@ interface ReplaceDocumentModalProps {
   document: any | null;
   onReplaced: () => void;
 }
+
+// The three guarantees the confirm spells out, in the order the design lists
+// them — the point is that no manual follow-up is needed after a replace.
+const REPLACE_EFFECTS = [
+  'Mark the pending copies as outdated.',
+  'Send the new version to those caregivers.',
+  'Notify each one that a new version replaced the previous document.',
+];
 
 export default function ReplaceDocumentModal({
   open,
@@ -35,6 +42,7 @@ export default function ReplaceDocumentModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const documentId = document?._id;
+  const role = document?.role as 'CNA' | 'PCA' | undefined;
 
   useEffect(() => {
     if (!open) {
@@ -118,113 +126,129 @@ export default function ReplaceDocumentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[560px] p-6 rounded-xl'>
+      <DialogContent className='sm:max-w-[600px] gap-5 rounded-2xl p-7 sm:rounded-2xl'>
         <DialogHeader>
-          <DialogTitle className='text-xl text-start font-medium text-tertiary'>
-            Replace document
+          <DialogTitle className='text-start text-[20px] font-semibold text-[#1C1C1C]'>
+            Replace {role ? `${role} ` : ''}signing document?
           </DialogTitle>
-          <DialogDescription className='text-start text-sm text-[#5E6864]'>
-            {document?.title || 'This document'}
-            {document?.version ? ` · v${document.version}` : ''} will be replaced
-            by the file you pick below.
-          </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-4'>
-          {pendingCaregivers > 0 && (
-            <div className='rounded-xl border border-[#FAB607]/40 bg-[#FAB607]/10 p-4'>
-              <div className='flex items-start gap-2'>
-                <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-[#FAB607]' />
-                <p className='text-sm font-semibold text-tertiary'>
-                  {pendingCaregivers} caregiver(s) still have this document
-                  waiting to be signed.
+        {pendingCaregivers > 0 && (
+          <>
+            <div className='flex items-start gap-3 rounded-[12px] bg-[#FCFFDD] px-4 py-3'>
+              <AlertTriangle className='mt-0.5 size-5 shrink-0 text-[#FAB607]' />
+              <div className='space-y-0.5'>
+                <p className='text-[14px] font-semibold text-[#1C1C1C]'>
+                  {pendingCaregivers} caregiver
+                  {pendingCaregivers === 1 ? '' : 's'}{' '}
+                  {pendingCaregivers === 1 ? 'has' : 'have'} this document
+                  awaiting signature
+                </p>
+                <p className='text-[13px] text-[#5E6864]'>
+                  Replacing the document affects documents that are still
+                  pending.
                 </p>
               </div>
-              <p className='mt-2 pl-6 text-sm text-[#5E6864]'>
-                Replacing it will mark their copy outdated, send the new version
-                automatically, and notify them by email. No manual resend is
-                needed.
+            </div>
+
+            <div className='rounded-[12px] bg-[#F2F4F3] p-4'>
+              <p className='text-[14px] font-semibold text-[#1C1C1C]'>
+                When you replace it, WeVoro will automatically:
               </p>
+              <ul className='mt-1.5 space-y-2.5'>
+                {REPLACE_EFFECTS.map((effect) => (
+                  <li key={effect} className='flex items-start gap-3'>
+                    <span className='mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#D0E4D1]'>
+                      <Check className='size-3 text-[#008000]' />
+                    </span>
+                    <p className='text-[14px] text-[#5E6864]'>{effect}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
-          )}
 
-          {file ? (
-            <div className='flex items-start gap-3 rounded-[12px] bg-[#F4F5F6] p-3'>
-              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E94435]/10 text-[10px] font-semibold text-[#E94435]'>
-                {extensionLabel(file.name)}
-              </div>
+            <p className='text-[13px] text-[#5E6864]'>
+              No manual resend needed &mdash; this happens automatically.
+            </p>
+          </>
+        )}
 
-              <div className='min-w-0 flex-1'>
-                <p className='truncate text-sm font-semibold text-tertiary'>
-                  {file.name}
-                </p>
-                <p className='text-xs text-[#6C6C6C]'>
-                  {formatFileSize(file.size)}
-                </p>
-                {fileError && (
-                  <p className='mt-1 text-xs text-[#E94435]'>{fileError}</p>
-                )}
-              </div>
-
-              <button
-                type='button'
-                onClick={() => {
-                  setFile(null);
-                  setFileError(null);
-                }}
-                disabled={submitting}
-                aria-label={`Remove ${file.name}`}
-                className='mt-1 shrink-0 text-[#6C6C6C] transition-colors hover:text-tertiary disabled:opacity-40'
-              >
-                <X className='h-4 w-4' />
-              </button>
+        {file ? (
+          <div className='flex items-start gap-3 rounded-[12px] bg-[#F2F4F3] p-3'>
+            <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E94435]/10 text-[10px] font-semibold text-[#E94435]'>
+              {extensionLabel(file.name)}
             </div>
-          ) : null}
 
-          <input
-            ref={fileInputRef}
-            type='file'
-            accept='.pdf,.doc,.docx'
-            onChange={handleFileSelected}
-            className='hidden'
-          />
-          <button
-            type='button'
-            onClick={() => fileInputRef.current?.click()}
-            disabled={submitting}
-            className='w-full rounded-xl border border-dashed border-[#DFE2E0] py-4 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-50'
-          >
-            {file ? '+ Choose a different file' : '+ Choose replacement file'}
-          </button>
-
-          <div className='flex gap-3 pt-1'>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => onOpenChange(false)}
-              disabled={submitting}
-              className='flex-1 h-12 rounded-xl border-[#DFE2E0] text-tertiary font-medium'
-            >
-              Cancel
-            </Button>
-            <Button
-              type='button'
-              onClick={handleReplace}
-              disabled={submitting || loadingPending || !file || !!fileError}
-              className='flex-1 h-12 rounded-xl bg-primary text-white font-medium'
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Replacing...
-                </>
-              ) : pendingCaregivers > 0 ? (
-                'Replace & resend'
-              ) : (
-                'Replace document'
+            <div className='min-w-0 flex-1'>
+              <p className='truncate text-sm font-semibold text-[#1C1C1C]'>
+                {file.name}
+              </p>
+              <p className='text-xs text-[#6C6C6C]'>
+                {formatFileSize(file.size)}
+              </p>
+              {fileError && (
+                <p className='mt-1 text-xs text-[#E94435]'>{fileError}</p>
               )}
-            </Button>
+            </div>
+
+            <button
+              type='button'
+              onClick={() => {
+                setFile(null);
+                setFileError(null);
+              }}
+              disabled={submitting}
+              aria-label={`Remove ${file.name}`}
+              className='mt-1 shrink-0 text-[#6C6C6C] transition-colors hover:text-[#1C1C1C] disabled:opacity-40'
+            >
+              <X className='h-4 w-4' />
+            </button>
           </div>
+        ) : null}
+
+        <input
+          ref={fileInputRef}
+          type='file'
+          accept='.pdf,.doc,.docx'
+          onChange={handleFileSelected}
+          className='hidden'
+        />
+        <button
+          type='button'
+          onClick={() => fileInputRef.current?.click()}
+          disabled={submitting}
+          className='w-full rounded-[12px] border border-dashed border-[#DFE2E0] py-4 text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-50'
+        >
+          {file ? '+ Choose a different file' : '+ Choose replacement file'}
+        </button>
+
+        <div className='flex items-center justify-end gap-3'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => onOpenChange(false)}
+            disabled={submitting}
+            className='h-10 rounded-[10px] border-[#DFE2E0] px-5 text-[14px] font-semibold text-[#1C1C1C]'
+          >
+            Cancel
+          </Button>
+          <Button
+            type='button'
+            onClick={handleReplace}
+            disabled={submitting || loadingPending || !file || !!fileError}
+            className='h-10 rounded-[10px] bg-primary px-5 text-[14px] font-semibold text-white'
+          >
+            {submitting ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Replacing...
+              </>
+            ) : pendingCaregivers > 0 ? (
+              'Replace & resend'
+            ) : (
+              'Replace document'
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

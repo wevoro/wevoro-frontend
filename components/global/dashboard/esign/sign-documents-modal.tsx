@@ -112,8 +112,17 @@ export default function SignDocumentsModal({
   const isReadOnly =
     !currentItem || currentItem.status !== 'pending' || index !== activeIndex;
 
+  // Declared before the derived flags below, which read `signature`.
+  const [drawOpen, setDrawOpen] = React.useState(false);
+  const [signature, setSignature] = React.useState<string | null>(
+    localPacket?.signatureImage ?? null
+  );
+
   const hasRead = !!currentId && readIds.includes(currentId);
-  const hasStamp = !!currentId && !!stampedAt[currentId];
+  // Both halves matter: the seal must have been applied to THIS document, and
+  // a drawing must actually exist to apply. Checking only the stamp let a
+  // document be submitted with no signature behind it.
+  const hasStamp = !!currentId && !!stampedAt[currentId] && !!signature;
   const showStamp = hasStamp || currentItem?.status === 'signed';
 
   const markRead = useCallback((id?: string) => {
@@ -144,10 +153,6 @@ export default function SignDocumentsModal({
   // The drawing is captured once for the whole packet; on later documents the
   // "Sign here" target applies the signature already on file rather than
   // asking again.
-  const [drawOpen, setDrawOpen] = React.useState(false);
-  const [signature, setSignature] = React.useState<string | null>(
-    localPacket?.signatureImage ?? null
-  );
 
   const handleAdoptStamp = () => {
     if (!currentId || isReadOnly) return;

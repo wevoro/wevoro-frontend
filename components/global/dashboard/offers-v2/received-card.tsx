@@ -166,18 +166,20 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
             <span className='text-xs text-gray-400'>
               {moment(offer.createdAt).fromNow()}
             </span>
-            <div className='flex items-center gap-2'>
-              {isUrgent && (
-                <span className='inline-flex items-center px-2.5 py-0.5 rounded-md bg-red-100 text-red-600 text-xs font-semibold'>
-                  URGENT
-                </span>
-              )}
-              {isNew && (
-                <span className='inline-flex items-center px-2.5 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold'>
-                  NEW
-                </span>
-              )}
-            </div>
+            {!credentialing && (
+              <div className='flex items-center gap-2'>
+                {isUrgent && (
+                  <span className='inline-flex items-center px-2.5 py-0.5 rounded-md bg-red-100 text-red-600 text-xs font-semibold'>
+                    URGENT
+                  </span>
+                )}
+                {isNew && (
+                  <span className='inline-flex items-center px-2.5 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold'>
+                    NEW
+                  </span>
+                )}
+              </div>
+            )}
             {!credentialing && (
               <div className='inline-flex items-center gap-2 text-base md:text-lg font-bold text-gray-900'>
                 <Calendar className='size-5 text-gray-400' />
@@ -237,24 +239,6 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
           />
         )}
 
-        {/* Job Link — the design leads with it, above the agency row. */}
-        {offer?.jobLink && (
-          <div className='rounded-xl border border-gray-200 p-4'>
-            <div className='flex items-center gap-2 text-sm text-gray-900'>
-              <LinkIcon className='size-4 text-gray-400' />
-              Job Link
-            </div>
-            <a
-              href={offer.jobLink}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='mt-2 block truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-primary hover:underline'
-            >
-              {offer.jobLink}
-            </a>
-          </div>
-        )}
-
         {/* Agency row */}
         <div className='flex items-center justify-between gap-3 bg-gray-50 rounded-xl p-3'>
           <div className='flex items-center gap-3'>
@@ -285,6 +269,24 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
             </Link>
           )}
         </div>
+
+        {/* Job Link — the design places it directly under the agency row. */}
+        {offer?.jobLink && (
+          <div className='rounded-xl border border-gray-200 p-4'>
+            <div className='flex items-center gap-2 text-sm text-gray-900'>
+              <LinkIcon className='size-4 text-gray-400' />
+              Job Link
+            </div>
+            <a
+              href={offer.jobLink}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='mt-2 block truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-primary hover:underline'
+            >
+              {offer.jobLink}
+            </a>
+          </div>
+        )}
 
         {/* Requested files */}
         {offer?.documentsNeeded && offer.documentsNeeded.length > 0 && (

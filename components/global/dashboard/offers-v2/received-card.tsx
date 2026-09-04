@@ -13,6 +13,7 @@ import {
   Check,
   FileText,
   PenLine,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +29,7 @@ import NotesPopup from '../../note-popup';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatShiftDays, getInitialStatus, isNightShift } from './helpers';
+import { isCredentialingMode } from '@/lib/credentialing';
 
 interface ReceivedCardProps {
   offer: any;
@@ -70,6 +72,11 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
   const [signingRows, setSigningRows] = useState<SigningRow[]>([]);
 
   const isNew = moment().diff(moment(offer.createdAt), 'hours') < 24;
+  // SCRUM-118: the approved offer box (Figma 10593:3950) carries Job Link,
+  // Requested Files and Documents to be signed — and none of the scheduling-era
+  // chrome. In credentialing mode there is no shift, rate or start date behind
+  // those fields anyway, so they render as "Date TBD", "$—" and a row of dashes.
+  const credentialing = isCredentialingMode();
   const isUrgent = !!offer?.urgent;
 
   const partner = offer?.partner;
@@ -171,13 +178,15 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
                 </span>
               )}
             </div>
-            <div className='inline-flex items-center gap-2 text-base md:text-lg font-bold text-gray-900'>
-              <Calendar className='size-5 text-gray-400' />
-              {offer?.startingDate
-                ? moment(offer.startingDate).format('dddd, MMM DD')
-                : 'Date TBD'}
-            </div>
-            <div className='inline-flex items-center gap-2 text-xs text-gray-500'>
+            {!credentialing && (
+              <div className='inline-flex items-center gap-2 text-base md:text-lg font-bold text-gray-900'>
+                <Calendar className='size-5 text-gray-400' />
+                {offer?.startingDate
+                  ? moment(offer.startingDate).format('dddd, MMM DD')
+                  : 'Date TBD'}
+              </div>
+            )}
+            <div className={`items-center gap-2 text-xs text-gray-500 ${credentialing ? 'hidden' : 'inline-flex'}`}>
               <span className='inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md'>
                 {night ? <Moon className='size-3' /> : <Sun className='size-3' />}
                 {night ? 'Night Shift' : 'Day Shift'}
@@ -204,23 +213,47 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <p className='text-2xl md:text-3xl font-bold text-gray-900'>
-              ${hourlyRate}
-              <span className='text-sm font-normal text-gray-500'>/hr</span>
-            </p>
-            <p className='text-xs text-gray-400'>
-              {hoursPerShift} hrs shift{' '}
-              {totalPerShift !== null && `( Total $${totalPerShift} )`}
-            </p>
+            {!credentialing && (
+              <>
+                <p className='text-2xl md:text-3xl font-bold text-gray-900'>
+                  ${hourlyRate}
+                  <span className='text-sm font-normal text-gray-500'>/hr</span>
+                </p>
+                <p className='text-xs text-gray-400'>
+                  {hoursPerShift} hrs shift{' '}
+                  {totalPerShift !== null && `( Total $${totalPerShift} )`}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
-        <ShiftDetailGrid
-          shiftDays={formatShiftDays(offer?.shiftDays)}
-          timeRange={offer?.timeRange}
-          location={offer?.location}
-          position={offer?.position}
-        />
+        {!credentialing && (
+          <ShiftDetailGrid
+            shiftDays={formatShiftDays(offer?.shiftDays)}
+            timeRange={offer?.timeRange}
+            location={offer?.location}
+            position={offer?.position}
+          />
+        )}
+
+        {/* Job Link — the design leads with it, above the agency row. */}
+        {offer?.jobLink && (
+          <div className='rounded-xl border border-gray-200 p-4'>
+            <div className='flex items-center gap-2 text-sm text-gray-900'>
+              <LinkIcon className='size-4 text-gray-400' />
+              Job Link
+            </div>
+            <a
+              href={offer.jobLink}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='mt-2 block truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-primary hover:underline'
+            >
+              {offer.jobLink}
+            </a>
+          </div>
+        )}
 
         {/* Agency row */}
         <div className='flex items-center justify-between gap-3 bg-gray-50 rounded-xl p-3'>
@@ -247,7 +280,7 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
                 size='sm'
                 className='rounded-lg border-primary text-primary hover:bg-primary/5'
               >
-                View Profile ↗
+                {credentialing ? 'View Agency ↗' : 'View Profile ↗'}
               </Button>
             </Link>
           )}
@@ -307,7 +340,7 @@ const ReceivedCard: React.FC<ReceivedCardProps> = ({ offer }) => {
             <span className='inline-flex w-6 h-6 rounded-md bg-amber-50 items-center justify-center'>
               <FileText className='size-3.5 text-amber-500' />
             </span>
-            <span>The client has left additional notes</span>
+            <span>The agency has left additional notes</span>
             <NotesPopup
               notes={offer.notes}
               id={offer._id}

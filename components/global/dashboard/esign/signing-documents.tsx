@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Info, Plus, UploadCloud } from 'lucide-react';
+import { Info, Plus, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import UploadDocumentsModal from './upload-documents-modal';
@@ -106,13 +106,13 @@ const SigningDocuments: React.FC = () => {
       </div>
 
       {bothEmpty && (
-        <div className='flex gap-3 rounded-[12px] border border-[#008000]/20 bg-[#ECFAF0] p-4'>
+        <div className='flex gap-3 rounded-[12px] bg-[#ECFAF0] p-4'>
           <Info className='size-5 shrink-0 text-[#008000] mt-0.5' />
           <div className='flex flex-col gap-1'>
             <p className='text-sm font-bold text-[#1C1C1C]'>
               What happens after you upload
             </p>
-            <p className='text-sm text-[#6C6C6C]'>
+            <p className='text-sm text-[#5E6864]'>
               When a caregiver connects, WeVoro sends all matching documents (CNA
               or PCA) for signature, auto-reminds them by email until every
               document is signed, and notifies you once they&apos;re all
@@ -204,7 +204,7 @@ const GroupCard = ({
           {group.role} documents
         </h2>
         {count > 0 && (
-          <span className='text-sm text-[#6C6C6C]'>
+          <span className='text-sm text-[#5E6864]'>
             · {count} {count === 1 ? 'document' : 'documents'}
           </span>
         )}
@@ -217,13 +217,13 @@ const GroupCard = ({
       </div>
 
       {count === 0 ? (
-        <div className='flex flex-col items-center gap-3 rounded-[12px] border border-dashed border-[#DFE2E0] bg-[#FAFBFB] px-4 py-8 text-center'>
-          <UploadCloud className='size-8 text-[#5E6864]' />
+        <div className='flex flex-col items-center gap-3 rounded-[12px] border border-dashed border-[#DFE2E0] bg-[#F2F4F3] px-4 py-8 text-center'>
+          <Upload className='size-6 text-[#5E6864]' />
           <div className='flex flex-col gap-1'>
             <p className='text-sm font-bold text-[#1C1C1C]'>
               No documents added yet
             </p>
-            <p className='text-xs text-[#6C6C6C]'>
+            <p className='text-xs text-[#5E6864]'>
               Add one or more files this {group.role} must sign · PDF or DOCX, up
               to 10 MB each
             </p>
@@ -237,20 +237,22 @@ const GroupCard = ({
         </div>
       ) : (
         <>
-          <div className='flex flex-col gap-2'>
+          <div className='flex flex-col gap-3'>
             {group.documents.map((document) => (
               <div
                 key={document._id}
                 className='flex items-center gap-3 rounded-[12px] bg-[#F4F5F6] p-3'
               >
-                <span className='shrink-0 rounded-[8px] bg-[#E94435]/10 px-2 py-1.5 text-[10px] font-bold text-[#E94435]'>
-                  {fileBadge(document.fileName)}
+                <span className='flex size-8 shrink-0 items-center justify-center'>
+                  <span className='flex h-6 w-5 items-end justify-center rounded-[3px] bg-[#E94435]/10 pb-[3px] text-[7px] font-bold leading-none text-[#E94435] [clip-path:polygon(0_0,68%_0,100%_28%,100%_100%,0_100%)]'>
+                    {fileBadge(document.fileName)}
+                  </span>
                 </span>
                 <div className='min-w-0 flex-1'>
                   <p className='truncate text-sm font-bold text-[#1C1C1C]'>
                     {document.fileName}
                   </p>
-                  <p className='text-xs text-[#6C6C6C]'>
+                  <p className='text-xs text-[#5E6864]'>
                     {formatFileSize(document.fileSize)}
                   </p>
                 </div>
@@ -258,14 +260,14 @@ const GroupCard = ({
                   <button
                     type='button'
                     onClick={() => onReplace(document)}
-                    className='text-xs font-medium text-[#5E6864] hover:underline'
+                    className='text-sm font-medium text-[#1C1C1C] hover:underline'
                   >
                     Replace
                   </button>
                   <button
                     type='button'
                     onClick={() => onRemove(document)}
-                    className='text-xs font-medium text-[#E94435] hover:underline'
+                    className='text-sm font-medium text-[#E94435] hover:underline'
                   >
                     Remove
                   </button>
@@ -278,7 +280,7 @@ const GroupCard = ({
             type='button'
             onClick={onUpload}
             disabled={isFull}
-            className='flex w-full items-center justify-center gap-1.5 rounded-[12px] border border-dashed border-[#DFE2E0] py-3 text-sm font-medium text-[#5E6864] transition-colors hover:border-[#008000] hover:text-[#008000] disabled:pointer-events-none disabled:opacity-50'
+            className='flex w-full items-center justify-center gap-1.5 rounded-[12px] border border-dashed border-[#DFE2E0] py-3 text-sm font-semibold text-[#008000] transition-colors hover:border-[#008000] hover:bg-[#ECFAF0] disabled:pointer-events-none disabled:opacity-50'
           >
             <Plus className='size-4' />
             {isFull
@@ -288,7 +290,7 @@ const GroupCard = ({
 
           <div className='flex items-start gap-2'>
             <Info className='mt-0.5 size-3.5 shrink-0 text-[#5E6864]' />
-            <p className='text-xs text-[#6C6C6C]'>
+            <p className='text-xs text-[#5E6864]'>
               Sent automatically to {group.role}s on connection ·{' '}
               {group.caregiversSent}{' '}
               {group.caregiversSent === 1 ? 'caregiver' : 'caregivers'} ·{' '}

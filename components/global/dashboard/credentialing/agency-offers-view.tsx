@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useAgencyEngagements } from '@/app/apiHooks/useAgencyEngagements';
 import DownloadPackageButton from '@/components/global/dashboard/download-package-button';
+import PacketDocumentsModal from '@/components/global/dashboard/payment/packet-documents-modal';
+import PaymentGateModal from '@/components/global/dashboard/payment/payment-gate-modal';
 import { EngagementCard, EngagementEntry } from './engagement-card';
 
 type SubTab = 'submitted' | 'received';
@@ -39,6 +41,14 @@ const AgencyOffersView: React.FC = () => {
     () => (data?.received ?? []).map(toEntry),
     [data],
   );
+
+  // SCRUM-119: the paywall. `docsFor` opens the documents modal (free to view,
+  // urls withheld until paid); `payFor` opens the payment gate. `paidTick` is
+  // bumped after a successful payment so the documents modal refetches and
+  // flips from locked to unlocked without a page reload.
+  const [docsFor, setDocsFor] = useState<EngagementEntry | null>(null);
+  const [payFor, setPayFor] = useState<EngagementEntry | null>(null);
+  const [paidTick, setPaidTick] = useState(0);
 
   const initialTab: SubTab =
     searchParams.get('tab') === 'received' ? 'received' : 'submitted';
@@ -108,6 +118,10 @@ const AgencyOffersView: React.FC = () => {
                     caregiverId={e.partyId}
                     caregiverName={e.name}
                     onDownloaded={() => refetch()}
+                    // SCRUM-119: an unpaid packet answers 402. That opens the
+                    // documents modal so the agency can see what they are
+                    // buying, rather than hitting a dead error.
+                    onPaymentRequired={() => setDocsFor(e)}
                     className='h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 text-sm font-semibold'
                   />
                 }
@@ -132,6 +146,42 @@ const AgencyOffersView: React.FC = () => {
             />
           ))}
         </div>
+      )}
+
+      {/* SCRUM-119: locked/unlocked file list. Free to open — the server
+          withholds every url until the packet is paid for. */}
+      {docsFor && (
+        <PacketDocumentsModal
+          open={!!docsFor}
+          onOpenChange={(o) => !o && setDocsFor(null)}
+          caregiverId={docsFor.partyId}
+          caregiverName={docsFor.name}
+          onboardedAt={docsFor.onboardedAt ?? undefined}
+          refreshKey={paidTick}
+          onUnlock={() => {
+            // Hand off to the gate, keeping the caregiver in context so the
+            // modal can reopen unlocked once payment clears.
+            setPayFor(docsFor);
+            setDocsFor(null);
+          }}
+        />
+      )}
+
+      {/* The payment gate. onPaid runs only after the SERVER confirms the
+          charge, so nothing is released on a browser claim. */}
+      {payFor && (
+        <PaymentGateModal
+          open={!!payFor}
+          onOpenChange={(o) => !o && setPayFor(null)}
+          caregiverId={payFor.partyId}
+          caregiverName={payFor.name}
+          caregiverImage={payFor.image ?? undefined}
+          caregiverRole={payFor.role ?? undefined}
+          onPaid={async () => {
+            setPaidTick((t) => t + 1);
+            await refetch();
+          }}
+        />
       )}
     </div>
   );

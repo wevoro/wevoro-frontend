@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import StripeCardForm from './stripe-card-form';
 
 /**
  * SCRUM-119 — the payment gate.
@@ -479,47 +480,62 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
       </div>
 
       <p className='mt-4 text-[13.5px] text-[#1C1C1C]'>Card information</p>
-      <div className='mt-1.5 flex items-center gap-2.5 rounded-lg border border-[#DFE2E0] px-3.5 py-3'>
-        <CreditCard className='size-4 shrink-0 text-[#6C6C6C]' />
-        <input
-          placeholder='1234 1234 1234 1234'
-          disabled={checkout?.testMode}
-          className='w-full bg-transparent text-[14px] text-[#1C1C1C] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
-        />
-      </div>
-      <div className='mt-2.5 grid grid-cols-2 gap-2.5'>
-        <input
-          placeholder='MM / YY'
-          disabled={checkout?.testMode}
-          className='rounded-lg border border-[#DFE2E0] px-3.5 py-3 text-[14px] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
-        />
-        <input
-          placeholder='CVC'
-          disabled={checkout?.testMode}
-          className='rounded-lg border border-[#DFE2E0] px-3.5 py-3 text-[14px] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
-        />
-      </div>
 
-      <p className='mt-4 text-[13.5px] text-[#1C1C1C]'>Name on card</p>
-      <input
-        placeholder='Full name'
-        disabled={checkout?.testMode}
-        className='mt-1.5 w-full rounded-lg border border-[#DFE2E0] px-3.5 py-3 text-[14px] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
-      />
+      {checkout?.clientSecret && checkout?.publishableKey ? (
+        // Stripe's own iframe. Card numbers never enter this page's DOM.
+        <div className='mt-1.5'>
+          <StripeCardForm
+            clientSecret={checkout.clientSecret}
+            publishableKey={checkout.publishableKey}
+            priceCents={price}
+            onSubmitted={pay}
+            onFailed={(m) => {
+              setFailure(m);
+              setState('payment-failed');
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          {/* No Stripe credentials on this environment — the fields are inert
+              placeholders so the layout still reads correctly, and the button
+              drives the simulated path instead. */}
+          <div className='mt-1.5 flex items-center gap-2.5 rounded-lg border border-[#DFE2E0] px-3.5 py-3'>
+            <CreditCard className='size-4 shrink-0 text-[#6C6C6C]' />
+            <input
+              placeholder='1234 1234 1234 1234'
+              disabled
+              className='w-full bg-transparent text-[14px] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
+            />
+          </div>
+          <div className='mt-2.5 grid grid-cols-2 gap-2.5'>
+            <input
+              placeholder='MM / YY'
+              disabled
+              className='rounded-lg border border-[#DFE2E0] px-3.5 py-3 text-[14px] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
+            />
+            <input
+              placeholder='CVC'
+              disabled
+              className='rounded-lg border border-[#DFE2E0] px-3.5 py-3 text-[14px] outline-none placeholder:text-[#9CA3A0] disabled:cursor-not-allowed'
+            />
+          </div>
 
-      <Button
-        onClick={pay}
-        disabled={busy || !checkout?.transactionId}
-        className='mt-5 h-12 w-full gap-2 rounded-xl bg-[#008000] text-[15px] font-semibold text-white hover:bg-[#016b01]'
-      >
-        <Lock className='size-4' />
-        {busy ? 'Processing…' : `Pay ${money(price)} & download documents`}
-      </Button>
+          <Button
+            onClick={pay}
+            disabled={busy || !checkout?.transactionId}
+            className='mt-5 h-12 w-full gap-2 rounded-xl bg-[#008000] text-[15px] font-semibold text-white hover:bg-[#016b01]'
+          >
+            <Lock className='size-4' />
+            {busy ? 'Processing…' : `Pay ${money(price)} & download documents`}
+          </Button>
 
-      <p className='mt-3 flex items-center justify-center gap-1.5 text-center text-[12px] text-[#6C6C6C]'>
-        <Lock className='size-3' />
-        Secure payment via Stripe · Charged once · Re-downloads are always free
-      </p>
+          <p className='mt-3 flex items-center justify-center gap-1.5 text-center text-[12px] text-[#6C6C6C]'>
+            <Lock className='size-3' />
+            Secure payment via Stripe · Charged once · Re-downloads are always free
+          </p>
+        </>
+      )}
 
       {checkout?.testMode && (
         // Only rendered when the server reports it has no Stripe credentials.

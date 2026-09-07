@@ -35,15 +35,25 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({
-      status: response.status,
-      message: response.data?.message || 'Failed to submit response',
-    });
+    // The HTTP status has to carry the failure too. These used to return 200
+    // with the error hidden in the body, so the client read every failure as a
+    // success.
+    return NextResponse.json(
+      {
+        status: response.status,
+        message: response.data?.message || 'Failed to submit response',
+      },
+      { status: response.status || 500 }
+    );
   } catch (error: any) {
     console.error('Pro respond failed:', error.response);
-    return NextResponse.json({
-      status: 500,
-      message: error.response?.data?.message || 'Failed to submit response',
-    });
+    const status = error.response?.status || 500;
+    return NextResponse.json(
+      {
+        status,
+        message: error.response?.data?.message || 'Failed to submit response',
+      },
+      { status }
+    );
   }
 }

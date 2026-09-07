@@ -159,24 +159,30 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
       formData.append('offerId', shift._id);
       formData.append('consent', 'true');
 
-      // Build action payload describing each requested document.
-      const docActions = requested.map((req: any) => {
+      // The backend contract (offer.service.ts proRespondToOffer) is narrow and
+      // must be matched exactly, or the request succeeds while attaching nothing:
+      //   - an uploaded file is located by its FILENAME, looked up as
+      //     fileMap[documentsNeeded._id], so the file must be named with that id;
+      //   - an already-held credential is granted through `statusUpdates`, keyed
+      //     by the documentsNeeded._id — NOT the caregiver's own credential id.
+      // This previously sent `file_<title>` and a `docActions` payload the
+      // backend has no handler for, so every application submitted empty.
+      const statusUpdates: Array<{ documentId: string; status: 'granted' }> = [];
+
+      requested.forEach((req: any) => {
         const r = resolved[req.title];
-        if (r?.matched) {
-          return {
-            title: req.title,
-            action: 'grant',
-            documentId: r.matched._id,
-          };
-        }
+        const requestedId = String(req._id);
         if (r?.uploadingFile) {
-          formData.append(`file_${req.title}`, r.uploadingFile);
-          return { title: req.title, action: 'upload' };
+          // Third argument is the filename the backend reads as originalname.
+          formData.append(requestedId, r.uploadingFile, requestedId);
+          return;
         }
-        return { title: req.title, action: 'pending' };
+        if (r?.matched) {
+          statusUpdates.push({ documentId: requestedId, status: 'granted' });
+        }
       });
 
-      formData.append('docActions', JSON.stringify(docActions));
+      formData.append('statusUpdates', JSON.stringify(statusUpdates));
 
       const res = await fetch(`/api/user/offer/pro-respond?id=${shift._id}`, {
         method: 'POST',
@@ -184,7 +190,10 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
       });
       const data = await res.json();
 
-      if (data.status === 200 || res.ok) {
+      // `res.ok` used to be OR-ed in here, which made the error branch
+      // unreachable: the proxy wrapped failures in an HTTP 200, so a failed
+      // submission still reported "Application submitted!".
+      if (res.ok && data.status === 200) {
         setConfirmOpen(false);
 
         // SCRUM-118: hand off to Step 2 when the agency has documents to sign —

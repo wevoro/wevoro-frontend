@@ -12,6 +12,12 @@ interface DownloadPackageButtonProps {
   /** SCRUM-88: invoked after a successful download so callers can refetch
    * (e.g. move the agency Submitted card to Received). */
   onDownloaded?: () => void;
+  /**
+   * SCRUM-119: the packet is behind a paywall. The server answers an unpaid
+   * download with 402, and this hands that back to the caller so the payment
+   * gate can open instead of the agency seeing a dead error toast.
+   */
+  onPaymentRequired?: (caregiverId: string) => void;
   className?: string;
 }
 
@@ -23,6 +29,7 @@ const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
   caregiverId,
   caregiverName,
   onDownloaded,
+  onPaymentRequired,
   className,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +38,15 @@ const DownloadPackageButton: React.FC<DownloadPackageButtonProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(`/api/document/download-package/${caregiverId}`);
+
+      // SCRUM-119: 402 means this packet has not been paid for. That is a
+      // normal, expected answer — the paywall working — so it opens the
+      // payment gate rather than surfacing as a failure.
+      if (response.status === 402) {
+        onPaymentRequired?.(caregiverId);
+        return;
+      }
+
       const data = await response.json();
 
       if (!data.success || !data.data?.length) {
@@ -115,6 +131,15 @@ export const DownloadDocumentButton: React.FC<{
     setIsLoading(true);
     try {
       const response = await fetch(`/api/document/download/${documentId}`);
+
+      // SCRUM-119: a single file is covered by the same per-caregiver
+      // entitlement as the whole packet, so it can come back 402 too. Say what
+      // is actually true instead of "failed".
+      if (response.status === 402) {
+        toast.error('Unlock this caregiver\'s packet to download their documents');
+        return;
+      }
+
       const data = await response.json();
 
       if (!data.success || !data.data?.url) {

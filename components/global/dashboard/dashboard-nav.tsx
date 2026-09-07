@@ -144,7 +144,11 @@ export default function DashboardNav() {
           <SheetContent side='left' className='max-w-[300px]'>
             <SheetTitle />
             <nav className='flex flex-col space-y-4 mt-10'>
-              {!isPublicProPage ? (
+              {/* Same condition as the desktop bar above. It used to be just
+                  !isPublicProPage, so on a public caregiver profile a signed-in
+                  user got the account menu — and Sign Out — on desktop but a
+                  bare "Signup Now!" on mobile, with no way to sign out at all. */}
+              {!isPublicProPage || user?.role ? (
                 <>
                   <Button
                     href={`${path}/profile`}

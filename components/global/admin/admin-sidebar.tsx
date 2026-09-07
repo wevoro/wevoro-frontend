@@ -14,6 +14,7 @@ import {
 import {
   Briefcase,
   Building2,
+  DollarSign,
   FileBadge,
   LayoutDashboardIcon,
   MessageCircleQuestion,
@@ -51,6 +52,14 @@ const items = [
     url: '/admin/feedbacks',
     icon: MessageCircleQuestion,
     disabled: false,
+  },
+  // SCRUM-113: per-packet pricing. The whole /admin area is already role-gated,
+  // and the backend gates the endpoints with auth(ADMIN), which also admits
+  // super_admin — so this is the founder/admin-only section the ticket asks for.
+  {
+    title: 'Pricing',
+    url: '/admin/pricing',
+    icon: DollarSign,
   },
 ];
 
@@ -90,9 +99,13 @@ export function AdminSidebar() {
                     <Link
                       href={item.url}
                       className={cn(
-                        'flex items-center gap-6 py-3 rounded-lg transition-colors',
+                        // SCRUM-113 design: the active item is a light-green
+                        // pill. The negative margin cancels the horizontal
+                        // padding, so the pill has room without shifting any
+                        // label from where it sits today.
+                        'flex items-center gap-6 py-3 px-3 -mx-3 rounded-lg transition-colors',
                         {
-                          'text-primary font-bold': isActive,
+                          'text-primary font-bold bg-[#E9F7EE]': isActive,
                           'text-tertiary hover:text-primary hover:font-bold':
                             !isActive,
                           'pointer-events-none opacity-50': item.disabled,

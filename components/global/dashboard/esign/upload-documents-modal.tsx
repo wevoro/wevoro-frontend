@@ -16,19 +16,21 @@ import { formatFileSize } from './format';
 export const MAX_DOCUMENTS_PER_ROLE = 10;
 export const MAX_ESIGN_UPLOAD_MB = 10;
 
-const ACCEPTED_EXTENSIONS = ['.pdf', '.doc', '.docx'];
+// PDF only — the signature is stamped with pdf-lib, which cannot open a Word
+// file, so a .docx was accepted here and then signed into nothing.
+const ACCEPTED_EXTENSIONS = ['.pdf'];
 
 // SCRUM-117: shared with the replace modal so a file refused here is refused
 // there for exactly the same stated reason. Returns null when the file is fine.
 export const validateEsignFile = (file: File): string | null => {
   const extension = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
   if (!ACCEPTED_EXTENSIONS.includes(extension)) {
-    return 'Only PDF and Word documents are accepted (.pdf, .doc, .docx).';
+    return 'Only PDF files are accepted (.pdf).';
   }
   if (file.size > MAX_ESIGN_UPLOAD_MB * 1024 * 1024) {
     return `This file is ${formatFileSize(
       file.size
-    )} — the maximum size is ${MAX_ESIGN_UPLOAD_MB} MB. Please upload a smaller PDF or DOCX.`;
+    )} — the maximum size is ${MAX_ESIGN_UPLOAD_MB} MB. Please upload a smaller PDF.`;
   }
   return null;
 };
@@ -375,7 +377,7 @@ export default function UploadDocumentsModal({
             ref={fileInputRef}
             type='file'
             multiple
-            accept='.pdf,.doc,.docx'
+            accept='.pdf'
             onChange={handleFilesSelected}
             className='hidden'
           />
@@ -399,7 +401,7 @@ export default function UploadDocumentsModal({
               >
                 <Upload className='h-5 w-5 text-[#5E6864]' />
                 <span className='text-sm text-[#5E6864]'>
-                  Drag a file here or choose another · PDF or DOCX, up to{' '}
+                  Drag a file here or choose another · PDF, up to{' '}
                   {MAX_ESIGN_UPLOAD_MB} MB
                 </span>
               </button>

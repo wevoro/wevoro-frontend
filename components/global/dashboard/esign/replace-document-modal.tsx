@@ -209,7 +209,7 @@ export default function ReplaceDocumentModal({
         <input
           ref={fileInputRef}
           type='file'
-          accept='.pdf,.doc,.docx'
+          accept='.pdf'
           onChange={handleFileSelected}
           className='hidden'
         />

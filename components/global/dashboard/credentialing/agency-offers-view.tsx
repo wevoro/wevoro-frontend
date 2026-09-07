@@ -143,6 +143,19 @@ const AgencyOffersView: React.FC = () => {
               entry={e}
               profileHref={`/partner/pros/${e.partyId}`}
               profileLabel='View Caregiver Profile'
+              // SCRUM-119 AC #5: a paid packet re-downloads for free, so the
+              // action has to still be here. Without it a Received caregiver
+              // had no route back to their files at all — the entitlement was
+              // real but unreachable.
+              extraAction={
+                <DownloadPackageButton
+                  caregiverId={e.partyId}
+                  caregiverName={e.name}
+                  onDownloaded={() => refetch()}
+                  onPaymentRequired={() => setDocsFor(e)}
+                  className='h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 text-sm font-semibold'
+                />
+              }
             />
           ))}
         </div>

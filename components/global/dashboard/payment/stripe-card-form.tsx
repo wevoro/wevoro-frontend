@@ -99,6 +99,25 @@ const StripeCardForm: React.FC<StripeCardFormProps> = ({
     [publishableKey]
   );
 
+  // Elements re-initialises whenever `options` is a new object, which tore the
+  // card form down and rebuilt it on every parent render — visible as the form
+  // flashing back to a skeleton. Memoised so it changes only with the secret.
+  const elementsOptions = useMemo(
+    () => ({
+      clientSecret,
+      appearance: {
+        theme: 'stripe' as const,
+        variables: {
+          colorPrimary: '#008000',
+          colorText: '#1C1C1C',
+          borderRadius: '8px',
+          fontFamily: 'Poppins, system-ui, sans-serif',
+        },
+      },
+    }),
+    [clientSecret]
+  );
+
   if (!stripePromise || !clientSecret) {
     return (
       <p className='rounded-lg bg-[#FDF4E3] px-4 py-3 text-[13px] text-[#8A5D06]'>
@@ -108,21 +127,7 @@ const StripeCardForm: React.FC<StripeCardFormProps> = ({
   }
 
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret,
-        appearance: {
-          theme: 'stripe',
-          variables: {
-            colorPrimary: '#008000',
-            colorText: '#1C1C1C',
-            borderRadius: '8px',
-            fontFamily: 'Poppins, system-ui, sans-serif',
-          },
-        },
-      }}
-    >
+    <Elements stripe={stripePromise} options={elementsOptions}>
       <CardFields {...rest} />
     </Elements>
   );

@@ -47,31 +47,41 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
         onPaymentRequired={() => setDocsOpen(true)}
       />
 
-      <PacketDocumentsModal
-        open={docsOpen}
-        onOpenChange={setDocsOpen}
-        caregiverId={caregiverId}
-        caregiverName={caregiverName}
-        refreshKey={paidTick}
-        onUnlock={() => {
-          setPayOpen(true);
-          setDocsOpen(false);
-        }}
-      />
+      {/* Only one dialog is mounted at a time. Keeping both mounted meant the
+          documents modal was still playing its exit animation while the gate
+          played its entrance, so the payment card appeared to flash in and out
+          before settling. */}
+      {docsOpen && (
+        <PacketDocumentsModal
+          open
+          onOpenChange={setDocsOpen}
+          caregiverId={caregiverId}
+          caregiverName={caregiverName}
+          refreshKey={paidTick}
+          onUnlock={() => {
+            // Close first, then open the gate on the next frame, so the two
+            // dialogs never overlap.
+            setDocsOpen(false);
+            requestAnimationFrame(() => setPayOpen(true));
+          }}
+        />
+      )}
 
-      <PaymentGateModal
-        open={payOpen}
-        onOpenChange={setPayOpen}
-        caregiverId={caregiverId}
-        caregiverName={caregiverName}
-        caregiverImage={caregiverImage}
-        caregiverRole={caregiverRole}
-        onPaid={async () => {
-          // Force the documents modal to refetch so it flips to unlocked.
-          setPaidTick((t) => t + 1);
-          onDownloaded?.();
-        }}
-      />
+      {payOpen && (
+        <PaymentGateModal
+          open
+          onOpenChange={setPayOpen}
+          caregiverId={caregiverId}
+          caregiverName={caregiverName}
+          caregiverImage={caregiverImage}
+          caregiverRole={caregiverRole}
+          onPaid={async () => {
+            // Force the documents modal to refetch so it flips to unlocked.
+            setPaidTick((t) => t + 1);
+            onDownloaded?.();
+          }}
+        />
+      )}
     </>
   );
 };

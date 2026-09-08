@@ -525,6 +525,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             clientSecret={checkout.clientSecret}
             publishableKey={checkout.publishableKey}
             priceCents={price}
+            email={email}
             onSubmitted={pay}
             onFailed={(m) => {
               setFailure(m);

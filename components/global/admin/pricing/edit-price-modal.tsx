@@ -106,6 +106,7 @@ const EditPriceModal: React.FC<EditPriceModalProps> = ({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
+            maxLength={300}
             placeholder='e.g. Standard rate increase for Q4'
             className='mt-1.5 w-full resize-none rounded-lg border border-[#DFE2E0] bg-white px-3.5 py-2.5 text-[14px] text-[#1C1C1C] outline-none placeholder:text-[#9CA3A0] focus:border-[#008000]'
           />

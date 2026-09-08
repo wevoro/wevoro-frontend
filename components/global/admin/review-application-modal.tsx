@@ -215,12 +215,35 @@ export function ReviewApplicationModal({
   data,
   from,
 }: any) {
+  // The dialog is used uncontrolled everywhere (columns.tsx passes only `data`
+  // and a trigger), but we need to know whether it is open to decide which
+  // `data` changes are safe to adopt — so track it here and still honour a
+  // controlled `open` if a caller ever passes one.
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : uncontrolledOpen;
+  const handleOpenChange = (next: boolean) => {
+    if (!isControlled) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
+
   const [localData, setLocalData] = useState(data);
 
   // Keep localData in sync when the data prop changes — including a STATUS change
   // after an Approve/Reject refetch, not only a different _id. Without the status
   // check the header kept showing Approve/Reject after the admin already approved.
-  if (data?._id !== localData?._id || data?.status !== localData?.status) {
+  //
+  // But ONLY adopt a different record while the dialog is CLOSED. This modal is
+  // mounted inside the table row cell, so after a decision the list refetches,
+  // re-sorts by updatedAt, and the row index we live in comes to hold a
+  // different agency. Blindly following the prop repointed the open dialog at
+  // an unrelated company — with Edit / Block / Remove still on screen and armed
+  // against it. While open we accept only a status refresh of the SAME record.
+  const sameRecord = data?._id === localData?._id;
+  if (
+    (!isOpen && !sameRecord) ||
+    (sameRecord && data?.status !== localData?.status)
+  ) {
     setLocalData(data);
   }
 
@@ -250,7 +273,7 @@ export function ReviewApplicationModal({
     localData?.professionalInfo?.experience?.[0]?.jobTitle ?? '';
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='max-w-full sm:max-w-[852px] p-4 sm:p-8'>
         <DialogHeader className='py-3'>
@@ -446,7 +469,10 @@ export function ReviewApplicationModal({
                           </span>
                         )}
                         <a
-                          href='https://dch.georgia.gov/hfrd'
+                          // /hfrd is a 404. This is the state's actual "Find a
+                          // Licensed Facility" tool — the lookup SCRUM-106
+                          // recommended the admin search by hand.
+                          href='https://dch.georgia.gov/gamap2carer-find-facility'
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-primary text-xs underline underline-offset-2 inline-flex items-center gap-1'

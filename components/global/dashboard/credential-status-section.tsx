@@ -128,14 +128,16 @@ const CredentialStatusSection: React.FC = () => {
                       {isPca ? 'PCA Certifications' : 'CNA Certification'}
                     </h3>
                     <div className='grid gap-3'>
-                      {isPca ? (
-                        <>
-                          {card('Written Exam (GACCP)')}
-                          {card('RN / LPN sign-off')}
-                        </>
-                      ) : (
-                        card('CNA Certification')
-                      )}
+                      {/* The PCA track is meant to carry TWO documents (the
+                          written exam and the RN/LPN sign-off), but nothing
+                          stores them separately yet — there is a single
+                          'certifications' document, and rendering it under both
+                          labels showed one upload as two independently
+                          "Confirmed" credentials. That asserted a sign-off the
+                          caregiver never submitted, so show the one document
+                          that actually exists until the two-document model is
+                          built end to end. */}
+                      {card(isPca ? 'PCA Certification' : 'CNA Certification')}
                     </div>
                   </div>
                 );

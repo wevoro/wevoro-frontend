@@ -151,6 +151,11 @@ export default function AdminAlertModal({
             ? 'Approving application?'
             : 'Rejecting application?';
 
+  // The approve/reject copy was hardcoded to "Caregiver", so an admin deciding
+  // an AGENCY application was told they were approving a caregiver. The record
+  // already carries the role, so name the right thing.
+  const subject = data?.role === 'partner' ? 'Agency' : 'Caregiver';
+
   const description =
     alertType === 'block'
       ? 'You are about to block the user from logging to his account. The user will be notified through his registered email that his account has been blocked by the admin. <strong>Would you like to proceed?</strong>'
@@ -159,9 +164,9 @@ export default function AdminAlertModal({
         : alertType === 'remove'
           ? 'You are about to remove the user from the platform. The user will be notified through his registered email that his account has been deleted by the admin. <strong>Would you like to proceed?</strong>'
           : alertType === 'approve'
-            ? 'You are about to approve the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
+            ? `You are about to approve the ${subject} application. The ${subject} will be notified by your response. <strong>Would you like to proceed?</strong>`
             : alertType === 'reject'
-              ? 'You are about to reject the Caregiver application. The Caregiver will be notified by your response. <strong>Would you like to proceed?</strong>'
+              ? `You are about to reject the ${subject} application. The ${subject} will be notified by your response. <strong>Would you like to proceed?</strong>`
               : '';
 
   const placeholder =

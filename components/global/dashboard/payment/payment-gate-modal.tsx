@@ -504,7 +504,21 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
 
       <p className='mt-4 text-[13.5px] text-[#1C1C1C]'>Card information</p>
 
-      {checkout?.clientSecret && checkout?.publishableKey ? (
+      {/* Three different card UIs used to flash past in sequence: the inert
+          placeholder rendered first because `checkout` was still null, then
+          Stripe's own skeleton, then the real form. The placeholder is only
+          correct when Stripe genuinely is not configured, so while the checkout
+          is still loading this shows one steady skeleton instead. */}
+      {!checkout ? (
+        <div className='mt-1.5 animate-pulse space-y-2.5' aria-busy='true'>
+          <div className='h-[46px] rounded-lg bg-[#F2F4F3]' />
+          <div className='grid grid-cols-2 gap-2.5'>
+            <div className='h-[46px] rounded-lg bg-[#F2F4F3]' />
+            <div className='h-[46px] rounded-lg bg-[#F2F4F3]' />
+          </div>
+          <div className='h-12 rounded-xl bg-[#E8EDEA]' />
+        </div>
+      ) : checkout.clientSecret && checkout.publishableKey ? (
         // Stripe's own iframe. Card numbers never enter this page's DOM.
         <div className='mt-1.5'>
           <StripeCardForm

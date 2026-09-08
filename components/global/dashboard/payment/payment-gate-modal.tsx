@@ -37,6 +37,10 @@ const money = (cents?: number | null) =>
 
 const firstName = (full?: string) => (full || '').trim().split(/\s+/)[0] || 'this caregiver';
 
+/** " · 3 files" / " · 1 file" / "" — a packet of one should not read "1 files". */
+const fileLine = (n?: number | null) =>
+  n ? ` · ${n} ${n === 1 ? 'file' : 'files'}` : '';
+
 interface PaymentGateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -300,7 +304,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
               <p className='text-[14px] font-semibold text-[#1C1C1C]'>Credential packet</p>
               <p className='truncate text-[12.5px] text-[#6C6C6C]'>
                 {name}
-                {packet?.fileCount ? ` · ${packet.fileCount} files` : ''}
+                {fileLine(packet?.fileCount)}
               </p>
             </div>
             <div className='flex shrink-0 items-center gap-2'>
@@ -468,7 +472,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           <p className='text-[15px] font-semibold text-[#1C1C1C]'>Credential packet</p>
           <p className='truncate text-[13px] text-[#6C6C6C]'>
             {name}
-            {packet?.fileCount ? ` · ${packet.fileCount} files` : ''}
+            {fileLine(packet?.fileCount)}
           </p>
         </div>
         <div className='shrink-0 text-right'>

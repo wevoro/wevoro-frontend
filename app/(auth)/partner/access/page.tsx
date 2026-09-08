@@ -103,7 +103,15 @@ export default function PartnerAccessPage() {
           </div>
 
           {step === 'email' ? (
-            <form onSubmit={sendCode} className="flex flex-col gap-4">
+            // Distinct keys matter here. Both forms sit at the same position,
+            // so React reconciles their children BY INDEX: the "Use a different
+            // email" button (a <button>) lined up with this form's submit
+            // button (also a <button>), so React reused that DOM node and only
+            // flipped type="button" to type="submit". The node you had just
+            // clicked then submitted this form, firing sendCode and bouncing
+            // straight back to the code step. Separate keys force a full
+            // remount instead of reusing anything.
+            <form key="email-step" onSubmit={sendCode} className="flex flex-col gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   Company Email
@@ -159,7 +167,7 @@ export default function PartnerAccessPage() {
               )}
             </form>
           ) : (
-            <form onSubmit={verify} className="flex flex-col gap-4">
+            <form key="code-step" onSubmit={verify} className="flex flex-col gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">
                   6-digit code
@@ -186,6 +194,9 @@ export default function PartnerAccessPage() {
                 onClick={() => {
                   setStep('email');
                   setCode('');
+                  // "Use a different email" should not leave the old one in the
+                  // box for you to delete.
+                  setEmail('');
                 }}
                 className="text-sm text-gray-500 underline mx-auto"
               >

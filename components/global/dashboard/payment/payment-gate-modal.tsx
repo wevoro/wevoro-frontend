@@ -9,6 +9,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  MapPin,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -96,6 +97,12 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
 
   const name = packet?.caregiverName || caregiverName || 'This caregiver';
   const price = checkout?.priceCents ?? packet?.priceCents;
+  // Prefer what the server knows; the props are only a fallback for callers
+  // that already have the caregiver loaded.
+  const avatar = packet?.caregiverImage || caregiverImage;
+  const role = packet?.caregiverRole || caregiverRole;
+  const location = packet?.caregiverLocation || caregiverLocation;
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   /** Load the price and open (or resume) the purchase. */
   const start = useCallback(async () => {
@@ -425,12 +432,17 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   return (
     <Shell wide>
       <div className='flex flex-col items-center text-center'>
-        {caregiverImage ? (
+        {/* The server supplies the photo, role and city, so the card is
+            complete no matter which surface opened the gate. `alt=""` matters:
+            a broken avatar URL was rendering the caregiver's name as alt text,
+            so the name appeared twice. */}
+        {avatar && !avatarFailed ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={caregiverImage}
-            alt={name}
-            className='size-[104px] rounded-full object-cover'
+            src={avatar}
+            alt=''
+            onError={() => setAvatarFailed(true)}
+            className='size-[104px] rounded-full object-cover ring-4 ring-white'
           />
         ) : (
           <div className='flex size-[104px] items-center justify-center rounded-full bg-[#F2F4F3] text-[30px] font-semibold text-[#6C6C6C]'>
@@ -438,13 +450,16 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           </div>
         )}
         <h2 className='mt-4 text-[26px] font-bold text-[#1C1C1C]'>{name}</h2>
-        {caregiverRole && (
+        {role && (
           <span className='mt-2 rounded-full bg-[#DDF3E4] px-3.5 py-1 text-[13px] font-medium text-[#046A22]'>
-            {caregiverRole}
+            {role}
           </span>
         )}
-        {caregiverLocation && (
-          <p className='mt-2 text-[13.5px] text-[#6C6C6C]'>{caregiverLocation}</p>
+        {location && (
+          <p className='mt-2 flex items-center gap-1.5 text-[13.5px] text-[#6C6C6C]'>
+            <MapPin className='size-4' />
+            {location}
+          </p>
         )}
       </div>
 

@@ -194,7 +194,7 @@ const PricingPage = () => {
                 {['Old price', 'New price', 'Changed by', 'Date', 'Reason'].map((h) => (
                   <th
                     key={h}
-                    className='px-6 py-3.5 text-left text-[13px] font-medium text-[#6C6C6C]'
+                    className='whitespace-nowrap px-6 py-3.5 text-left text-[13px] font-medium text-[#6C6C6C]'
                   >
                     {h}
                   </th>
@@ -218,10 +218,15 @@ const PricingPage = () => {
                       {money(h.newPriceCents)}
                     </td>
                     <td className='px-6 py-4 text-[14px] text-[#1C1C1C]'>{h.changedByName}</td>
-                    <td className='px-6 py-4 text-[14px] text-[#1C1C1C]'>
+                    <td className='whitespace-nowrap px-6 py-4 text-[14px] text-[#1C1C1C]'>
                       {shortDate(h.createdAt)}
                     </td>
-                    <td className='px-6 py-4 text-[14px] text-[#6C6C6C]'>{h.reason || '—'}</td>
+                    <td
+                      className='max-w-[320px] break-words px-6 py-4 text-[14px] text-[#6C6C6C]'
+                      title={h.reason || undefined}
+                    >
+                      {h.reason || '—'}
+                    </td>
                   </tr>
                 ))
               )}
@@ -285,7 +290,7 @@ const PricingPage = () => {
                 {['Agency', 'Caregiver', 'Amount', 'Status', 'Date'].map((h) => (
                   <th
                     key={h}
-                    className='px-6 py-3.5 text-left text-[13px] font-medium text-[#6C6C6C]'
+                    className='whitespace-nowrap px-6 py-3.5 text-left text-[13px] font-medium text-[#6C6C6C]'
                   >
                     {h}
                   </th>

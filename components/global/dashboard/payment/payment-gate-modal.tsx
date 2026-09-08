@@ -240,8 +240,12 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
     wide,
   }) => (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* The card form grows with Stripe's payment methods and can easily be
+          taller than a laptop screen. Without a height cap the dialog is
+          centred with translate-y(-50%), so it overflows off the top AND the
+          bottom with nothing to scroll — the pay button becomes unreachable. */}
       <DialogContent
-        className={`${wide ? 'max-w-[560px]' : 'max-w-[520px]'} border-0 bg-transparent p-0 shadow-none`}
+        className={`${wide ? 'max-w-[560px]' : 'max-w-[520px]'} max-h-[92vh] overflow-y-auto overscroll-contain border-0 bg-transparent p-0 shadow-none`}
       >
         <Wordmark />
         <div className='rounded-2xl bg-white p-8 shadow-sm'>{children}</div>

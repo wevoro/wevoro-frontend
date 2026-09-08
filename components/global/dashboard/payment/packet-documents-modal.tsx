@@ -120,7 +120,10 @@ const PacketDocumentsModal: React.FC<PacketDocumentsModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-[640px] gap-0 p-0'>
+      {/* Same reason as the payment gate: a caregiver with many credentials
+          makes this taller than the viewport, and a centred dialog with no cap
+          overflows off both edges with no way to reach the button. */}
+      <DialogContent className='max-h-[92vh] max-w-[640px] gap-0 overflow-y-auto overscroll-contain p-0'>
         <div className='px-6 pt-6'>
           <h2 className='text-[21px] font-bold text-[#1C1C1C]'>{name}&apos;s documents</h2>
           <p className='mt-1 text-[13.5px] text-[#6C6C6C]'>

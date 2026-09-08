@@ -449,7 +449,10 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             className='size-[104px] rounded-full object-cover ring-4 ring-white'
           />
         ) : (
-          <div className='flex size-[104px] items-center justify-center rounded-full bg-[#F2F4F3] text-[30px] font-semibold text-[#6C6C6C]'>
+          // The design has a photo here. When there is none, a flat grey disc
+          // reads like a loading failure — this is tinted to the brand and
+          // ringed like the photo would be, so it looks deliberate.
+          <div className='flex size-[104px] items-center justify-center rounded-full bg-gradient-to-b from-[#EAF7EE] to-[#D9F0E1] text-[34px] font-semibold text-[#046A22] ring-4 ring-white'>
             {name.charAt(0).toUpperCase()}
           </div>
         )}

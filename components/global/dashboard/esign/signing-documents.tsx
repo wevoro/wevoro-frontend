@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Info, Plus, Upload } from 'lucide-react';
+import { Eye, Info, Plus, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import DocumentViewer from '@/components/global/dashboard/document-viewer';
 import UploadDocumentsModal from './upload-documents-modal';
 import ReplaceDocumentModal from './replace-document-modal';
 import RemoveDocumentDialog from './remove-document-dialog';
@@ -257,6 +258,29 @@ const GroupCard = ({
                   </p>
                 </div>
                 <div className='flex shrink-0 items-center gap-3'>
+                  {/* An agency could upload a document and then never see it
+                      again — only replace or remove it. Reviewing your own
+                      upload for accuracy is the same thing caregivers can
+                      already do with their credentials. An icon rather than a
+                      third text link, so the row does not turn into a wall of
+                      words. */}
+                  <DocumentViewer
+                    documents={{
+                      _id: document._id,
+                      url: document.fileUrl,
+                      title: document.fileName,
+                    }}
+                    title={document.fileName}
+                  >
+                    <button
+                      type='button'
+                      aria-label={`Preview ${document.fileName}`}
+                      title='Preview'
+                      className='flex size-8 items-center justify-center rounded-lg text-[#5E6864] transition-colors hover:bg-white hover:text-[#1C1C1C]'
+                    >
+                      <Eye className='size-4' />
+                    </button>
+                  </DocumentViewer>
                   <button
                     type='button'
                     onClick={() => onReplace(document)}

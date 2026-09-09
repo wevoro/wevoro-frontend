@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DownloadPackageButton, {
   downloadCredentialPacket,
 } from '@/components/global/dashboard/download-package-button';
@@ -36,6 +37,28 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
   const [docsOpen, setDocsOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [paidTick, setPaidTick] = useState(0);
+  const [resume, setResume] = useState<
+    { transactionId: string; outcome: 'success' | 'cancelled' } | null
+  >(null);
+
+  const router = useRouter();
+  const params = useSearchParams();
+
+  /**
+   * Stripe's hosted checkout sends the agency back to this profile with
+   * ?payment=success|cancelled&tx=<id>. Reopen the gate on the matching screen
+   * and strip the parameters, so a refresh does not replay the return.
+   */
+  useEffect(() => {
+    const outcome = params.get('payment');
+    const tx = params.get('tx');
+    if (!outcome || !tx) return;
+    if (outcome !== 'success' && outcome !== 'cancelled') return;
+
+    setResume({ transactionId: tx, outcome });
+    setPayOpen(true);
+    router.replace(window.location.pathname, { scroll: false });
+  }, [params, router]);
 
   return (
     <>
@@ -72,7 +95,11 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
       {payOpen && (
         <PaymentGateModal
           open
-          onOpenChange={setPayOpen}
+          onOpenChange={(v) => {
+            setPayOpen(v);
+            if (!v) setResume(null);
+          }}
+          resume={resume}
           caregiverId={caregiverId}
           caregiverName={caregiverName}
           caregiverImage={caregiverImage}

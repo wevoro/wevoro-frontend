@@ -30,7 +30,20 @@ const shortDate = (d?: string | null) =>
       })
     : '—';
 
-/** Paid / Pending / Failed, as a dot + label chip. */
+/**
+ * The ledger reads in Stripe's words — Success, Incomplete, Fail — so a founder
+ * comparing this table against the Stripe dashboard is looking at one
+ * vocabulary, not two. "Pending" was the worst of them: in Stripe it means an
+ * abandoned checkout, but the word suggests something still on its way.
+ *
+ * The stored values stay `paid` / `pending` / `failed`; this is display only.
+ */
+export const TX_STATUS_LABEL: Record<string, string> = {
+  paid: 'Success',
+  pending: 'Incomplete',
+  failed: 'Fail',
+};
+
 const StatusChip: React.FC<{ status: string }> = ({ status }) => {
   const styles: Record<string, string> = {
     paid: 'bg-[#E9F7EE] text-[#046A22]',
@@ -43,7 +56,7 @@ const StatusChip: React.FC<{ status: string }> = ({ status }) => {
     failed: 'bg-[#A72019]',
   };
   const key = (status || '').toLowerCase();
-  const label = key ? key[0].toUpperCase() + key.slice(1) : '—';
+  const label = TX_STATUS_LABEL[key] || (key ? key[0].toUpperCase() + key.slice(1) : '—');
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium ${
@@ -258,9 +271,9 @@ const PricingPage = () => {
                 className='appearance-none rounded-lg border border-[#DFE2E0] bg-white py-2 pl-3 pr-8 text-[13.5px] text-[#1C1C1C] outline-none'
               >
                 <option value=''>Status</option>
-                <option value='paid'>Paid</option>
-                <option value='pending'>Pending</option>
-                <option value='failed'>Failed</option>
+                <option value='paid'>Success</option>
+                <option value='pending'>Incomplete</option>
+                <option value='failed'>Fail</option>
               </select>
               <ChevronDown className='pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[#6C6C6C]' />
             </div>

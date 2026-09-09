@@ -8,6 +8,13 @@ import type { CredentialStatus } from '@/lib/credential-config';
 
 interface AgencyCredentialStatusProps {
   userId: string;
+  /**
+   * SCRUM-110: the certification credential is role-driven — a PCA's card must
+   * not be labelled "CNA Certificate". The caregiver's own section reads the
+   * role off its user context; an agency is looking at somebody else, so the
+   * page has to hand it down.
+   */
+  caregiverRole?: string;
 }
 
 /**
@@ -22,7 +29,9 @@ interface AgencyCredentialStatusProps {
  */
 const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
   userId,
+  caregiverRole,
 }) => {
+  const isPca = caregiverRole === 'PCA';
   const [collapsed, setCollapsed] = useState(false);
   const [credentials, setCredentials] = useState<CredentialStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,14 +117,31 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
 
         {!collapsed && (
           <div className='grid gap-4'>
-            {shownCredentials.map((cred: CredentialStatus, idx: number) => (
-              <CredentialStatusCard
-                key={cred.key}
-                credential={cred}
-                index={idx}
-                readOnly
-              />
-            ))}
+            {shownCredentials.map((cred: CredentialStatus, idx: number) => {
+              // The same title overrides the caregiver's own section applies,
+              // so the two views read identically (SCRUM-90 parity). The
+              // certification is named for the caregiver's own track — without
+              // this a PCA's card was labelled "CNA Certificate" to every
+              // agency — and driver_license carries the design's wording.
+              const titleOverride =
+                cred.key === 'certifications'
+                  ? isPca
+                    ? 'PCA Certification'
+                    : 'CNA Certification'
+                  : cred.key === 'driver_license'
+                    ? 'Driving License'
+                    : undefined;
+
+              return (
+                <CredentialStatusCard
+                  key={cred.key}
+                  credential={cred}
+                  index={idx}
+                  titleOverride={titleOverride}
+                  readOnly
+                />
+              );
+            })}
           </div>
         )}
       </div>

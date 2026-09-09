@@ -52,7 +52,7 @@ export default function Hero() {
                 Build Your Profile Free <MoveUpRight className='size-4' />
               </Link>
               <Link
-                href='/partner/signup'
+                href='/partner/access'
                 className={cn(
                   'inline-flex h-[50px] items-center justify-center rounded-[14px] border px-6 text-sm font-semibold text-tertiary transition-colors hover:bg-[#f4f9f6]',
                   HAIRLINE

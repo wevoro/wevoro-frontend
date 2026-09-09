@@ -35,8 +35,12 @@ export const REQUIRED_CREDENTIALS: RequiredCredential[] = [
     documentType: 'auto_insurance',
   },
   {
+    // SCRUM-110: the admin review card calls this "CPR & First Aid"
+    // (admin-credentials.tsx) and the admin view is the source of truth for
+    // credential naming, so the caregiver and agency cards use the same words.
+    // "CPR Test" understated it — the credential covers first aid too.
     key: 'cpr_test',
-    label: 'CPR Test',
+    label: 'CPR & First Aid',
     category: 'medical',
     documentType: 'cpr_test',
   },

@@ -26,7 +26,7 @@ export default function FinalCta() {
             <MoveRight className='size-4 shrink-0' />
           </Link>
           <Link
-            href='/partner/signup'
+            href='/partner/access'
             className={cn(
               'inline-flex min-h-[50px] w-full items-center justify-center gap-1 rounded-[14px] border px-6 py-2 text-center text-sm font-semibold text-tertiary transition-colors hover:bg-[#f4f9f6] sm:w-auto',
               HAIRLINE

@@ -103,6 +103,9 @@ const PricingPage = () => {
       const params = new URLSearchParams({ page: String(page), limit: '10' });
       if (search.trim()) params.set('search', search.trim());
       if (status) params.set('status', status);
+      // Sorting belongs on the server: the response is one page of ten rows, so
+      // re-ordering it here only shuffled the page you were already looking at.
+      if (sort) params.set('sort', sort);
       const res = await fetch(`/api/admin/pricing?${params.toString()}`);
       const json = await res.json();
       if (!res.ok || json?.status !== 200) {
@@ -115,7 +118,7 @@ const PricingPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, search, status, sort]);
 
   // Debounced so typing in the search box does not fire a request per keystroke.
   useEffect(() => {
@@ -123,18 +126,8 @@ const PricingPage = () => {
     return () => clearTimeout(t);
   }, [load]);
 
-  const transactions = useMemo(() => {
-    const rows = data?.transactions ?? [];
-    if (sort === 'oldest') {
-      return [...rows].sort(
-        (a, b) => +new Date(a.transactionDate) - +new Date(b.transactionDate)
-      );
-    }
-    if (sort === 'amount') {
-      return [...rows].sort((a, b) => b.priceChargedCents - a.priceChargedCents);
-    }
-    return rows;
-  }, [data?.transactions, sort]);
+  // The server returns the page already sorted, so this is just the rows.
+  const transactions = data?.transactions ?? [];
 
   if (loading && !data) {
     return <div className='text-[14px] text-[#6C6C6C]'>Loading pricing…</div>;
@@ -274,7 +267,12 @@ const PricingPage = () => {
             <div className='relative'>
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value)}
+                onChange={(e) => {
+                  // Re-sorting reorders the whole ledger, so the old page
+                  // number points at unrelated rows — go back to the top.
+                  setPage(1);
+                  setSort(e.target.value);
+                }}
                 className='appearance-none rounded-lg border border-[#DFE2E0] bg-white py-2 pl-3 pr-8 text-[13.5px] text-[#1C1C1C] outline-none'
               >
                 <option value='newest'>Sort by</option>

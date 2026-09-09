@@ -39,7 +39,7 @@ export default function CtaBanner() {
               Join as Caregiver <MoveUpRight className='size-4' />
             </Link>
             <Link
-              href='/partner/signup'
+              href='/partner/access'
               className='inline-flex h-[50px] items-center justify-center rounded-[14px] border border-white/30 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10'
             >
               Join as Agency

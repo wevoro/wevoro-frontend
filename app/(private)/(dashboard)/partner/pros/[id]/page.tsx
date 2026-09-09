@@ -53,7 +53,10 @@ const ProFromPartner = async ({ params }: { params: { id: string } }) => {
       <Skills proUser={user} />
       {/* SCRUM-66: GCHEXS Flag (read-only for agencies) */}
       <GchexsSection isEditable={false} userData={user} />
-      <AgencyCredentialStatus userId={user._id} />
+      <AgencyCredentialStatus
+        userId={user._id}
+        caregiverRole={user?.professionalInfo?.role}
+      />
       {/* SCRUM-67 download, behind the SCRUM-119 paywall. The action carries
           its own modals so the paywall cannot be forgotten on a surface. */}
       <div className='flex justify-end'>

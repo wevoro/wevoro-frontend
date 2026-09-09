@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import DownloadPackageButton from '@/components/global/dashboard/download-package-button';
+import DownloadPackageButton, {
+  downloadCredentialPacket,
+} from '@/components/global/dashboard/download-package-button';
 import PacketDocumentsModal from './packet-documents-modal';
 import PaymentGateModal from './payment-gate-modal';
 
@@ -76,7 +78,15 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
           caregiverImage={caregiverImage}
           caregiverRole={caregiverRole}
           onPaid={async () => {
-            // Force the documents modal to refetch so it flips to unlocked.
+            // Actually fetch the packet. The success screen tells the agency
+            // "your download is starting automatically", so this has to run the
+            // real download — bumping the refresh counter alone delivered
+            // nothing, because the documents modal is unmounted by now and the
+            // profile surface passes no onDownloaded. If it throws, the gate
+            // shows delivery-failed and the purchase still stands.
+            await downloadCredentialPacket(caregiverId, caregiverName);
+            // Keep the unlocked state fresh for when the documents modal
+            // is reopened.
             setPaidTick((t) => t + 1);
             onDownloaded?.();
           }}

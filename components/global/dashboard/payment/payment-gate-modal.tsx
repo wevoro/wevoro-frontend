@@ -8,14 +8,13 @@ import {
   Download,
   Loader2,
   Lock,
-  Mail,
   MapPin,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import StripeCardForm from './stripe-card-form';
 
 /**
  * SCRUM-119 — the payment gate.
@@ -30,7 +29,14 @@ import StripeCardForm from './stripe-card-form';
  * criterion #7 — the agency must never think they are buying signatures.
  */
 
-type GateState = 'form' | 'processing' | 'success' | 'payment-failed' | 'delivery-failed';
+type GateState =
+  | 'form'
+  | 'redirecting'
+  | 'processing'
+  | 'success'
+  | 'incomplete'
+  | 'payment-failed'
+  | 'delivery-failed';
 
 const money = (cents?: number | null) =>
   cents === null || cents === undefined ? '—' : `$${(cents / 100).toFixed(2)}`;
@@ -51,6 +57,13 @@ interface PaymentGateModalProps {
   caregiverLocation?: string;
   /** Called after a confirmed payment so the caller can retry the download. */
   onPaid?: () => void | Promise<void>;
+  /**
+   * Set when the agency has just come back from Stripe's checkout page.
+   * 'success' means Stripe reported the payment taken — the gate still confirms
+   * that with our own server before unlocking anything. 'cancelled' means they
+   * left the page without paying.
+   */
+  resume?: { transactionId: string; outcome: 'success' | 'cancelled' } | null;
 }
 
 /** The Wevoro lockup that sits above the card on every state. */
@@ -91,13 +104,13 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   caregiverRole,
   caregiverLocation,
   onPaid,
+  resume,
 }) => {
   const [state, setState] = useState<GateState>('form');
   const [busy, setBusy] = useState(false);
   const [packet, setPacket] = useState<any>(null);
   const [checkout, setCheckout] = useState<any>(null);
   const [failure, setFailure] = useState('');
-  const [email, setEmail] = useState('');
 
   const name = packet?.caregiverName || caregiverName || 'This caregiver';
   const price = checkout?.priceCents ?? packet?.priceCents;
@@ -138,13 +151,76 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
     }
   }, [caregiverId]);
 
+  /**
+   * Ask our own server what Stripe says about this transaction, until it
+   * settles. Stripe's redirect is a hint, not proof — only the webhook (or our
+   * server asking Stripe directly) releases the packet.
+   */
+  const awaitConfirmation = useCallback(
+    async (transactionId: string) => {
+      const deadline = Date.now() + 40000;
+      while (Date.now() < deadline) {
+        const c = await fetch(`/api/payment/confirm/${transactionId}`, {
+          method: 'POST',
+        })
+          .then((r) => r.json())
+          .catch(() => null);
+
+        if (c?.data?.status === 'paid') return 'paid' as const;
+        if (c?.data?.status === 'failed') {
+          setFailure(c.data.failureMessage || 'The payment did not go through');
+          return 'failed' as const;
+        }
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+      return 'timeout' as const;
+    },
+    []
+  );
+
   useEffect(() => {
     if (!open) return;
-    setState('form');
     setFailure('');
     setCheckout(null);
+
+    // Coming back from Stripe's checkout page.
+    if (resume) {
+      if (resume.outcome === 'cancelled') {
+        setState('incomplete');
+        // Still load the packet so the summary card has a name and a price.
+        fetch(`/api/payment/packet/${caregiverId}`)
+          .then((r) => r.json())
+          .then((p) => setPacket(p?.data ?? null))
+          .catch(() => {});
+        return;
+      }
+      setState('processing');
+      (async () => {
+        const outcome = await awaitConfirmation(resume.transactionId);
+        const p = await fetch(`/api/payment/packet/${caregiverId}`)
+          .then((r) => r.json())
+          .catch(() => null);
+        setPacket(p?.data ?? null);
+        if (outcome === 'paid') {
+          await finishAsPaid();
+        } else if (outcome === 'failed') {
+          setState('payment-failed');
+        } else {
+          setFailure(
+            'Stripe has not confirmed this payment yet. Nothing further is needed from you — refresh in a minute.'
+          );
+          setState('incomplete');
+        }
+      })();
+      return;
+    }
+
+    setState('form');
     start();
-  }, [open, start]);
+    // finishAsPaid is stable enough for this effect; re-running on it would
+    // restart checkout every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, start, resume, caregiverId, awaitConfirmation]);
 
   /** Confirm the charge, then hand control back so the download can run. */
   const finishAsPaid = async () => {
@@ -181,31 +257,17 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         return;
       }
 
-      // Live Stripe. The charge is only ever trusted from the server side —
-      // either the webhook marks it paid, or /confirm asks Stripe directly.
-      // Neither path believes the browser.
-      setState('processing');
-      const deadline = Date.now() + 40000;
-      while (Date.now() < deadline) {
-        const c = await fetch(`/api/payment/confirm/${checkout.transactionId}`, {
-          method: 'POST',
-        }).then((r) => r.json());
-
-        if (c?.data?.status === 'paid') {
-          const p = await fetch(`/api/payment/packet/${caregiverId}`).then((r) => r.json());
-          setPacket(p?.data ?? packet);
-          await finishAsPaid();
-          return;
-        }
-        if (c?.data?.status === 'failed') {
-          setFailure(c.data.failureMessage || 'Card declined');
-          setState('payment-failed');
-          return;
-        }
-        await new Promise((r) => setTimeout(r, 2500));
+      // Live Stripe: hand the agency to Stripe's own checkout page rather than
+      // asking for card details inside our modal. A stripe.com address is the
+      // single strongest trust signal available at the moment of payment, and
+      // it is where agencies were hesitating.
+      if (!checkout.checkoutUrl) {
+        setFailure('Could not open the secure checkout page');
+        setState('payment-failed');
+        return;
       }
-      setFailure('We did not receive confirmation from the card issuer.');
-      setState('payment-failed');
+      setState('redirecting');
+      window.location.assign(checkout.checkoutUrl);
     } catch {
       setFailure('Payment could not be completed');
       setState('payment-failed');
@@ -265,6 +327,72 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   );
 
   // ---------------------------------------------------------------- processing
+  // --------------------------------------------------------------- redirecting
+  if (state === 'redirecting') {
+    return (
+      <Shell>
+        <div className='flex flex-col items-center text-center'>
+          <Loader2 className='size-10 animate-spin text-[#22B14C]' />
+          <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>
+            Taking you to secure checkout
+          </h2>
+          <p className='mt-3 max-w-[420px] text-[14px] leading-[22px] text-[#6C6C6C]'>
+            Your card details are entered on Stripe, not on WeVoro. You&apos;ll come straight
+            back here once the payment is done.
+          </p>
+        </div>
+      </Shell>
+    );
+  }
+
+  // ---------------------------------------------------------------- incomplete
+  // Stripe's own word for a checkout that was started and not finished. It is
+  // not a failure and nothing was charged, so it does not get the red screen —
+  // but the agency must be told plainly why the packet is still locked.
+  if (state === 'incomplete') {
+    return (
+      <Shell>
+        <div className='flex flex-col items-center text-center'>
+          <span className='flex size-14 items-center justify-center rounded-full bg-[#FDF4E3]'>
+            <AlertCircle className='size-7 text-[#8A5D06]' />
+          </span>
+          <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>
+            Payment not completed
+          </h2>
+          <p className='mt-3 max-w-[430px] text-[14px] leading-[22px] text-[#6C6C6C]'>
+            You left the checkout before it finished, so <b>you have not been charged</b> and{' '}
+            {firstName(name)}&apos;s documents are still locked. You can pick up where you
+            left off whenever you&apos;re ready.
+          </p>
+          {failure && (
+            <div className='mt-4 flex w-full items-center gap-2 rounded-lg bg-[#FDF4E3] px-3.5 py-2.5'>
+              <AlertCircle className='size-4 shrink-0 text-[#8A5D06]' />
+              <p className='text-left text-[13px] font-medium text-[#8A5D06]'>{failure}</p>
+            </div>
+          )}
+        </div>
+        <Button
+          onClick={() => {
+            setFailure('');
+            setState('form');
+            start();
+          }}
+          disabled={busy}
+          className='mt-5 h-12 w-full rounded-xl bg-[#008000] text-[15px] font-semibold text-white hover:bg-[#016b01]'
+        >
+          Resume payment
+        </Button>
+        <Button
+          onClick={() => onOpenChange(false)}
+          variant='outline'
+          className='mt-3 h-12 w-full rounded-xl border-[#DFE2E0] text-[15px] font-semibold text-[#1C1C1C]'
+        >
+          Not now
+        </Button>
+      </Shell>
+    );
+  }
+
   if (state === 'processing') {
     return (
       <Shell>
@@ -332,7 +460,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
 
         <div className='mt-4 flex items-center justify-between gap-3 rounded-lg bg-[#F4F6F5] px-4 py-3'>
           <p className='truncate text-[13px] text-[#6C6C6C]'>
-            Receipt sent to {email || 'your email'}
+            Stripe has emailed your receipt
           </p>
           <span className='shrink-0 text-[13px] font-semibold text-[#046A22]'>View receipt</span>
         </div>
@@ -490,52 +618,45 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
 
       <p className='mt-6 text-[15px] font-semibold text-[#1C1C1C]'>Pay with card</p>
 
-      <label htmlFor='pay-email' className='mt-3 block text-[13.5px] text-[#1C1C1C]'>
-        Email
-      </label>
-      <div className='mt-1.5 flex items-center gap-2.5 rounded-lg border border-[#DFE2E0] px-3.5 py-3'>
-        <Mail className='size-4 shrink-0 text-[#6C6C6C]' />
-        <input
-          id='pay-email'
-          type='email'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder='you@agency.com'
-          className='w-full bg-transparent text-[14px] text-[#1C1C1C] outline-none placeholder:text-[#9CA3A0]'
-        />
-      </div>
-
-      <p className='mt-4 text-[13.5px] text-[#1C1C1C]'>Card information</p>
-
-      {/* Three different card UIs used to flash past in sequence: the inert
-          placeholder rendered first because `checkout` was still null, then
-          Stripe's own skeleton, then the real form. The placeholder is only
-          correct when Stripe genuinely is not configured, so while the checkout
-          is still loading this shows one steady skeleton instead. */}
+      {/* Payment happens on Stripe's own hosted page rather than in this modal.
+          A card form embedded in a supplier's dialog is exactly where agencies
+          hesitate; a stripe.com address is the strongest trust signal available
+          at the moment of payment. Stripe collects the card and the receipt
+          email, so neither is asked for here. */}
       {!checkout ? (
-        <div className='mt-1.5 animate-pulse space-y-2.5' aria-busy='true'>
-          <div className='h-[46px] rounded-lg bg-[#F2F4F3]' />
-          <div className='grid grid-cols-2 gap-2.5'>
-            <div className='h-[46px] rounded-lg bg-[#F2F4F3]' />
-            <div className='h-[46px] rounded-lg bg-[#F2F4F3]' />
-          </div>
+        <div className='mt-3 animate-pulse space-y-2.5' aria-busy='true'>
+          <div className='h-[68px] rounded-xl bg-[#F2F4F3]' />
           <div className='h-12 rounded-xl bg-[#E8EDEA]' />
         </div>
-      ) : checkout.clientSecret && checkout.publishableKey ? (
-        // Stripe's own iframe. Card numbers never enter this page's DOM.
-        <div className='mt-1.5'>
-          <StripeCardForm
-            clientSecret={checkout.clientSecret}
-            publishableKey={checkout.publishableKey}
-            priceCents={price}
-            email={email}
-            onSubmitted={pay}
-            onFailed={(m) => {
-              setFailure(m);
-              setState('payment-failed');
-            }}
-          />
-        </div>
+      ) : checkout.checkoutUrl ? (
+        <>
+          <div className='mt-3 flex items-start gap-3 rounded-xl border border-[#DFE2E0] bg-[#F9FBFA] px-4 py-3.5'>
+            <ShieldCheck className='mt-0.5 size-5 shrink-0 text-[#046A22]' />
+            <div>
+              <p className='text-[14px] font-semibold text-[#1C1C1C]'>
+                You&apos;ll finish on Stripe
+              </p>
+              <p className='mt-0.5 text-[13px] leading-[19px] text-[#6C6C6C]'>
+                Card details are entered on Stripe&apos;s secure page, never on WeVoro. Your
+                receipt is emailed by Stripe, and we bring you straight back here.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={pay}
+            disabled={busy}
+            className='mt-5 h-12 w-full gap-2 rounded-xl bg-[#008000] text-[15px] font-semibold text-white hover:bg-[#016b01]'
+          >
+            <Lock className='size-4' />
+            {busy ? 'Opening secure checkout…' : `Pay ${money(price)} on Stripe`}
+          </Button>
+
+          <p className='mt-3 flex items-center justify-center gap-1.5 text-center text-[12px] text-[#6C6C6C]'>
+            <Lock className='size-3' />
+            Charged once · Re-downloads are always free
+          </p>
+        </>
       ) : (
         <>
           {/* No Stripe credentials on this environment — the fields are inert

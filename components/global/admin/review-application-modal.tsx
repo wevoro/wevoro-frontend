@@ -29,6 +29,7 @@ import AdminAlertModal from './admin-alert-modal';
 import PartnerPersonalInformation from '../dashboard/partner-personal-information';
 import { AdminEditUserModal } from './admin-edit-user-modal';
 import AdminCredentials from './admin-credentials';
+import AdminAgencyDocuments from './admin-agency-documents';
 import DownloadAuditTrail from './download-audit-trail';
 import { toast } from 'sonner';
 import {
@@ -522,6 +523,13 @@ export function ReviewApplicationModal({
                     link, then Approve or Reject above.
                   </p>
                 </div>
+              )}
+
+              {/* The agency's signing documents and what came back signed. Kept
+                  inside the agency record rather than a separate activity area,
+                  so everything about one agency reads in one place. */}
+              {from === 'partner' && localData?._id && (
+                <AdminAgencyDocuments agencyId={localData._id} />
               )}
 
               {/* Pro: Background Checks + Credentials */}

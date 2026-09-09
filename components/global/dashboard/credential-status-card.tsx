@@ -249,8 +249,12 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
             </div>
           )}
 
-          {/* Why it was not confirmed */}
-          {status === 'notConfirmed' && doc?.rejectionReason && (
+          {/* Why it was not confirmed. SCRUM-63 Scenario 5: this is feedback
+              between the admin and the caregiver, and agencies must not see it
+              — they get "Not confirmed" and nothing more, so they know the
+              caregiver has work to do without learning that a document looked
+              altered or the name did not match. `readOnly` is the agency view. */}
+          {!readOnly && status === 'notConfirmed' && doc?.rejectionReason && (
             <div className='mt-3 rounded-lg bg-[#FDECEC] px-3 py-2'>
               <p className='text-xs font-semibold text-[#E94435]'>In-correct Information</p>
               <p className='mt-0.5 text-xs text-[#E94435]'>{doc.rejectionReason}</p>

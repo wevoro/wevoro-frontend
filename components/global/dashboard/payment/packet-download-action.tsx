@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import DownloadPackageButton, {
   downloadCredentialPacket,
 } from '@/components/global/dashboard/download-package-button';
@@ -41,7 +41,6 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
     { transactionId: string; outcome: 'success' | 'cancelled' } | null
   >(null);
 
-  const router = useRouter();
   const params = useSearchParams();
 
   /**
@@ -57,8 +56,11 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
 
     setResume({ transactionId: tx, outcome });
     setPayOpen(true);
-    router.replace(window.location.pathname, { scroll: false });
-  }, [params, router]);
+    // history.replaceState, not router.replace: a router navigation re-renders
+    // this route and remounts the component, which threw away the state set two
+    // lines above and closed the dialog the agency had just been sent back to.
+    window.history.replaceState(null, '', window.location.pathname);
+  }, [params]);
 
   return (
     <>

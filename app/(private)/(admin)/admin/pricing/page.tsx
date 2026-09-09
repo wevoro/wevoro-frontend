@@ -221,11 +221,14 @@ const PricingPage = () => {
                     <td className='whitespace-nowrap px-6 py-4 text-[14px] text-[#1C1C1C]'>
                       {shortDate(h.createdAt)}
                     </td>
-                    <td
-                      className='max-w-[320px] break-words px-6 py-4 text-[14px] text-[#6C6C6C]'
-                      title={h.reason || undefined}
-                    >
-                      {h.reason || '—'}
+                    {/* New reasons are capped at 300 characters, but rows
+                        written before that cap are still long and the log is
+                        append-only, so they cannot be cleaned up. Clamp to two
+                        lines with an ellipsis; the full text is on hover. */}
+                    <td className='max-w-[340px] px-6 py-4 text-[14px] text-[#6C6C6C]'>
+                      <span className='line-clamp-2 break-words' title={h.reason || undefined}>
+                        {h.reason || '—'}
+                      </span>
                     </td>
                   </tr>
                 ))

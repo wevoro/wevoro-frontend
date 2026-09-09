@@ -41,9 +41,22 @@ const EditPriceModal: React.FC<EditPriceModalProps> = ({
   }, [open, currentPriceCents]);
 
   const save = async () => {
-    const value = Number(price);
-    if (!Number.isFinite(value) || value < 0) {
-      toast.error('Enter a valid price');
+    // An empty field is the trap here: Number('') is 0, which is finite and not
+    // negative, so the old guard let it straight through and the packet price
+    // was saved as $0.00 — every Stripe checkout then failed, because Stripe
+    // will not charge less than $0.50.
+    const raw = price.trim();
+    const value = Number(raw);
+    if (!raw || !Number.isFinite(value)) {
+      toast.error('Enter a price');
+      return;
+    }
+    if (value < 0.5) {
+      toast.error('Price must be at least $0.50');
+      return;
+    }
+    if (value > 10000) {
+      toast.error('Price looks too high — enter the amount in dollars');
       return;
     }
     setSaving(true);

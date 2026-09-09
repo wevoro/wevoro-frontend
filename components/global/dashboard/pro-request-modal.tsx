@@ -25,6 +25,7 @@ import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { MAX_UPLOAD_MB } from '@/utils/download';
 
 // Helper to extract filename from URL
 const getFilenameFromUrl = (url: string) => {
@@ -102,10 +103,14 @@ export function ProRequestModal({
   const handleFileChange = (docId: string, file: File | undefined) => {
     if (!file) return;
 
-    if (file.size > 3 * 1024 * 1024) {
-      return toast.error('File size should not exceed 3MB', {
-        position: 'top-center',
-      });
+    // SCRUM-97: unmodified phone photos run 3-8MB, so a 3MB cap made
+    // caregivers upload screenshots as a workaround. Share the one limit every
+    // other credential/document row already uses.
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      return toast.error(
+        `This file is ${(file.size / 1024 / 1024).toFixed(1)}MB. Please upload a file under ${MAX_UPLOAD_MB}MB.`,
+        { position: 'top-center' },
+      );
     }
 
     setUploadedFiles((prev) => {

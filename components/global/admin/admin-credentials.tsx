@@ -214,7 +214,7 @@ const META: Record<string, CredentialMeta> = {
     viewLabel: 'View source',
   },
   auto_insurance: {
-    title: 'Car Insurance',
+    title: 'Auto Insurance',
     fields: [
       { label: 'POLICY NUMBER', get: (d) => d.credentialIdNumber },
       { label: 'CARRIER', get: (d) => d.issuingOrganization },

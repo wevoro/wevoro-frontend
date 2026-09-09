@@ -1,11 +1,13 @@
 import moment from 'moment';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Share2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
 import React from 'react';
 import ProfileName from './profile-name';
-import CopyApplyLink from './copy-apply-link';
+import ShareProfileModal from './share-profile-modal';
+import { Button } from '@/components/ui/button';
+import { isSharingEnabled } from '@/lib/credentialing';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
   const personalInfo = user?.personalInfo;
@@ -68,14 +70,26 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
 
         </div>
       </div>
-      {!isProProfileFromPartner && !isPublicProPage && (
+      {/* SCRUM-64: the caregiver's own Profile tab carries a prominent Share
+          Profile button that opens the share modal (link + Copy Link + SMS +
+          Email). This used to be a bare copy field labelled "Copy Link for
+          Applying the Job" — scheduling-era copy that no longer describes what
+          the link does in the credentialing beta, and which skipped the modal
+          the ticket specifies. The modal itself already existed and was only
+          wired into the Offers tab. */}
+      {!isProProfileFromPartner && !isPublicProPage && isSharingEnabled() && (
         <div
           className={cn(
-            'flex flex-col gap-4 w-full lg:max-w-[561px]',
+            'flex flex-col items-start gap-4 w-full lg:max-w-[561px] lg:items-end',
             hasStatusPills && 'lg:mt-10',
           )}
         >
-          <CopyApplyLink link={shareLink} />
+          <ShareProfileModal shareLink={shareLink}>
+            <Button className='h-11 rounded-xl gap-2 font-semibold px-5'>
+              <Share2 className='size-4' />
+              Share Profile
+            </Button>
+          </ShareProfileModal>
         </div>
       )}
     </div>

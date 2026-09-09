@@ -102,7 +102,12 @@ export default function AdminAgencyDocuments({ agencyId }: { agencyId: string })
         const json = await res.json();
         if (cancelled) return;
         if (!res.ok || json?.status !== 200) {
-          setError(json?.message || 'Could not load the agency documents');
+          // Deliberately our own words. The backend's message here is HTTP
+          // boilerplate — an admin reading "Not Found" learns nothing about
+          // what to do.
+          setError(
+            "Couldn't load this agency's signing documents. Refresh to try again."
+          );
           return;
         }
         setData(json.data);

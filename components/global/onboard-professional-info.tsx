@@ -27,6 +27,7 @@ import {
 } from '@/lib/contexts';
 import { Button } from '../ui/button';
 import { AutoFillAlert } from './dashboard/autofill-alert';
+import { MAX_UPLOAD_MB } from '@/utils/download';
 
 const OnboardProfessionalInfo = forwardRef((props: any) => {
   const { from, userFromAdmin, onClose } = props;
@@ -819,10 +820,13 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                           const file =
                             typeof value === 'object' ? value?.[0] : null;
                           // console.log({ value });
+                          // SCRUM-97: same limit as every other credential
+                          // upload row — a phone photo of a certificate is
+                          // routinely larger than the old 3MB cap.
                           return (
                             !file ||
-                            file.size <= 3 * 1024 * 1024 ||
-                            'File size should be less than 3MB'
+                            file.size <= MAX_UPLOAD_MB * 1024 * 1024 ||
+                            `File size should be less than ${MAX_UPLOAD_MB}MB`
                           );
                         },
                       },

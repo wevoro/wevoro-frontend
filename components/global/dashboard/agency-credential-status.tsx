@@ -35,14 +35,18 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
     });
   }, [userId]);
 
-  // Show ALL uploaded credentials (verified, pending, rejected) — parity with
-  // the caregiver section.
-  const uploadedCredentials = (credentials ?? []).filter(
-    (c: CredentialStatus) => c.state !== 'not_uploaded'
-  );
-  const verifiedCount = uploadedCredentials.filter((c) => c.state === 'verified').length;
-  const pendingCount = uploadedCredentials.filter((c) => c.state === 'pending').length;
-  const rejectedCount = uploadedCredentials.filter((c) => c.state === 'rejected').length;
+  // SCRUM-63 Scenario 1 and 4: the agency sees ALL five required credentials,
+  // including the ones the caregiver has not uploaded — that is the deliberate
+  // Model C difference from the caregiver's own section, which lists only what
+  // has been uploaded. An agency deciding whether to hire needs to see that a
+  // TB Test is missing, not just be shown the four that exist. The card itself
+  // renders the not-uploaded state as a name plus a badge with no metadata and
+  // no View Credential action.
+  const shownCredentials = credentials ?? [];
+  const verifiedCount = shownCredentials.filter((c) => c.state === 'verified').length;
+  const pendingCount = shownCredentials.filter((c) => c.state === 'pending').length;
+  const rejectedCount = shownCredentials.filter((c) => c.state === 'rejected').length;
+  const missingCount = shownCredentials.filter((c) => c.state === 'not_uploaded').length;
 
   if (loading) {
     return (
@@ -54,8 +58,10 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
     );
   }
 
-  // Match caregiver behavior: nothing uploaded => render nothing.
-  if (uploadedCredentials.length === 0) return null;
+  // Only when the caregiver has no configured credentials at all (no role yet)
+  // is there nothing to show. A caregiver who has uploaded none of the five
+  // still renders five not-uploaded cards, per SCRUM-63 Scenario 1.
+  if (shownCredentials.length === 0) return null;
 
   return (
     // White background container matching Personal/Professional Information sections
@@ -86,6 +92,11 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
                   {rejectedCount} rejected
                 </span>
               )}
+              {missingCount > 0 && (
+                <span className='text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium'>
+                  {missingCount} not uploaded
+                </span>
+              )}
             </div>
           </div>
           {collapsed ? (
@@ -97,7 +108,7 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
 
         {!collapsed && (
           <div className='grid gap-4'>
-            {uploadedCredentials.map((cred: CredentialStatus, idx: number) => (
+            {shownCredentials.map((cred: CredentialStatus, idx: number) => (
               <CredentialStatusCard
                 key={cred.key}
                 credential={cred}

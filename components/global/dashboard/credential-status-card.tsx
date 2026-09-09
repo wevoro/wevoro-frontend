@@ -65,6 +65,7 @@ export type CardStatus =
   | 'expiresSoon'
   | 'expired'
   | 'notConfirmed'
+  | 'notUploaded'
   | 'pending';
 
 const STATUS_STYLE: Record<CardStatus, { text: string; cls: string }> = {
@@ -72,12 +73,16 @@ const STATUS_STYLE: Record<CardStatus, { text: string; cls: string }> = {
   expiresSoon: { text: 'Expires Soon', cls: 'bg-[#FCFFDD] text-[#FAB607]' },
   expired: { text: 'Expired', cls: 'bg-[#FDE8E8] text-[#E94435]' },
   notConfirmed: { text: 'Not confirmed', cls: 'bg-[#FDE8E8] text-[#E94435]' },
+  // SCRUM-63 Scenario 4: neutral grey, no urgency colour — the caregiver has
+  // work to do, but a missing document is not a failure state.
+  notUploaded: { text: 'Not Uploaded', cls: 'bg-[#F1F2F3] text-[#6C6C6C]' },
   pending: { text: 'Pending review', cls: 'bg-[#FCFFDD] text-[#FAB607]' },
 };
 
 /** Resolve the badge a credential should carry. Exported so the PCA group can tint itself. */
 export function resolveCardStatus(credential: CredentialStatus): CardStatus {
   const doc = credential.document;
+  if (credential.state === 'not_uploaded') return 'notUploaded';
   if (credential.state === 'rejected') return 'notConfirmed';
   if (credential.state !== 'verified') return 'pending';
   const exp = getExpirationInfo(doc?.credentialExpirationDate);
@@ -174,6 +179,12 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
   const noExpiry = doc?.hasNoExpiration || !exp.hasExpiration;
   const dash = !showCounts || noExpiry;
 
+  // SCRUM-63 Scenario 4: a credential the caregiver has not uploaded is name +
+  // badge only. There is no document, so an expiry countdown of dashes and a
+  // View Credential link pointing at "#" are both noise — and the link would
+  // read as an offer to open something that does not exist.
+  const isMissing = status === 'notUploaded';
+
   return (
     <div className='rounded-xl border border-[#DFE2E0] bg-white px-5 py-4'>
       <div className='flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6'>
@@ -188,12 +199,14 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
             >
               {badge.text}
             </span>
-            <span
-              title={isPublic ? 'Visible to agencies' : 'Private'}
-              className='text-[#6C6C6C]'
-            >
-              {isPublic ? <Globe className='size-4' /> : <Lock className='size-4' />}
-            </span>
+            {!isMissing && (
+              <span
+                title={isPublic ? 'Visible to agencies' : 'Private'}
+                className='text-[#6C6C6C]'
+              >
+                {isPublic ? <Globe className='size-4' /> : <Lock className='size-4' />}
+              </span>
+            )}
           </div>
 
           {(doc?.wevoroCredentialId || doc?.credentialIdNumber || extra) && (
@@ -252,6 +265,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
 
         {/* Right: countdown + action */}
         <div className='flex shrink-0 flex-wrap items-center gap-3'>
+          {!isMissing && (
           <div className='flex items-center gap-1.5'>
             <span className='text-xs text-[#6C6C6C]'>Expires On</span>
             {[
@@ -269,16 +283,19 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
               </React.Fragment>
             ))}
           </div>
+          )}
 
-          <a
-            href={doc?.url || '#'}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-[#B0BCB8] bg-white px-3.5 text-[13px] font-medium text-[#1C1C1C] transition-colors hover:bg-gray-50'
-          >
-            {labels.viewAction}
-            <MoveUpRight className='size-3.5' />
-          </a>
+          {!isMissing && (
+            <a
+              href={doc?.url || '#'}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-[#B0BCB8] bg-white px-3.5 text-[13px] font-medium text-[#1C1C1C] transition-colors hover:bg-gray-50'
+            >
+              {labels.viewAction}
+              <MoveUpRight className='size-3.5' />
+            </a>
+          )}
 
           {/* NOTE: the design shows only "View Credential" here, so the
               three-dot menu is hidden. Re-upload / remove are still reachable

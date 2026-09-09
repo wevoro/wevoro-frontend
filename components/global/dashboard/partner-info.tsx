@@ -1,5 +1,6 @@
 import React from 'react';
 import ProfileName from './profile-name';
+import { isCredentialingMode } from '@/lib/credentialing';
 import { CircleHelp, Star } from 'lucide-react';
 import {
   Tooltip,
@@ -59,7 +60,13 @@ const PartnerInfo = ({
             </div>
           )}
         </div>
-        {!isPartnerFromPro && (
+        {/* SCRUM-88: "Offers Sent" and "Jobs Conversion" count shift offers
+            and job placements — scheduling-era metrics. In the credentialing
+            beta there are no shifts, so they sit at the top of every agency
+            profile reading 11 offers and 0% conversion, which is both
+            meaningless and discouraging. Hidden with the rest of the
+            scheduling surfaces; they return when the flag goes off. */}
+        {!isPartnerFromPro && !isCredentialingMode() && (
           <Tracks
             offersSent={user?.offersSent}
             jobConversionPercentage={user?.jobConversionPercentage}

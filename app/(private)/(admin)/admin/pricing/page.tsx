@@ -38,7 +38,9 @@ const shortDate = (d?: string | null) =>
  *
  * The stored values stay `paid` / `pending` / `failed`; this is display only.
  */
-export const TX_STATUS_LABEL: Record<string, string> = {
+// Not exported: Next.js allows a page module to export only its own reserved
+// names, and an extra export here fails the production type check.
+const TX_STATUS_LABEL: Record<string, string> = {
   paid: 'Success',
   pending: 'Incomplete',
   failed: 'Fail',

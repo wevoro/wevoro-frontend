@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Eye, Info, Plus, Upload } from 'lucide-react';
+import { Eye, Info, Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import DocumentViewer from '@/components/global/dashboard/document-viewer';
+import DocumentPreviewModal from '@/components/global/dashboard/document-preview-modal';
 import UploadDocumentsModal from './upload-documents-modal';
 import ReplaceDocumentModal from './replace-document-modal';
 import RemoveDocumentDialog from './remove-document-dialog';
@@ -65,6 +65,7 @@ const SigningDocuments: React.FC = () => {
     open: boolean;
     document: SigningDoc | null;
   }>({ open: false, document: null });
+  const [previewDoc, setPreviewDoc] = useState<SigningDoc | null>(null);
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -129,6 +130,7 @@ const SigningDocuments: React.FC = () => {
             key={role}
             group={groups[role]}
             onUpload={() => setUploadModal({ open: true, role })}
+            onPreview={(document) => setPreviewDoc(document)}
             onReplace={(document) => setReplaceModal({ open: true, document })}
             onRemove={(document) => setRemoveDialog({ open: true, document })}
           />
@@ -162,6 +164,21 @@ const SigningDocuments: React.FC = () => {
         />
       )}
 
+      {/* SCRUM-120: the same viewer the admin uses, with replace still offered
+          because this is the agency's own document. */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          open
+          onOpenChange={(v) => !v && setPreviewDoc(null)}
+          fileName={previewDoc.fileName}
+          fileUrl={previewDoc.fileUrl}
+          fileSize={previewDoc.fileSize}
+          onReplace={() =>
+            setReplaceModal({ open: true, document: previewDoc })
+          }
+        />
+      )}
+
       {removeDialog.document && (
         <RemoveDocumentDialog
           open={removeDialog.open}
@@ -184,11 +201,13 @@ export default SigningDocuments;
 const GroupCard = ({
   group,
   onUpload,
+  onPreview,
   onReplace,
   onRemove,
 }: {
   group: Group;
   onUpload: () => void;
+  onPreview: (document: SigningDoc) => void;
   onReplace: (document: SigningDoc) => void;
   onRemove: (document: SigningDoc) => void;
 }) => {
@@ -257,43 +276,38 @@ const GroupCard = ({
                     {formatFileSize(document.fileSize)}
                   </p>
                 </div>
-                <div className='flex shrink-0 items-center gap-3'>
-                  {/* An agency could upload a document and then never see it
-                      again — only replace or remove it. Reviewing your own
-                      upload for accuracy is the same thing caregivers can
-                      already do with their credentials. An icon rather than a
-                      third text link, so the row does not turn into a wall of
-                      words. */}
-                  <DocumentViewer
-                    documents={{
-                      _id: document._id,
-                      url: document.fileUrl,
-                      title: document.fileName,
-                    }}
-                    title={document.fileName}
+                {/* SCRUM-120: icon-only row actions. An agency could upload a
+                    document and then never see it again — only replace or
+                    remove it. Preview is the eye; a third text link would have
+                    turned the row into a wall of words, so all three are icons
+                    with tooltips and labels for screen readers. */}
+                <div className='flex shrink-0 items-center gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => onPreview(document)}
+                    aria-label={`Preview ${document.fileName}`}
+                    title='Preview'
+                    className='flex size-8 items-center justify-center rounded-lg border border-[#DFE2E0] bg-white text-[#1C1C1C] transition-colors hover:bg-[#F2F4F3]'
                   >
-                    <button
-                      type='button'
-                      aria-label={`Preview ${document.fileName}`}
-                      title='Preview'
-                      className='flex size-8 items-center justify-center rounded-lg text-[#5E6864] transition-colors hover:bg-white hover:text-[#1C1C1C]'
-                    >
-                      <Eye className='size-4' />
-                    </button>
-                  </DocumentViewer>
+                    <Eye className='size-5' />
+                  </button>
                   <button
                     type='button'
                     onClick={() => onReplace(document)}
-                    className='text-sm font-medium text-[#1C1C1C] hover:underline'
+                    aria-label={`Replace ${document.fileName}`}
+                    title='Replace'
+                    className='flex size-8 items-center justify-center rounded-lg border border-[#DFE2E0] bg-white text-[#1C1C1C] transition-colors hover:bg-[#F2F4F3]'
                   >
-                    Replace
+                    <Upload className='size-5' />
                   </button>
                   <button
                     type='button'
                     onClick={() => onRemove(document)}
-                    className='text-sm font-medium text-[#E94435] hover:underline'
+                    aria-label={`Remove ${document.fileName}`}
+                    title='Remove'
+                    className='flex size-8 items-center justify-center rounded-lg border border-[#DFE2E0] bg-white text-[#E94435] transition-colors hover:bg-[#FDECEB]'
                   >
-                    Remove
+                    <Trash2 className='size-5' />
                   </button>
                 </div>
               </div>

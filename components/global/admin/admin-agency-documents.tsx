@@ -1,19 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, Eye, FileSignature, FileText } from 'lucide-react';
-import DocumentViewer from '@/components/global/dashboard/document-viewer';
+import { Clock, Download, Eye, FileText } from 'lucide-react';
+import DocumentPreviewModal from '@/components/global/dashboard/document-preview-modal';
 
 /**
- * Admin oversight of one agency's e-signature activity.
+ * SCRUM-121 — "Documents for signature" on the admin agency record.
  *
- * Admins can already open a caregiver's uploaded credentials, but had no way to
- * see what an agency asked those caregivers to sign, or to read back a signed
- * copy. That left the signed artefact — the file an audit actually asks for —
- * visible only to the two parties.
- *
- * Read-only by design. Admin reviews the record; it does not step into the
- * agency/caregiver relationship.
+ * Admins could open any caregiver's credentials but had no view of what an
+ * agency asked those caregivers to sign. This is oversight only: view, preview,
+ * download. No approve, no reject, and deliberately no per-document signature
+ * status — signing is per caregiver, so one chip on a document row would claim
+ * something that is not true of every caregiver holding it.
  */
 
 interface LibraryDoc {
@@ -25,71 +23,40 @@ interface LibraryDoc {
   version: number;
   status: 'active' | 'removed';
   uploadedAt: string;
-}
-
-interface PacketItem {
-  title: string;
-  fileName?: string;
-  status: 'pending' | 'signed' | 'outdated';
-  version: number;
-  signedAt: string | null;
-  signedFileUrl: string | null;
-}
-
-interface Packet {
-  _id: string;
-  caregiverName: string;
   role: string;
-  status: 'pending' | 'completed';
-  startedAt: string;
-  completedAt: string | null;
-  items: PacketItem[];
 }
 
 interface Overview {
-  library: Array<{ role: string; documents: LibraryDoc[] }>;
-  packets: Packet[];
+  library: Array<{ role: string; documents: Omit<LibraryDoc, 'role'>[] }>;
   totals: { documents: number; caregivers: number; fullySigned: number };
 }
 
-const when = (value?: string | null) =>
-  value
-    ? new Date(value).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : '—';
+const KB = 1024;
 
-const size = (bytes?: number) => {
+const prettySize = (bytes?: number) => {
   if (!bytes) return '';
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < KB * KB) return `${Math.round(bytes / KB)} KB`;
+  return `${(bytes / (KB * KB)).toFixed(1)} MB`;
 };
 
-const ItemStatus: React.FC<{ status: PacketItem['status'] }> = ({ status }) => {
-  const map: Record<string, string> = {
-    signed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    pending: 'bg-amber-50 text-amber-700 border-amber-200',
-    outdated: 'bg-gray-50 text-gray-600 border-gray-200',
-  };
-  const label =
-    status === 'signed' ? 'Signed' : status === 'pending' ? 'To sign' : 'Outdated';
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-medium ${map[status]}`}
-    >
-      {label}
-    </span>
-  );
+const extensionOf = (name: string) => (name?.split('.').pop() || '').toUpperCase();
+
+const badgeLabel = (name: string) => {
+  const ext = extensionOf(name);
+  return ext === 'DOCX' ? 'DOC' : ext || 'FILE';
 };
 
-export default function AdminAgencyDocuments({ agencyId }: { agencyId: string }) {
+export default function AdminAgencyDocuments({
+  agencyId,
+  agencyName,
+}: {
+  agencyId: string;
+  agencyName?: string;
+}) {
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [preview, setPreview] = useState<LibraryDoc | null>(null);
 
   useEffect(() => {
     if (!agencyId) return;
@@ -102,17 +69,16 @@ export default function AdminAgencyDocuments({ agencyId }: { agencyId: string })
         const json = await res.json();
         if (cancelled) return;
         if (!res.ok || json?.status !== 200) {
-          // Deliberately our own words. The backend's message here is HTTP
-          // boilerplate — an admin reading "Not Found" learns nothing about
-          // what to do.
           setError(
-            "Couldn't load this agency's signing documents. Refresh to try again."
+            "Couldn't load this agency's documents. Refresh to try again."
           );
           return;
         }
         setData(json.data);
       } catch {
-        if (!cancelled) setError('Could not load the agency documents');
+        if (!cancelled) {
+          setError("Couldn't load this agency's documents. Refresh to try again.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -122,140 +88,110 @@ export default function AdminAgencyDocuments({ agencyId }: { agencyId: string })
     };
   }, [agencyId]);
 
-  const uploaded = (data?.library || []).flatMap((g) =>
+  const documents: LibraryDoc[] = (data?.library || []).flatMap((g) =>
     g.documents.map((d) => ({ ...d, role: g.role }))
   );
 
   return (
-    <div className='flex flex-col gap-4'>
-      <div className='flex flex-wrap items-center gap-2'>
-        <FileSignature className='size-5 text-muted-foreground' />
-        <h2 className='text-lg font-semibold'>Signing documents</h2>
-        {data && (
-          <span className='text-xs text-muted-foreground'>
-            {data.totals.documents} uploaded · {data.totals.caregivers} caregivers sent ·{' '}
-            {data.totals.fullySigned} fully signed
-          </span>
-        )}
+    <div className='flex flex-col gap-5 rounded-xl bg-[#F9F9FA] p-5'>
+      <div className='flex flex-col gap-1'>
+        <h2 className='text-[20px] font-semibold text-[#1C1C1C]'>
+          Documents for signature
+        </h2>
+        <p className='text-[14px] text-[#6C6C6C]'>
+          Uploaded by the agency for caregivers to e-sign. Preview or download each
+          file.
+        </p>
       </div>
 
       {loading && (
-        <div className='flex items-center justify-center py-8 text-sm text-muted-foreground'>
+        <div className='flex items-center justify-center py-8 text-[14px] text-[#6C6C6C]'>
           <Clock className='mr-2 size-4 animate-spin' />
-          Loading signing documents…
+          Loading documents…
         </div>
       )}
 
-      {!loading && error && <div className='py-4 text-sm text-red-500'>{error}</div>}
+      {!loading && error && <p className='py-2 text-[14px] text-[#A72019]'>{error}</p>}
 
-      {!loading && !error && data && uploaded.length === 0 && (
-        <div className='flex flex-col items-center justify-center rounded-xl border border-dashed py-8 text-muted-foreground'>
-          <FileText className='mb-2 size-10 opacity-40' />
-          <p className='text-sm'>This agency has not uploaded any signing documents</p>
+      {!loading && !error && documents.length === 0 && (
+        <div className='flex flex-col items-center justify-center rounded-xl border border-dashed border-[#DFE2E0] bg-white py-8 text-[#6C6C6C]'>
+          <FileText className='mb-2 size-9 opacity-40' />
+          <p className='text-[14px]'>
+            This agency has not uploaded any documents for signature
+          </p>
         </div>
       )}
 
-      {!loading && !error && uploaded.length > 0 && (
-        <>
-          {/* What the agency uploaded */}
-          <div className='overflow-hidden rounded-xl border'>
-            <table className='w-full text-sm'>
-              <thead>
-                <tr className='border-b bg-gray-50'>
-                  <th className='px-4 py-3 text-left font-medium text-muted-foreground'>Document</th>
-                  <th className='px-4 py-3 text-left font-medium text-muted-foreground'>For</th>
-                  <th className='px-4 py-3 text-left font-medium text-muted-foreground'>Uploaded</th>
-                  <th className='px-4 py-3 text-right font-medium text-muted-foreground'>Review</th>
-                </tr>
-              </thead>
-              <tbody>
-                {uploaded.map((d) => (
-                  <tr key={d._id} className='border-b transition-colors last:border-b-0 hover:bg-gray-50/50'>
-                    <td className='px-4 py-3'>
-                      <div className='flex flex-col'>
-                        <span className='font-medium text-tertiary'>{d.fileName}</span>
-                        <span className='text-xs text-muted-foreground'>
-                          v{d.version}
-                          {size(d.fileSize) ? ` · ${size(d.fileSize)}` : ''}
-                          {/* A removed document stays listed: an agency must not be
-                              able to erase what caregivers already signed. */}
-                          {d.status === 'removed' ? ' · removed by the agency' : ''}
-                        </span>
-                      </div>
-                    </td>
-                    <td className='px-4 py-3 text-tertiary'>{d.role}</td>
-                    <td className='px-4 py-3 text-muted-foreground'>{when(d.uploadedAt)}</td>
-                    <td className='px-4 py-3 text-right'>
-                      <DocumentViewer
-                        documents={{ _id: d._id, url: d.fileUrl, title: d.fileName }}
-                        title={d.fileName}
-                      >
-                        <button
-                          type='button'
-                          aria-label={`Preview ${d.fileName}`}
-                          title='Preview'
-                          className='inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-gray-100 hover:text-tertiary'
-                        >
-                          <Eye className='size-4' />
-                        </button>
-                      </DocumentViewer>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {!loading && !error && documents.length > 0 && (
+        <div className='flex flex-col gap-3'>
+          {documents.map((d) => (
+            <div
+              key={d._id}
+              className='flex items-center gap-4 rounded-[10px] border border-[#DFE2E0] bg-white px-4 py-3.5'
+            >
+              <span
+                className='flex size-11 shrink-0 items-center justify-center rounded-[10px] bg-[#E94435] text-[11px] font-bold text-white'
+                aria-hidden='true'
+              >
+                {badgeLabel(d.fileName)}
+              </span>
 
-          {/* What came back signed */}
-          {(data?.packets?.length ?? 0) > 0 && (
-            <div className='flex flex-col gap-3'>
-              <h3 className='text-sm font-semibold text-tertiary'>Signed by caregivers</h3>
-              {(data?.packets ?? []).map((p) => (
-                <div key={p._id} className='rounded-xl border'>
-                  <div className='flex flex-wrap items-center gap-2 border-b bg-gray-50 px-4 py-2.5'>
-                    <span className='font-medium text-tertiary'>{p.caregiverName}</span>
-                    <span className='text-xs text-muted-foreground'>{p.role}</span>
-                    <span
-                      className={`ml-auto rounded-full border px-2 py-0.5 text-xs font-medium ${
-                        p.status === 'completed'
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                          : 'border-amber-200 bg-amber-50 text-amber-700'
-                      }`}
-                    >
-                      {p.status === 'completed' ? 'Fully signed' : 'In progress'}
-                    </span>
-                  </div>
-                  <ul className='divide-y'>
-                    {p.items.map((it, i) => (
-                      <li key={i} className='flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm'>
-                        <span className='min-w-0 flex-1 truncate text-tertiary'>{it.title}</span>
-                        <span className='text-xs text-muted-foreground'>{when(it.signedAt)}</span>
-                        <ItemStatus status={it.status} />
-                        {it.signedFileUrl ? (
-                          <DocumentViewer
-                            documents={{ _id: `${p._id}-${i}`, url: it.signedFileUrl, title: it.title }}
-                            title={`${it.title} — signed by ${p.caregiverName}`}
-                          >
-                            <button
-                              type='button'
-                              aria-label={`Preview the signed ${it.title}`}
-                              title='Preview signed copy'
-                              className='inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-gray-100 hover:text-tertiary'
-                            >
-                              <Eye className='size-4' />
-                            </button>
-                          </DocumentViewer>
-                        ) : (
-                          <span className='inline-block size-8 shrink-0' />
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <div className='min-w-0 flex-1'>
+                <p className='truncate text-[16px] font-semibold text-[#1C1C1C]'>
+                  {d.title || d.fileName}
+                </p>
+                <p className='truncate text-[13.5px] text-[#6C6C6C]'>
+                  {[
+                    extensionOf(d.fileName) === 'DOCX' ? 'DOCX' : extensionOf(d.fileName),
+                    prettySize(d.fileSize),
+                    d.role,
+                    // An agency can pull a document after caregivers have signed
+                    // it. The row stays, marked, so the record cannot be erased.
+                    d.status === 'removed' ? 'removed by the agency' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+
+              <div className='flex shrink-0 items-center gap-2'>
+                <button
+                  type='button'
+                  onClick={() => setPreview(d)}
+                  aria-label={`Preview ${d.fileName}`}
+                  title='Preview'
+                  className='flex size-10 items-center justify-center rounded-lg border border-[#DFE2E0] text-[#1C1C1C] transition-colors hover:bg-[#F9F9FA]'
+                >
+                  <Eye className='size-5' />
+                </button>
+                <a
+                  href={d.fileUrl}
+                  download={d.fileName}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  aria-label={`Download ${d.fileName}`}
+                  title='Download'
+                  className='flex size-10 items-center justify-center rounded-lg border border-[#DFE2E0] text-[#1C1C1C] transition-colors hover:bg-[#F9F9FA]'
+                >
+                  <Download className='size-5' />
+                </a>
+              </div>
             </div>
-          )}
-        </>
+          ))}
+        </div>
+      )}
+
+      {preview && (
+        <DocumentPreviewModal
+          open
+          onOpenChange={(v) => !v && setPreview(null)}
+          fileName={preview.fileName}
+          fileUrl={preview.fileUrl}
+          fileSize={preview.fileSize}
+          uploadedBy={agencyName}
+          uploadedAt={preview.uploadedAt}
+          readOnly
+        />
       )}
     </div>
   );

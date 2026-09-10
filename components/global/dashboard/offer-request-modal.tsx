@@ -17,9 +17,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import DocumentPreviewModal from '@/components/global/dashboard/document-preview-modal';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getUserDocuments } from '@/app/actions';
-import { Lock } from 'lucide-react';
+import { Download, Eye, Lock } from 'lucide-react';
 
 // Helper to extract filename from URL
 const getFilenameFromUrl = (url: string) => {
@@ -50,6 +51,11 @@ export function OfferRequestModal({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  // SCRUM-120: the agency can open any file it is about to request, so it is
+  // never guessing what a filename refers to.
+  const [previewDoc, setPreviewDoc] = useState<{ name: string; url: string } | null>(
+    null,
+  );
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -332,33 +338,66 @@ export function OfferRequestModal({
               <div className='flex flex-col gap-3 max-h-[300px] overflow-y-auto'>
                 {documents?.map((doc: any) => {
                   const isSelected = selectedDocuments.includes(doc._id);
+                  const docName =
+                    getFilenameFromUrl(doc.url) ||
+                    doc.title ||
+                    'document';
                   return (
-                    <label
+                    // SCRUM-120: the row carries its own actions now, so it is a
+                    // div with the label wrapped only around the checkbox and
+                    // text — a button inside a label toggles the checkbox.
+                    <div
                       key={doc._id}
                       className={cn(
-                        'flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all',
+                        'flex items-center gap-3 p-4 border rounded-xl transition-all',
                         isSelected
                           ? 'border-primary bg-primary/5'
                           : 'border-[#DFE2E0] hover:border-gray-300',
                       )}
                     >
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => handleDocumentToggle(doc._id)}
-                        className='data-[state=checked]:bg-primary data-[state=checked]:border-primary'
-                      />
-                      <div className='flex-1 min-w-0'>
-                        <p className='text-sm font-medium text-gray-900 truncate'>
-                          {doc.title || doc.documentType?.replace(/_/g, ' ')}
-                        </p>
-                        <p className='text-xs text-gray-500 truncate'>
-                          {getFilenameFromUrl(doc.url)}
-                        </p>
-                      </div>
+                      <label className='flex flex-1 min-w-0 items-center gap-3 cursor-pointer'>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => handleDocumentToggle(doc._id)}
+                          className='data-[state=checked]:bg-primary data-[state=checked]:border-primary'
+                        />
+                        <div className='flex-1 min-w-0'>
+                          <p className='text-sm font-medium text-gray-900 truncate'>
+                            {doc.title || doc.documentType?.replace(/_/g, ' ')}
+                          </p>
+                          <p className='text-xs text-gray-500 truncate'>
+                            {getFilenameFromUrl(doc.url)}
+                          </p>
+                        </div>
+                      </label>
                       {doc.privacy === 'private' && (
                         <Lock className='w-4 h-4 text-gray-400 flex-shrink-0' />
                       )}
-                    </label>
+                      <div className='flex shrink-0 items-center gap-2'>
+                        <button
+                          type='button'
+                          onClick={() =>
+                            setPreviewDoc({ name: docName, url: doc.url })
+                          }
+                          aria-label={`Preview ${docName}`}
+                          title='Preview'
+                          className='flex size-9 items-center justify-center rounded-lg border border-[#DFE2E0] bg-white text-[#1C1C1C] transition-colors hover:bg-[#F2F4F3]'
+                        >
+                          <Eye className='size-4' />
+                        </button>
+                        <a
+                          href={doc.url}
+                          download={docName}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          aria-label={`Download ${docName}`}
+                          title='Download'
+                          className='flex size-9 items-center justify-center rounded-lg border border-[#DFE2E0] bg-white text-[#1C1C1C] transition-colors hover:bg-[#F2F4F3]'
+                        >
+                          <Download className='size-4' />
+                        </a>
+                      </div>
+                    </div>
                   );
                 })}
                 {(!documents || documents.length === 0) && (
@@ -458,6 +497,15 @@ export function OfferRequestModal({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {previewDoc && (
+        <DocumentPreviewModal
+          open
+          onOpenChange={(v) => !v && setPreviewDoc(null)}
+          fileName={previewDoc.name}
+          fileUrl={previewDoc.url}
+        />
+      )}
     </Dialog>
   );
 }

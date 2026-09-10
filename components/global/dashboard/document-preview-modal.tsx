@@ -126,13 +126,18 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className='max-w-[1040px] gap-0 overflow-hidden rounded-2xl border-0 p-0'
+        // `block`, not the dialog's default grid: a grid item is min-width:auto,
+        // so a long unbroken filename widened the track past the viewport and
+        // clipped both edges of the modal. And the width is capped against the
+        // viewport as well as the design width, so a narrow window shrinks the
+        // dialog instead of pushing its buttons off screen.
+        className='block w-full max-w-[min(1040px,calc(100vw-2rem))] gap-0 overflow-hidden rounded-2xl border-0 p-0'
         hideClose
       >
         <DialogTitle className='sr-only'>{fileName}</DialogTitle>
 
         {/* Header — badge, name, tag, meta, actions */}
-        <div className='flex items-start gap-4 bg-white px-6 py-5'>
+        <div className='flex min-w-0 items-start gap-4 bg-white px-5 py-5 sm:px-6'>
           <span
             className='flex size-11 shrink-0 items-center justify-center rounded-[10px] bg-[#E94435] text-[11px] font-bold text-white'
             aria-hidden='true'
@@ -180,7 +185,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
 
         {/* Page bar — only when the file is a PDF whose length we know */}
         {pdf && pages ? (
-          <div className='flex items-center justify-between border-y border-[#DFE2E0] bg-[#F9F9FA] px-6 py-3'>
+          <div className='flex items-center justify-between border-y border-[#DFE2E0] bg-[#F9F9FA] px-5 py-3 sm:px-6'>
             <p className='text-[14px] text-[#1C1C1C]'>
               Page {page} of {pages}
             </p>
@@ -210,7 +215,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
         )}
 
         {/* Body */}
-        <div className='flex max-h-[62vh] min-h-[380px] items-center justify-center overflow-auto bg-[#F2F4F3] p-6'>
+        <div className='flex max-h-[62vh] min-h-[380px] items-center justify-center overflow-auto bg-[#F2F4F3] p-4 sm:p-6'>
           {pdf ? (
             <iframe
               // #page drives the browser's own viewer from our page control, and
@@ -250,13 +255,13 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className='flex flex-wrap items-center justify-between gap-3 border-t border-[#DFE2E0] bg-white px-6 py-4'>
-          <p className='text-[13.5px] text-[#6C6C6C]'>
+        <div className='flex flex-wrap items-center justify-between gap-3 border-t border-[#DFE2E0] bg-white px-5 py-4 sm:px-6'>
+          <p className='min-w-0 flex-1 text-[13.5px] text-[#6C6C6C]'>
             {readOnly
               ? "Monitoring view — admin can't approve, reject or change this agency's documents."
               : 'Preview only — replacing a document sends the new version to caregivers who have not signed yet.'}
           </p>
-          <div className='flex items-center gap-3'>
+          <div className='flex shrink-0 items-center gap-3'>
             {!readOnly && onReplace && (
               <Button
                 onClick={() => {

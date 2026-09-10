@@ -39,7 +39,15 @@ const prettySize = (bytes?: number) => {
   return `${(bytes / (KB * KB)).toFixed(1)} MB`;
 };
 
-const extensionOf = (name: string) => (name?.split('.').pop() || '').toUpperCase();
+/**
+ * The extension, or '' when there is none. split('.') on a name with no dot
+ * returns the whole name, which put "QA117NOEXTENSION" inside a 44px badge.
+ */
+const extensionOf = (name: string) => {
+  if (!name || !name.includes('.')) return '';
+  const ext = name.split('.').pop() || '';
+  return ext.length <= 4 ? ext.toUpperCase() : '';
+};
 
 const badgeLabel = (name: string) => {
   const ext = extensionOf(name);
@@ -88,9 +96,15 @@ export default function AdminAgencyDocuments({
     };
   }, [agencyId]);
 
-  const documents: LibraryDoc[] = (data?.library || []).flatMap((g) =>
-    g.documents.map((d) => ({ ...d, role: g.role }))
-  );
+  // Documents the agency has removed stay in the list, but they belong at the
+  // bottom: what the agency is currently asking caregivers to sign is the point
+  // of the section, and a long tail of withdrawn files buried it.
+  const documents: LibraryDoc[] = (data?.library || [])
+    .flatMap((g) => g.documents.map((d) => ({ ...d, role: g.role })))
+    .sort((a, b) => {
+      if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+      return String(a.role).localeCompare(String(b.role));
+    });
 
   return (
     <div className='flex flex-col gap-5 rounded-xl bg-[#F9F9FA] p-5'>
@@ -142,7 +156,7 @@ export default function AdminAgencyDocuments({
                 </p>
                 <p className='truncate text-[13.5px] text-[#6C6C6C]'>
                   {[
-                    extensionOf(d.fileName) === 'DOCX' ? 'DOCX' : extensionOf(d.fileName),
+                    extensionOf(d.fileName),
                     prettySize(d.fileSize),
                     d.role,
                     // An agency can pull a document after caregivers have signed

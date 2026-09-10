@@ -37,8 +37,16 @@ const prettySize = (bytes?: number) => {
   return `${(bytes / (KB * KB)).toFixed(1)} MB`;
 };
 
-const extensionOf = (name: string) =>
-  (name?.split('.').pop() || '').toUpperCase();
+/**
+ * The extension, or '' when the filename has none. Guarded on both counts:
+ * split('.') on a name with no dot returns the whole name, which put
+ * "QA117NOEXTENSION" inside a 44px badge.
+ */
+const extensionOf = (name: string) => {
+  if (!name || !name.includes('.')) return '';
+  const ext = name.split('.').pop() || '';
+  return ext.length <= 4 ? ext.toUpperCase() : '';
+};
 
 /** DOC and DOCX both show as DOC, matching the row badges. */
 const badgeLabel = (name: string) => {

@@ -148,9 +148,17 @@ interface CredentialStatusCardProps {
   readOnly?: boolean;
   /** Overrides the card heading (PCA parts render as "Written Exam (GACCP)"). */
   titleOverride?: string;
+  /**
+   * Agency view, when the file is withheld because the caregiver's packet has
+   * not been bought yet (SCRUM-119): open the locked documents instead.
+   */
+  onLockedView?: () => void;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+const VIEW_ACTION_CLASS =
+  'inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-[#B0BCB8] bg-white px-3.5 text-[13px] font-medium text-[#1C1C1C] transition-colors hover:bg-gray-50';
 
 /** Design hides the per-row menu; set true to bring it back. */
 const SHOW_ROW_MENU = false;
@@ -161,6 +169,7 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
   onRemove,
   readOnly = false,
   titleOverride,
+  onLockedView,
 }) => {
   const doc = credential.document;
   const status = useMemo(() => resolveCardStatus(credential), [credential]);
@@ -289,17 +298,28 @@ const CredentialStatusCard: React.FC<CredentialStatusCardProps> = ({
           </div>
           )}
 
-          {!isMissing && (
-            <a
-              href={doc?.url || '#'}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-[#B0BCB8] bg-white px-3.5 text-[13px] font-medium text-[#1C1C1C] transition-colors hover:bg-gray-50'
-            >
-              {labels.viewAction}
-              <MoveUpRight className='size-3.5' />
-            </a>
-          )}
+          {!isMissing &&
+            (doc?.url ? (
+              <a
+                href={doc.url}
+                target='_blank'
+                rel='noopener noreferrer'
+                className={VIEW_ACTION_CLASS}
+              >
+                {labels.viewAction}
+                <MoveUpRight className='size-3.5' />
+              </a>
+            ) : (
+              // SCRUM-123: an agency that has not bought this caregiver's
+              // packet receives the credential without its url — the file is
+              // the paywalled product. The link fell back to href="#" with
+              // target="_blank", so every row opened this same profile again.
+              // With no file to open, show what is locked and how to unlock it.
+              <button type='button' onClick={onLockedView} className={VIEW_ACTION_CLASS}>
+                <Lock className='size-3.5' />
+                {labels.viewAction}
+              </button>
+            ))}
 
           {/* NOTE: the design shows only "View Credential" here, so the
               three-dot menu is hidden. Re-upload / remove are still reachable

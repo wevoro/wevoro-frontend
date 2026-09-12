@@ -47,6 +47,20 @@ const firstName = (full?: string) => (full || '').trim().split(/\s+/)[0] || 'thi
 const fileLine = (n?: number | null) =>
   n ? ` · ${n} ${n === 1 ? 'file' : 'files'}` : '';
 
+/**
+ * SCRUM-124: what may be shown to the agency when something goes wrong. A
+ * payment provider's internal error ("Invalid line_items[0]: the product tax
+ * code is missing…", with a dashboard link and account id) reached this screen
+ * verbatim. The server now sends a plain sentence; this is the second guard.
+ */
+const START_ERROR = "We couldn't open the secure checkout. Please try again in a moment.";
+const customerMessage = (message?: string) =>
+  !message ||
+  message.length > 160 ||
+  /stripe|line_items|tax code|acct_|https?:\/\//i.test(message)
+    ? ''
+    : message;
+
 interface PaymentGateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -111,6 +125,9 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   const [packet, setPacket] = useState<any>(null);
   const [checkout, setCheckout] = useState<any>(null);
   const [failure, setFailure] = useState('');
+  // Checkout that never opened is not a declined card, and must not be told
+  // to the agency as one.
+  const [failureKind, setFailureKind] = useState<'start' | 'payment'>('payment');
 
   const name = packet?.caregiverName || caregiverName || 'This caregiver';
   const price = checkout?.priceCents ?? packet?.priceCents;
@@ -122,7 +139,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   /** Load the price and open (or resume) the purchase. */
-  const start = useCallback(async () => {
+  const start = useCallback(async (): Promise<any> => {
     setBusy(true);
     try {
       const p = await fetch(`/api/payment/packet/${caregiverId}`).then((r) => r.json());
@@ -131,21 +148,25 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
       // Already owned — nothing to charge, go straight to the receipt.
       if (p?.data?.paid) {
         setState('success');
-        return;
+        return null;
       }
 
       const res = await fetch(`/api/payment/checkout/${caregiverId}`, { method: 'POST' });
       const json = await res.json();
       if (!res.ok || json?.status !== 200) {
-        setFailure(json?.message || 'Could not start checkout');
+        setFailureKind('start');
+        setFailure(customerMessage(json?.message) || START_ERROR);
         setState('payment-failed');
-        return;
+        return null;
       }
       setCheckout(json.data);
       setState(json.data?.alreadyPaid ? 'success' : 'form');
+      return json.data;
     } catch {
-      setFailure('Could not reach the payment service');
+      setFailureKind('start');
+      setFailure(START_ERROR);
       setState('payment-failed');
+      return null;
     } finally {
       setBusy(false);
     }
@@ -168,7 +189,10 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
 
         if (c?.data?.status === 'paid') return 'paid' as const;
         if (c?.data?.status === 'failed') {
-          setFailure(c.data.failureMessage || 'The payment did not go through');
+          setFailureKind('payment');
+          setFailure(
+            customerMessage(c.data.failureMessage) || 'The payment did not go through'
+          );
           return 'failed' as const;
         }
         await new Promise((r) => setTimeout(r, 2500));
@@ -249,7 +273,8 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         });
         const json = await res.json();
         if (!res.ok || json?.status !== 200) {
-          setFailure(json?.message || 'Payment failed');
+          setFailureKind('payment');
+          setFailure(customerMessage(json?.message) || 'Payment failed');
           setState('payment-failed');
           return;
         }
@@ -262,14 +287,16 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
       // single strongest trust signal available at the moment of payment, and
       // it is where agencies were hesitating.
       if (!checkout.checkoutUrl) {
-        setFailure('Could not open the secure checkout page');
+        setFailureKind('start');
+        setFailure(START_ERROR);
         setState('payment-failed');
         return;
       }
       setState('redirecting');
       window.location.assign(checkout.checkoutUrl);
     } catch {
-      setFailure('Payment could not be completed');
+      setFailureKind('start');
+      setFailure(START_ERROR);
       setState('payment-failed');
     } finally {
       setBusy(false);
@@ -287,12 +314,33 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         body: JSON.stringify({ outcome: 'fail' }),
       });
       const json = await res.json();
+      setFailureKind('payment');
       setFailure(
         json?.data?.failureMessage || 'Card declined — insufficient funds (no charge made)'
       );
       setState('payment-failed');
     } finally {
       setBusy(false);
+    }
+  };
+
+  /**
+   * SCRUM-124: start over from the failure screen. Both buttons used to restart
+   * checkout while leaving that screen up with its message cleared, so it
+   * flashed the placeholder "Card declined — insufficient funds" until the real
+   * error came back — which looked like a loop — and "Use a different card" did
+   * exactly what "Try again" did. Now both return to the loading form, and "Use
+   * a different card" carries straight on to Stripe's page, where the card is
+   * actually chosen.
+   */
+  const retry = async (toStripe: boolean) => {
+    setFailure('');
+    setCheckout(null);
+    setState('form');
+    const data = await start();
+    if (toStripe && data?.checkoutUrl) {
+      setState('redirecting');
+      window.location.assign(data.checkoutUrl);
     }
   };
 
@@ -486,39 +534,47 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             <X className='size-7 text-[#A72019]' strokeWidth={3} />
           </span>
           <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>
-            Payment couldn&apos;t be completed
+            {failureKind === 'start'
+              ? 'Checkout couldn’t be opened'
+              : 'Payment couldn’t be completed'}
           </h2>
           <p className='mt-3 max-w-[430px] text-[14px] leading-[22px] text-[#6C6C6C]'>
-            Your card was declined and you haven&apos;t been charged. Check your details and try
-            again.
+            {failureKind === 'start'
+              ? 'Nothing was charged. Please try again in a moment.'
+              : 'You haven’t been charged. Try again, or use a different card on the secure checkout page.'}
           </p>
-          <div className='mt-4 flex w-full items-center gap-2 rounded-lg bg-[#FCEBEA] px-3.5 py-2.5'>
-            <AlertCircle className='size-4 shrink-0 text-[#A72019]' />
-            <p className='text-[13px] font-medium text-[#A72019]'>
-              {failure || 'Card declined — insufficient funds (no charge made)'}
-            </p>
-          </div>
+          {failure && (
+            <div className='mt-4 flex w-full items-center gap-2 rounded-lg bg-[#FCEBEA] px-3.5 py-2.5'>
+              <AlertCircle className='size-4 shrink-0 text-[#A72019]' />
+              <p className='text-left text-[13px] font-medium text-[#A72019]'>{failure}</p>
+            </div>
+          )}
         </div>
         <Button
-          onClick={() => {
-            setFailure('');
-            start();
-          }}
+          onClick={() => retry(false)}
           disabled={busy}
           className='mt-5 h-12 w-full rounded-xl bg-[#008000] text-[15px] font-semibold text-white hover:bg-[#016b01]'
         >
           Try again
         </Button>
-        <Button
-          onClick={() => {
-            setFailure('');
-            start();
-          }}
-          variant='outline'
-          className='mt-3 h-12 w-full rounded-xl border-[#DFE2E0] text-[15px] font-semibold text-[#1C1C1C]'
-        >
-          Use a different card
-        </Button>
+        {failureKind === 'start' ? (
+          <Button
+            onClick={() => onOpenChange(false)}
+            variant='outline'
+            className='mt-3 h-12 w-full rounded-xl border-[#DFE2E0] text-[15px] font-semibold text-[#1C1C1C]'
+          >
+            Close
+          </Button>
+        ) : (
+          <Button
+            onClick={() => retry(true)}
+            disabled={busy}
+            variant='outline'
+            className='mt-3 h-12 w-full rounded-xl border-[#DFE2E0] text-[15px] font-semibold text-[#1C1C1C]'
+          >
+            Use a different card
+          </Button>
+        )}
       </Shell>
     );
   }

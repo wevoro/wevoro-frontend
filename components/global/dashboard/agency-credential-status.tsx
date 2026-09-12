@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { getCredentialStatus } from '@/app/actions';
 import CredentialStatusCard from './credential-status-card';
+import { OPEN_PACKET_EVENT } from './payment/packet-download-action';
 import type { CredentialStatus } from '@/lib/credential-config';
 
 interface AgencyCredentialStatusProps {
@@ -52,6 +54,22 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
   // renders the not-uploaded state as a name plus a badge with no metadata and
   // no View Credential action.
   const shownCredentials = credentials ?? [];
+
+  // SCRUM-123: a credential's file is withheld until the packet is bought, so
+  // "View Credential" opens the locked documents list with its unlock action.
+  // That list belongs to the download action further down the page — ask it to
+  // open, and say something useful on a surface that has none.
+  const openLockedPacket = () => {
+    const handled = !window.dispatchEvent(
+      new CustomEvent(OPEN_PACKET_EVENT, {
+        detail: { caregiverId: userId },
+        cancelable: true,
+      })
+    );
+    if (!handled) {
+      toast.error("Unlock this caregiver's packet to view their credentials");
+    }
+  };
   const verifiedCount = shownCredentials.filter((c) => c.state === 'verified').length;
   const pendingCount = shownCredentials.filter((c) => c.state === 'pending').length;
   const rejectedCount = shownCredentials.filter((c) => c.state === 'rejected').length;
@@ -139,6 +157,7 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
                   index={idx}
                   titleOverride={titleOverride}
                   readOnly
+                  onLockedView={openLockedPacket}
                 />
               );
             })}

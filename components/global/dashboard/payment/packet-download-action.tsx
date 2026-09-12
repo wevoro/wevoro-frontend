@@ -17,6 +17,13 @@ import PaymentGateModal from './payment-gate-modal';
  * surface that offers a download gets the paywall automatically, instead of
  * each one re-wiring it and one of them being forgotten.
  */
+/**
+ * SCRUM-123: "View Credential" on a credential whose file is still locked asks
+ * this component to open the documents list. Cancelled by the listener, so the
+ * sender can tell whether anything on the page answered.
+ */
+export const OPEN_PACKET_EVENT = 'wevoro:open-packet';
+
 interface PacketDownloadActionProps {
   caregiverId: string;
   caregiverName: string;
@@ -42,6 +49,17 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
   >(null);
 
   const params = useSearchParams();
+
+  useEffect(() => {
+    const openDocs = (e: Event) => {
+      const detail = (e as CustomEvent<{ caregiverId?: string }>).detail;
+      if (detail?.caregiverId !== caregiverId) return;
+      e.preventDefault();
+      setDocsOpen(true);
+    };
+    window.addEventListener(OPEN_PACKET_EVENT, openDocs);
+    return () => window.removeEventListener(OPEN_PACKET_EVENT, openDocs);
+  }, [caregiverId]);
 
   /**
    * Stripe's hosted checkout sends the agency back to this profile with

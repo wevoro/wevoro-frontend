@@ -376,6 +376,17 @@ export async function getUserByShareId(shareId: string) {
   }
 }
 
+// SCRUM-122: a signed-in agency opened a caregiver's share link — put that
+// caregiver in the agency's Offers › Submitted tab. Best-effort: it must never
+// stop the agency reaching the profile.
+export async function recordShareVisit(shareId: string) {
+  try {
+    await api.post(`/credentialing/share/${shareId}`);
+  } catch (error) {
+    console.error('Error recording share-link visit:', error);
+  }
+}
+
 // SCRUM-66: Update GCHEXS status
 export async function updateGchexsStatus(
   gchexsStatus: 'yes' | 'no',

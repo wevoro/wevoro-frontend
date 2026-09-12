@@ -177,7 +177,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await fetch('/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
+        // SCRUM-122: the share link is sent again at sign-in, not only when the
+        // code is requested. Requesting a code only attributes a brand-new
+        // account, so a returning agency opening a caregiver's link was never
+        // linked to that caregiver.
+        body: JSON.stringify({ email, otp, sourceShareId: shareId || undefined }),
       });
       const responseData: any = await response.json();
       if (responseData.status === 200) {
@@ -205,7 +209,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         position: 'top-center',
       });
     },
-    [id, proId, querySuffix]
+    [id, proId, querySuffix, shareId]
   );
 
   const handleLogin = useCallback(

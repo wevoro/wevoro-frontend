@@ -6,9 +6,16 @@ import { NextResponse } from 'next/server';
 // httpOnly cookies so the browser is authenticated.
 export async function POST(req: Request) {
   try {
-    const { email, otp } = await req.json();
+    const { email, otp, sourceShareId } = await req.json();
 
-    const response = await api.post(`/auth/verify-code`, { email, otp });
+    // sourceShareId must be forwarded: it is how the backend knows this agency
+    // came in through a caregiver's share link (SCRUM-122). Dropping it here
+    // left the caregiver out of the agency's Submitted tab.
+    const response = await api.post(`/auth/verify-code`, {
+      email,
+      otp,
+      sourceShareId,
+    });
 
     if (response.status === 200) {
       const { accessToken, refreshToken, completionPercentage, agencyProfileComplete } =

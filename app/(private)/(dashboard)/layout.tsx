@@ -26,6 +26,11 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   // wizard first. Its own profile details are deferred to the point of hire
   // rather than gating the first view (Flow 2 — no completion form to view).
   const isViewingCaregiver = pathname.startsWith('/partner/pros/');
+  // SCRUM-122: the Offers tab is how that same agency gets back to the
+  // caregiver once it has navigated away from the profile. Pushing it into the
+  // wizard here left the caregiver it had just onboarded through unreachable
+  // except by opening the original share link again.
+  const isAgencyOffers = pathname.startsWith('/partner/onboardings');
 
   useEffect(() => {
     if (!user?.completionPercentage && user?.role === 'pro') {
@@ -34,11 +39,12 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       !user?.completionPercentage &&
       user?.role === 'partner' &&
       !isPartnerOnboarded &&
-      !isViewingCaregiver
+      !isViewingCaregiver &&
+      !isAgencyOffers
     ) {
       return router.push('/partner/onboard/personal-info');
     }
-  }, [user, isViewingCaregiver]);
+  }, [user, isViewingCaregiver, isAgencyOffers]);
 
   const isAccountPage =
     pathname.includes('notifications') || pathname.includes('settings');

@@ -26,6 +26,7 @@ import Logo from '../logo';
 import { useParams, usePathname } from 'next/navigation';
 import { useUserContext } from '@/lib/contexts';
 import { useNotifications } from '@/app/apiHooks/useNotifications';
+import NotificationsPopover from './notifications-popover';
 import { Notification } from '@/app/types/types';
 
 export default function DashboardNav() {
@@ -42,20 +43,9 @@ export default function DashboardNav() {
 
   const isPublicProPage = pathName.includes('pro/') && id ? true : false;
 
+  // The bell opens the popover from the design rather than navigating; only
+  // Settings remains a plain nav link here.
   const items = [
-    {
-      href: `${path}/notifications`,
-      icon: (
-        <div className='relative'>
-          <Bell className='h-5 w-5 md:h-4 md:w-4 lg:h-6 lg:w-6' />
-          {isUnreadNotification?.length > 0 && (
-            <div className='absolute top-0 right-0 w-2 h-2 bg-[#33B55B] rounded-full'></div>
-          )}
-        </div>
-      ),
-      label: 'Notifications',
-    },
-
     {
       href: `${path}/settings`,
       icon: <Settings className='h-5 w-5 md:h-4 md:w-4 lg:h-6 lg:w-6' />,
@@ -73,6 +63,7 @@ export default function DashboardNav() {
         <div className='hidden md:flex items-center gap-2 lg:gap-8'>
           {!isPublicProPage || user?.role ? (
             <>
+              <NotificationsPopover basePath={path} />
               {items.map((item) => (
                 <NavItem
                   key={item.href}
@@ -153,7 +144,11 @@ export default function DashboardNav() {
           <SheetContent side='left' className='max-w-[300px]'>
             <SheetTitle />
             <nav className='flex flex-col space-y-4 mt-10'>
-              {!isPublicProPage ? (
+              {/* Same condition as the desktop bar above. It used to be just
+                  !isPublicProPage, so on a public caregiver profile a signed-in
+                  user got the account menu — and Sign Out — on desktop but a
+                  bare "Signup Now!" on mobile, with no way to sign out at all. */}
+              {!isPublicProPage || user?.role ? (
                 <>
                   <Button
                     href={`${path}/profile`}
@@ -170,6 +165,22 @@ export default function DashboardNav() {
 
                   {/* <UpgradeButton /> */}
 
+                  {/* The desktop bell is a popover, which does not fit a slide-out
+                      sheet — mobile keeps a plain link to the full page. */}
+                  <NavItem
+                    href={`${path}/notifications`}
+                    icon={
+                      <div className='relative'>
+                        <Bell className='h-5 w-5 md:h-4 md:w-4 lg:h-6 lg:w-6' />
+                        {isUnreadNotification?.length > 0 && (
+                          <div className='absolute top-0 right-0 w-2 h-2 bg-[#33B55B] rounded-full'></div>
+                        )}
+                      </div>
+                    }
+                    pathName={pathName}
+                  >
+                    Notifications
+                  </NavItem>
                   {items.map((item) => (
                     <NavItem
                       key={item.href}

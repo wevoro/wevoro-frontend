@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import DrawSignatureModal from './draw-signature-modal';
 
 interface SignDocumentsModalProps {
   open: boolean;
@@ -111,8 +112,17 @@ export default function SignDocumentsModal({
   const isReadOnly =
     !currentItem || currentItem.status !== 'pending' || index !== activeIndex;
 
+  // Declared before the derived flags below, which read `signature`.
+  const [drawOpen, setDrawOpen] = React.useState(false);
+  const [signature, setSignature] = React.useState<string | null>(
+    localPacket?.signatureImage ?? null
+  );
+
   const hasRead = !!currentId && readIds.includes(currentId);
-  const hasStamp = !!currentId && !!stampedAt[currentId];
+  // Both halves matter: the seal must have been applied to THIS document, and
+  // a drawing must actually exist to apply. Checking only the stamp let a
+  // document be submitted with no signature behind it.
+  const hasStamp = !!currentId && !!stampedAt[currentId] && !!signature;
   const showStamp = hasStamp || currentItem?.status === 'signed';
 
   const markRead = useCallback((id?: string) => {
@@ -140,9 +150,24 @@ export default function SignDocumentsModal({
     return () => cancelAnimationFrame(frame);
   }, [open, completed, index, evaluateScrollGate]);
 
+  // The drawing is captured once for the whole packet; on later documents the
+  // "Sign here" target applies the signature already on file rather than
+  // asking again.
+
   const handleAdoptStamp = () => {
     if (!currentId || isReadOnly) return;
+    if (!signature) {
+      setDrawOpen(true);
+      return;
+    }
     setStampedAt((prev) => ({ ...prev, [currentId]: new Date().toISOString() }));
+  };
+
+  const handleDrawn = (dataUrl: string) => {
+    setSignature(dataUrl);
+    if (currentId) {
+      setStampedAt((prev) => ({ ...prev, [currentId]: new Date().toISOString() }));
+    }
   };
 
   const isLastToSign = !items.some(
@@ -156,7 +181,12 @@ export default function SignDocumentsModal({
       const res = await fetch('/api/esign/sign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packetId: localPacket._id, itemId: currentItem._id }),
+        body: JSON.stringify({
+          packetId: localPacket._id,
+          itemId: currentItem._id,
+          // Only needs to travel once; the backend keeps the first one.
+          signatureImage: localPacket.signatureImage ? undefined : signature,
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json?.data) {
@@ -299,9 +329,16 @@ export default function SignDocumentsModal({
 
                 <div className={isOutdated ? 'pointer-events-none opacity-50' : undefined}>
                   {currentItem?.fileUrl ? (
+                    // #toolbar=0 hides the browser's built-in PDF chrome. Left
+                    // on, it hands the caregiver a text/draw/highlight toolbar
+                    // over a document they are about to sign — edits that are
+                    // never persisted and never part of what gets signed, so the
+                    // screen implies they changed something when they did not.
+                    // It also offers Print and Download, neither of which is in
+                    // the design.
                     <iframe
                       key={currentItem._id}
-                      src={currentItem.fileUrl}
+                      src={`${currentItem.fileUrl}#toolbar=0&navpanes=0&statusbar=0&view=FitH`}
                       title={currentItem.title}
                       onLoad={evaluateScrollGate}
                       className='mt-4 h-[420px] w-full rounded-lg border border-[#DFE2E0]'
@@ -320,12 +357,22 @@ export default function SignDocumentsModal({
                     // a 2px green ring (Figma 10769:1551). Time and signature id
                     // sit outside it so the seal itself stays clean.
                     <div className='mt-6 flex items-center gap-4'>
-                      <div className='flex h-[140px] w-[140px] shrink-0 flex-col items-center justify-center rounded-full border-2 border-[#22B14C] bg-white text-center'>
+                      {/* The caregiver's drawing IS the mark, so it sits inside
+                          the seal where the printed name used to be. */}
+                      <div className='flex h-[140px] w-[140px] shrink-0 flex-col items-center justify-center rounded-full border-2 border-[#22B14C] bg-white px-3 text-center'>
                         <span className='font-serif text-[11px] text-[#6C6C6C]'>Signed by</span>
-                        <span className='mt-0.5 px-2 text-[15px] font-bold leading-tight text-[#008000]'>
-                          {stampName}
-                        </span>
-                        <span className='mt-1 font-serif text-[13px] text-[#008000]'>Wevoro</span>
+                        {signature ? (
+                          <img
+                            src={signature}
+                            alt='Your signature'
+                            className='my-1 h-[46px] w-full object-contain'
+                          />
+                        ) : (
+                          <span className='my-1 line-clamp-2 text-[13px] font-bold leading-tight text-[#008000]'>
+                            {stampName}
+                          </span>
+                        )}
+                        <span className='font-serif text-[13px] text-[#008000]'>Wevoro</span>
                       </div>
                       <div className='text-[11px] leading-[17px] text-[#6C6C6C]'>
                         <p>{stampTime}</p>
@@ -391,6 +438,12 @@ export default function SignDocumentsModal({
           </>
         )}
       </DialogContent>
+      <DrawSignatureModal
+        open={drawOpen}
+        onOpenChange={setDrawOpen}
+        signerName={stampName}
+        onAdopt={handleDrawn}
+      />
     </Dialog>
   );
 }

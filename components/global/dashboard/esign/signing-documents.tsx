@@ -224,7 +224,7 @@ const GroupCard = ({
               No documents added yet
             </p>
             <p className='text-xs text-[#5E6864]'>
-              Add one or more files this {group.role} must sign · PDF or DOCX, up
+              Add one or more files this {group.role} must sign · PDF, up
               to 10 MB each
             </p>
           </div>

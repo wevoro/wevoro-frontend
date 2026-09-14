@@ -41,3 +41,11 @@ next-env.d.ts
 QA-*.html
 *-SCRUM-*.html
 qa-demo-media/
+
+# Local feature demos, guides and reports — built and viewed on the dev machine,
+# never part of the app.
+/features-*.html
+/*-report.html
+/*-guide.html
+/*-guide.pdf
+/*.pdf

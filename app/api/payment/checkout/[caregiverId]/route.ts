@@ -9,11 +9,16 @@ import { NextRequest, NextResponse } from 'next/server';
  * existing PaymentIntent — so calling this twice never creates a second charge.
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { caregiverId: string } }
 ) {
   try {
-    const response = await api.post(`/payment/checkout/${params.caregiverId}`);
+    // Tell the backend which site the agency is on, so Stripe sends them back
+    // here. QA and production share one backend, so it cannot know on its own.
+    const returnOrigin = request.headers.get('origin') || request.nextUrl.origin;
+    const response = await api.post(`/payment/checkout/${params.caregiverId}`, {
+      returnOrigin,
+    });
     return NextResponse.json({ status: 200, data: response.data?.data });
   } catch (error: any) {
     const status = error?.response?.status || 500;

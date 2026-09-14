@@ -45,8 +45,15 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
 
   /**
    * Stripe's hosted checkout sends the agency back to this profile with
-   * ?payment=success|cancelled&tx=<id>. Reopen the gate on the matching screen
-   * and strip the parameters, so a refresh does not replay the return.
+   * ?payment=success|cancelled&tx=<id>. Reopen the gate on the matching screen.
+   *
+   * The parameters stay in the address bar while the gate is open. Stripping
+   * them here — first with router.replace, then with history.replaceState —
+   * changes the page's search params, and the App Router keys the page segment
+   * on those, so this component was remounted a few seconds later and the gate
+   * vanished mid-confirmation: the agency was charged and the file downloaded,
+   * but "Payment successful" never appeared. They are cleared when the gate
+   * closes instead, where a remount no longer loses anything.
    */
   useEffect(() => {
     const outcome = params.get('payment');
@@ -56,10 +63,6 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
 
     setResume({ transactionId: tx, outcome });
     setPayOpen(true);
-    // history.replaceState, not router.replace: a router navigation re-renders
-    // this route and remounts the component, which threw away the state set two
-    // lines above and closed the dialog the agency had just been sent back to.
-    window.history.replaceState(null, '', window.location.pathname);
   }, [params]);
 
   return (
@@ -99,7 +102,14 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
           open
           onOpenChange={(v) => {
             setPayOpen(v);
-            if (!v) setResume(null);
+            if (!v) {
+              setResume(null);
+              // The gate is closed, so dropping the Stripe return parameters
+              // can no longer cut it short — and a refresh will not replay it.
+              if (params.get('payment')) {
+                window.history.replaceState(null, '', window.location.pathname);
+              }
+            }
           }}
           resume={resume}
           caregiverId={caregiverId}

@@ -79,7 +79,7 @@ export default function Agencies() {
 
             <Reveal className='mt-10'>
               <Link
-                href='/partner/signup'
+                href='/partner/access'
                 className='group inline-flex items-center gap-2 text-sm font-semibold text-primary'
               >
                 Learn about agency access

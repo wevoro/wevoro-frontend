@@ -30,7 +30,22 @@ const shortDate = (d?: string | null) =>
       })
     : '—';
 
-/** Paid / Pending / Failed, as a dot + label chip. */
+/**
+ * The ledger reads in Stripe's words — Success, Incomplete, Fail — so a founder
+ * comparing this table against the Stripe dashboard is looking at one
+ * vocabulary, not two. "Pending" was the worst of them: in Stripe it means an
+ * abandoned checkout, but the word suggests something still on its way.
+ *
+ * The stored values stay `paid` / `pending` / `failed`; this is display only.
+ */
+// Not exported: Next.js allows a page module to export only its own reserved
+// names, and an extra export here fails the production type check.
+const TX_STATUS_LABEL: Record<string, string> = {
+  paid: 'Success',
+  pending: 'Incomplete',
+  failed: 'Fail',
+};
+
 const StatusChip: React.FC<{ status: string }> = ({ status }) => {
   const styles: Record<string, string> = {
     paid: 'bg-[#E9F7EE] text-[#046A22]',
@@ -43,7 +58,7 @@ const StatusChip: React.FC<{ status: string }> = ({ status }) => {
     failed: 'bg-[#A72019]',
   };
   const key = (status || '').toLowerCase();
-  const label = key ? key[0].toUpperCase() + key.slice(1) : '—';
+  const label = TX_STATUS_LABEL[key] || (key ? key[0].toUpperCase() + key.slice(1) : '—');
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium ${
@@ -103,6 +118,9 @@ const PricingPage = () => {
       const params = new URLSearchParams({ page: String(page), limit: '10' });
       if (search.trim()) params.set('search', search.trim());
       if (status) params.set('status', status);
+      // Sorting belongs on the server: the response is one page of ten rows, so
+      // re-ordering it here only shuffled the page you were already looking at.
+      if (sort) params.set('sort', sort);
       const res = await fetch(`/api/admin/pricing?${params.toString()}`);
       const json = await res.json();
       if (!res.ok || json?.status !== 200) {
@@ -115,7 +133,7 @@ const PricingPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, search, status, sort]);
 
   // Debounced so typing in the search box does not fire a request per keystroke.
   useEffect(() => {
@@ -123,18 +141,8 @@ const PricingPage = () => {
     return () => clearTimeout(t);
   }, [load]);
 
-  const transactions = useMemo(() => {
-    const rows = data?.transactions ?? [];
-    if (sort === 'oldest') {
-      return [...rows].sort(
-        (a, b) => +new Date(a.transactionDate) - +new Date(b.transactionDate)
-      );
-    }
-    if (sort === 'amount') {
-      return [...rows].sort((a, b) => b.priceChargedCents - a.priceChargedCents);
-    }
-    return rows;
-  }, [data?.transactions, sort]);
+  // The server returns the page already sorted, so this is just the rows.
+  const transactions = data?.transactions ?? [];
 
   if (loading && !data) {
     return <div className='text-[14px] text-[#6C6C6C]'>Loading pricing…</div>;
@@ -265,16 +273,21 @@ const PricingPage = () => {
                 className='appearance-none rounded-lg border border-[#DFE2E0] bg-white py-2 pl-3 pr-8 text-[13.5px] text-[#1C1C1C] outline-none'
               >
                 <option value=''>Status</option>
-                <option value='paid'>Paid</option>
-                <option value='pending'>Pending</option>
-                <option value='failed'>Failed</option>
+                <option value='paid'>Success</option>
+                <option value='pending'>Incomplete</option>
+                <option value='failed'>Fail</option>
               </select>
               <ChevronDown className='pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[#6C6C6C]' />
             </div>
             <div className='relative'>
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value)}
+                onChange={(e) => {
+                  // Re-sorting reorders the whole ledger, so the old page
+                  // number points at unrelated rows — go back to the top.
+                  setPage(1);
+                  setSort(e.target.value);
+                }}
                 className='appearance-none rounded-lg border border-[#DFE2E0] bg-white py-2 pl-3 pr-8 text-[13.5px] text-[#1C1C1C] outline-none'
               >
                 <option value='newest'>Sort by</option>

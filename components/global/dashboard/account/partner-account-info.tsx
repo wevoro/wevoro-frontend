@@ -1,9 +1,14 @@
 import { CircleHelp, Star } from 'lucide-react';
 import React from 'react';
 import { useUserContext } from '@/lib/contexts';
+import { isCredentialingMode } from '@/lib/credentialing';
 
 const PartnerAccountInfo = () => {
   const { user } = useUserContext();
+
+  // SCRUM-88: the same scheduling-era counters as the agency profile header.
+  // Hidden for the credentialing beta; restored when the flag goes off.
+  if (isCredentialingMode()) return null;
 
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>

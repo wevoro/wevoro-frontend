@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import DownloadPackageButton from '@/components/global/dashboard/download-package-button';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import DownloadPackageButton, {
+  downloadCredentialPacket,
+} from '@/components/global/dashboard/download-package-button';
 import PacketDocumentsModal from './packet-documents-modal';
 import PaymentGateModal from './payment-gate-modal';
 
@@ -34,6 +37,28 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
   const [docsOpen, setDocsOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [paidTick, setPaidTick] = useState(0);
+  const [resume, setResume] = useState<
+    { transactionId: string; outcome: 'success' | 'cancelled' } | null
+  >(null);
+
+  const router = useRouter();
+  const params = useSearchParams();
+
+  /**
+   * Stripe's hosted checkout sends the agency back to this profile with
+   * ?payment=success|cancelled&tx=<id>. Reopen the gate on the matching screen
+   * and strip the parameters, so a refresh does not replay the return.
+   */
+  useEffect(() => {
+    const outcome = params.get('payment');
+    const tx = params.get('tx');
+    if (!outcome || !tx) return;
+    if (outcome !== 'success' && outcome !== 'cancelled') return;
+
+    setResume({ transactionId: tx, outcome });
+    setPayOpen(true);
+    router.replace(window.location.pathname, { scroll: false });
+  }, [params, router]);
 
   return (
     <>
@@ -70,13 +95,25 @@ const PacketDownloadAction: React.FC<PacketDownloadActionProps> = ({
       {payOpen && (
         <PaymentGateModal
           open
-          onOpenChange={setPayOpen}
+          onOpenChange={(v) => {
+            setPayOpen(v);
+            if (!v) setResume(null);
+          }}
+          resume={resume}
           caregiverId={caregiverId}
           caregiverName={caregiverName}
           caregiverImage={caregiverImage}
           caregiverRole={caregiverRole}
           onPaid={async () => {
-            // Force the documents modal to refetch so it flips to unlocked.
+            // Actually fetch the packet. The success screen tells the agency
+            // "your download is starting automatically", so this has to run the
+            // real download — bumping the refresh counter alone delivered
+            // nothing, because the documents modal is unmounted by now and the
+            // profile surface passes no onDownloaded. If it throws, the gate
+            // shows delivery-failed and the purchase still stands.
+            await downloadCredentialPacket(caregiverId, caregiverName);
+            // Keep the unlocked state fresh for when the documents modal
+            // is reopened.
             setPaidTick((t) => t + 1);
             onDownloaded?.();
           }}

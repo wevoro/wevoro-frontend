@@ -13,6 +13,7 @@ import { useUserContext } from '@/lib/contexts';
 import { CloudUpload } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+import { MAX_UPLOAD_MB } from '@/utils/download';
 
 const PartnerVerificationModal = ({
   children,
@@ -62,7 +63,8 @@ const PartnerVerificationModal = ({
   };
 
   const processFile = (file: File) => {
-    if (file.size > 3 * 1024 * 1024) {
+    // SCRUM-97: agencies photograph their licence too — same limit.
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
       setErrors({
         ...errors,
         file: 'File size must be less than 3MB',

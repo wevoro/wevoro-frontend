@@ -1,5 +1,5 @@
 import React from 'react';
-import { getUserByShareId, getUser } from '@/app/actions';
+import { getUserByShareId, getUser, recordShareVisit } from '@/app/actions';
 import { redirect } from 'next/navigation';
 import { isSharingEnabled } from '@/lib/credentialing';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,11 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
 
   // If logged-in partner, redirect to full profile view
   if (currentUser?.role === 'partner') {
+    // SCRUM-122: a signed-in agency opening the link has come in through this
+    // caregiver just as much as one signing up with it, so the caregiver must
+    // appear in their Offers › Submitted tab. Best-effort; the redirect happens
+    // either way.
+    await recordShareVisit(shareId);
     return redirect(`/partner/pros/${proUser._id}?s=true`);
   }
 

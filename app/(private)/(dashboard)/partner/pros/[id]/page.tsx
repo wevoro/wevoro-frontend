@@ -4,7 +4,7 @@ import ProfessionalInformation from '@/components/global/dashboard/professional-
 import Skills from '@/components/global/dashboard/skills';
 import AgencyCredentialStatus from '@/components/global/dashboard/agency-credential-status';
 import GchexsSection from '@/components/global/dashboard/gchexs-section';
-import DownloadPackageButton from '@/components/global/dashboard/download-package-button';
+import PacketDownloadAction from '@/components/global/dashboard/payment/packet-download-action';
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -54,9 +54,15 @@ const ProFromPartner = async ({ params }: { params: { id: string } }) => {
       {/* SCRUM-66: GCHEXS Flag (read-only for agencies) */}
       <GchexsSection isEditable={false} userData={user} />
       <AgencyCredentialStatus userId={user._id} />
-      {/* SCRUM-67: Download Credential Package */}
+      {/* SCRUM-67 download, behind the SCRUM-119 paywall. The action carries
+          its own modals so the paywall cannot be forgotten on a surface. */}
       <div className='flex justify-end'>
-        <DownloadPackageButton caregiverId={user._id} caregiverName={caregiverName} />
+        <PacketDownloadAction
+          caregiverId={user._id}
+          caregiverName={caregiverName}
+          caregiverImage={user?.personalInfo?.image}
+          caregiverRole={user?.professionalInfo?.role}
+        />
       </div>
       <Documents proUser={user} />
     </div>

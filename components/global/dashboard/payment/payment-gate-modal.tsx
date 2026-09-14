@@ -109,6 +109,36 @@ const EsignRow: React.FC<{ subtitle: string }> = ({ subtitle }) => (
   </div>
 );
 
+/**
+ * The dialog every screen of the gate renders into.
+ *
+ * It lives at module level on purpose. Declaring it inside the component made
+ * it a brand-new component type on every render, so React threw the dialog away
+ * and mounted a fresh one each time the screen changed — the agency saw the
+ * payment card flash out and back in between "loading" and "ready", and again
+ * on every later step. Hoisted, the dialog stays mounted and only its contents
+ * change.
+ */
+const GateShell: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  wide?: boolean;
+  children: React.ReactNode;
+}> = ({ open, onOpenChange, wide, children }) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    {/* The card form grows with Stripe's payment methods and can easily be
+        taller than a laptop screen. Without a height cap the dialog is centred
+        with translate-y(-50%), so it overflows off the top AND the bottom with
+        nothing to scroll — the pay button becomes unreachable. */}
+    <DialogContent
+      className={`${wide ? 'max-w-[560px]' : 'max-w-[520px]'} max-h-[92vh] overflow-y-auto overscroll-contain border-0 bg-transparent p-0 shadow-none`}
+    >
+      <Wordmark />
+      <div className='rounded-2xl bg-white p-8 shadow-sm'>{children}</div>
+    </DialogContent>
+  </Dialog>
+);
+
 const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   open,
   onOpenChange,
@@ -356,22 +386,15 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
     }
   };
 
-  const Shell: React.FC<{ children: React.ReactNode; wide?: boolean }> = ({
-    children,
-    wide,
-  }) => (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* The card form grows with Stripe's payment methods and can easily be
-          taller than a laptop screen. Without a height cap the dialog is
-          centred with translate-y(-50%), so it overflows off the top AND the
-          bottom with nothing to scroll — the pay button becomes unreachable. */}
-      <DialogContent
-        className={`${wide ? 'max-w-[560px]' : 'max-w-[520px]'} max-h-[92vh] overflow-y-auto overscroll-contain border-0 bg-transparent p-0 shadow-none`}
-      >
-        <Wordmark />
-        <div className='rounded-2xl bg-white p-8 shadow-sm'>{children}</div>
-      </DialogContent>
-    </Dialog>
+  /** Bound to this gate's open state; GateShell itself lives outside the
+      component so the dialog is never torn down between screens. */
+  const Shell: React.FC<{ children: React.ReactNode; wide?: boolean }> = useCallback(
+    ({ children, wide }) => (
+      <GateShell open={open} onOpenChange={onOpenChange} wide={wide}>
+        {children}
+      </GateShell>
+    ),
+    [open, onOpenChange]
   );
 
   // ---------------------------------------------------------------- processing

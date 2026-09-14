@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -58,6 +58,28 @@ const AdminVerifyModal: React.FC<AdminVerifyModalProps> = ({
     existingData?.hasNoExpiration === true
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Compared by value, so a parent re-render that rebuilds the same object does
+  // not wipe what the admin is typing.
+  const seed = useMemo(() => JSON.stringify(existingData || {}), [existingData]);
+
+  // The modal is mounted once and reused for every credential, so state seeded
+  // at mount kept the previous one's answers: the ID, dates and issuer entered
+  // for the TB test were still in the form when the driver's licence was opened
+  // next, and a careless Confirm would have written them to the wrong document.
+  // Re-seed from this document every time the modal opens.
+  useEffect(() => {
+    if (!open) return;
+    const data = JSON.parse(seed || '{}');
+    setForm({
+      credentialIdNumber: data.credentialIdNumber || '',
+      credentialIssueDate: toDateInputValue(data.credentialIssueDate) || '',
+      credentialExpirationDate: toDateInputValue(data.credentialExpirationDate) || '',
+      issuingOrganization: data.issuingOrganization || '',
+    });
+    setHasNoExpiration(data.hasNoExpiration === true);
+    setErrors({});
+  }, [open, documentId, seed]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};

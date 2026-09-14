@@ -529,7 +529,14 @@ export function ReviewApplicationModal({
                   inside the agency record rather than a separate activity area,
                   so everything about one agency reads in one place. */}
               {from === 'partner' && localData?._id && (
-                <AdminAgencyDocuments agencyId={localData._id} />
+                <AdminAgencyDocuments
+                  agencyId={localData._id}
+                  agencyName={
+                    localData?.personalInfo?.companyName ||
+                    localData?.personalInfo?.firstName ||
+                    'this agency'
+                  }
+                />
               )}
 
               {/* Pro: Background Checks + Credentials */}

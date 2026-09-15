@@ -282,7 +282,19 @@ export function ReviewApplicationModal({
             Application Details
           </DialogTitle>
         </DialogHeader>
-        <ScrollArea className='h-[70vh] sm:h-[80vh]'>
+        {/*
+          SCRUM-125. Radix puts the viewport's content inside a wrapper it
+          styles `display: table`, and a table sizes to max-content. One long
+          filename in the documents list stretched the whole dialog body to
+          ~2450px, so every row grew with it and the preview and download
+          buttons ended up roughly 1500px outside the panel, with overflow-x
+          hidden and no scrollbar to reach them. All an admin could see was the
+          badge and the filename. Forcing that wrapper back to a block makes the
+          rows honour the dialog width again, which is what lets `truncate` do
+          its job. Scoped to this dialog rather than the shared ScrollArea, so
+          nothing else in the app changes.
+        */}
+        <ScrollArea className='h-[70vh] sm:h-[80vh] [&_[data-radix-scroll-area-viewport]>div]:!block'>
           <div className='pr-2'>
             <div className='flex flex-col gap-5'>
               {/* Header: avatar + name/title + action buttons */}

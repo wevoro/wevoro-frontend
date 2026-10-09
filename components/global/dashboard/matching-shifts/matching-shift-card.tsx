@@ -209,7 +209,7 @@ const MatchingShiftCard: React.FC<MatchingShiftCardProps> = ({ shift }) => {
             </div>
           </div>
           {partner?._id && (
-            <Link href={`/pro/partner/${partner._id}`}>
+            <Link href={`/caregiver/agencies/${partner._id}`}>
               <Button
                 variant='outline'
                 size='sm'

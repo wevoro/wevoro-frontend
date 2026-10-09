@@ -5,6 +5,7 @@ import Steps from './steps';
 import { useSearchParams } from 'next/navigation';
 import AutoFillModal from './dashboard/autofill-modal';
 import { useUIContext } from '@/lib/contexts';
+import { cn } from '@/lib/utils';
 
 const Onboard = ({ source }: { source: 'partner' | 'pro' }) => {
   const searchParams = useSearchParams();
@@ -27,8 +28,10 @@ const Onboard = ({ source }: { source: 'partner' | 'pro' }) => {
             <h2 className='text-2xl font-semibold'>
               {isEdit ? 'Edit your profile' : 'Onboarding Page'}
             </h2>
+            {/* SCRUM-152: Faisal's Figma sets this paragraph in capitalized
+                case for the caregiver; the agency sidebar keeps its text. */}
             {!isEdit && (
-              <p className='text-base'>
+              <p className={cn('text-base', source === 'pro' && 'capitalize')}>
                 Welcome to healthcare! Let&apos;s get started with setting up
                 your profile to make managing your employment documents easier.
               </p>

@@ -262,7 +262,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               Confirm Onboarding?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to onboard this pro. Would you like to proceed now?
+              You are about to onboard this caregiver. Would you like to proceed now?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className='flex flex-row gap-3 sm:flex-row'>

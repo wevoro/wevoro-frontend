@@ -28,6 +28,7 @@ import { useUserContext } from '@/lib/contexts';
 import { useNotifications } from '@/app/apiHooks/useNotifications';
 import NotificationsPopover from './notifications-popover';
 import { Notification } from '@/app/types/types';
+import { isCaregiverPublicPath, roleBasePath } from '@/lib/routes';
 
 export default function DashboardNav() {
   const { id } = useParams();
@@ -38,10 +39,10 @@ export default function DashboardNav() {
     [notifications],
   );
   const [isOpen, setIsOpen] = React.useState(false);
-  const path = user?.role === 'pro' ? '/pro' : '/partner';
+  const path = roleBasePath(user?.role);
   const pathName = usePathname();
 
-  const isPublicProPage = pathName.includes('pro/') && id ? true : false;
+  const isPublicProPage = isCaregiverPublicPath(pathName) && !!id;
 
   // The bell opens the popover from the design rather than navigating; only
   // Settings remains a plain nav link here.
@@ -127,7 +128,7 @@ export default function DashboardNav() {
             </>
           ) : (
             <NavItem
-              href={`/partner/signup`}
+              href={`/agency/signup`}
               pathName={pathName}
               className='bg-primary text-white !px-10'
             >
@@ -203,7 +204,7 @@ export default function DashboardNav() {
                 </>
               ) : (
                 <NavItem
-                  href={`/partner/signup`}
+                  href={`/agency/signup`}
                   pathName={pathName}
                   className='bg-primary text-white !px-10'
                 >

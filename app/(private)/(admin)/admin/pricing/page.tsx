@@ -94,6 +94,11 @@ interface Overview {
     currency: string;
     status: string;
     transactionDate: string;
+    // SCRUM-143: the receipt stored with the transaction.
+    receiptNumber?: string | null;
+    receiptEmailSentAt?: string | null;
+    receiptSentTo?: string | null;
+    stripeTransactionId?: string | null;
   }>;
   total: number;
   page: number;
@@ -212,7 +217,7 @@ const PricingPage = () => {
             <tbody>
               {data.history.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className='px-6 py-6 text-[14px] text-[#6C6C6C]'>
+                  <td colSpan={6} className='px-6 py-6 text-[14px] text-[#6C6C6C]'>
                     No price changes yet.
                   </td>
                 </tr>
@@ -300,10 +305,10 @@ const PricingPage = () => {
         </div>
 
         <div className='overflow-x-auto rounded-xl bg-white'>
-          <table className='w-full min-w-[760px] border-collapse'>
+          <table className='w-full min-w-[900px] border-collapse'>
             <thead>
               <tr className='border-b border-[#DFE2E0]'>
-                {['Agency', 'Caregiver', 'Amount', 'Status', 'Date'].map((h) => (
+                {['Agency', 'Caregiver', 'Amount', 'Status', 'Date', 'Receipt'].map((h) => (
                   <th
                     key={h}
                     className='whitespace-nowrap px-6 py-3.5 text-left text-[13px] font-medium text-[#6C6C6C]'
@@ -335,6 +340,28 @@ const PricingPage = () => {
                     </td>
                     <td className='px-6 py-4 text-[14px] text-[#1C1C1C]'>
                       {shortDate(t.transactionDate)}
+                    </td>
+                    {/* SCRUM-143: the stored WeVoro receipt (SCRUM-142), opened
+                        here without going through Stripe's dashboard. */}
+                    <td className='px-6 py-4 text-[13px] text-[#1C1C1C]'>
+                      {t.status === 'paid' ? (
+                        <div className='flex flex-col gap-0.5'>
+                          <a
+                            href={`/api/payment/receipt/${t._id}`}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='font-semibold text-[#046A22] hover:underline'
+                          >
+                            {t.receiptNumber || 'View receipt'}
+                          </a>
+                          <span className='text-[12px] text-[#6C6C6C]'>
+                            {t.receiptEmailSentAt ? 'Emailed' : 'Not emailed'}
+                            {t.stripeTransactionId ? ` · ${t.stripeTransactionId}` : ''}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className='text-[#9CA3A0]'>—</span>
+                      )}
                     </td>
                   </tr>
                 ))

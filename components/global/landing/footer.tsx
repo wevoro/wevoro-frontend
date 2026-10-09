@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Facebook, Linkedin, Youtube } from 'lucide-react';
 import Container from '../container';
 import Logo from '../logo';
+import { toCurrentPath } from '@/lib/routes';
 
 export default function Footer({
   facebookLink,
@@ -100,7 +101,7 @@ export default function Footer({
               <ul className='list-none space-y-4 font-medium text-sm md:text-base pl-0'>
                 {section?.links?.map((link: any, linkIndex: number) => (
                   <li key={linkIndex} className='list-none '>
-                    <Link href={link.link}>{link.label}</Link>
+                    <Link href={toCurrentPath(link.link)}>{link.label}</Link>
                   </li>
                 ))}
                 {index === 1 && (

@@ -33,13 +33,13 @@ export default function CtaBanner() {
           </p>
           <div className='mt-8 flex flex-col gap-3 sm:flex-row'>
             <Link
-              href='/pro/signup'
+              href='/caregiver/signup'
               className='inline-flex h-[50px] items-center justify-center gap-2 rounded-[14px] bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/90'
             >
               Join as Caregiver <MoveUpRight className='size-4' />
             </Link>
             <Link
-              href='/partner/access'
+              href='/agency/access'
               className='inline-flex h-[50px] items-center justify-center rounded-[14px] border border-white/30 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10'
             >
               Join as Agency

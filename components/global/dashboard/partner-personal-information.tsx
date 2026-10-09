@@ -45,7 +45,7 @@ const PartnerPersonalInformation = ({
           className='mb-0 !text-lg md:!text-2xl'
         />
         {from !== 'admin' && (
-          <EditBtn href={`/partner/edit/personal-information?edit=true`} />
+          <EditBtn href={`/agency/edit/personal-information?edit=true`} />
         )}
       </div>
 

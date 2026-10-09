@@ -2,6 +2,7 @@ import { getResourcePagesData } from '@/app/actions';
 import Container from '@/components/global/container';
 import { urlFor } from '@/sanity/lib/client';
 import { PortableText } from '@portabletext/react';
+import FeedbackMount from '@/components/global/feedback/feedback-mount';
 import React from 'react';
 
 const PrivacyPage = async () => {
@@ -27,6 +28,11 @@ const PrivacyPage = async () => {
           }}
         />
       </Container>
+      {/* SCRUM-200: Privacy and Terms sit in the public (homelayout) group, so
+          they never got SCRUM-98's Feedback button from app/(private)/layout.
+          FeedbackMount carries that layout's rule verbatim, which is what keeps
+          the button off this page for a logged-out reader. */}
+      <FeedbackMount />
     </div>
   );
 };

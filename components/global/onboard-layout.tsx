@@ -19,7 +19,10 @@ const OnboardContentLayout: React.FC<OnboardContentLayoutProps> = ({
         </div>
         <Back />
       </div>
-      {children}
+      {/* SCRUM-152 (Figma onboarding frames): the caregiver's steps sit in a
+          780px column — cards, Skip for now and the Previous / Next / Need
+          help row all align to it. The agency form keeps the full width. */}
+      <div className={source === 'pro' ? 'max-w-[780px]' : undefined}>{children}</div>
     </div>
   );
 };

@@ -28,7 +28,7 @@ const ProBanner = ({
             <ProButton />
           ) : (
             <Button
-              href='/pro/signup'
+              href='/caregiver/signup'
               className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto'
             >
               {buttonText}

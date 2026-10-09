@@ -46,7 +46,7 @@ export default function OfferActionModal() {
     if (responseData.status === 200) {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
       closeOfferAction();
-      router.push(`/pro/jobs`);
+      router.push(`/caregiver/jobs`);
       toast.success(`Offer ${status} successfully!`);
       // Notification is now sent from the backend
     } else {

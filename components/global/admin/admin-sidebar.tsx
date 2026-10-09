@@ -19,11 +19,13 @@ import {
   LayoutDashboardIcon,
   MessageCircleQuestion,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import Logo from '../logo';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUserContext } from '@/lib/contexts';
+import { SHOW_AI_AUTOMATION_PAGE } from '@/lib/feature-flags';
 
 const items = [
   {
@@ -33,12 +35,12 @@ const items = [
   },
   {
     title: 'Agencies',
-    url: '/admin/partners',
+    url: '/admin/agencies',
     icon: Building2,
   },
   {
     title: 'Caregivers',
-    url: '/admin/pros',
+    url: '/admin/caregivers',
     icon: FileBadge,
   },
   {
@@ -72,13 +74,27 @@ const superAdminItems = [
   },
 ];
 
+// How much of the credential review the AI does. Last in the list, below the
+// Super Admin panel, because it is a platform-wide switch rather than a place
+// an admin works day to day. Gated by auth(ADMIN) on the backend like Pricing.
+const aiItems = [
+  {
+    title: 'AI Automation',
+    url: '/admin/ai-automation',
+    icon: Sparkles,
+  },
+];
+
 export function AdminSidebar() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const { user } = useUserContext();
 
+  const ai = SHOW_AI_AUTOMATION_PAGE ? aiItems : [];
   const navItems =
-    user?.role === 'super_admin' ? [...items, ...superAdminItems] : items;
+    user?.role === 'super_admin'
+      ? [...items, ...superAdminItems, ...ai]
+      : [...items, ...ai];
 
   return (
     <Sidebar>

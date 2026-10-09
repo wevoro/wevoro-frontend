@@ -19,6 +19,20 @@ export interface EngagementEntry {
   role?: 'CNA' | 'PCA' | null;
   onboardedAt?: string | null;
   downloadedAt?: string | null;
+  /** SCRUM-141: agency-side only — where the Onboard → Respond flow stands. */
+  onboard?: {
+    state: 'none' | 'awaiting' | 'signing' | 'submitted' | 'declined';
+    submittedAt?: string | null;
+    signedCount?: number;
+    totalToSign?: number;
+    /** What the caregiver was asked to sign (Faisal A8 rows). */
+    documents?: Array<{ title: string; signed: boolean }>;
+  } | null;
+  /** SCRUM-141: agency-side only — the packet is already bought. */
+  paid?: boolean;
+  paidAt?: string | null;
+  /** Agency-side: the package price, shown on the download button. */
+  priceCents?: number | null;
 }
 
 /**
@@ -66,7 +80,11 @@ export function EngagementCard({
             {fmt(entry.onboardedAt) && (
               <span className='inline-flex items-center gap-1.5'>
                 <CalendarDays className='size-3.5' />
-                Onboarded on {fmt(entry.onboardedAt)}
+                {/* This card lists agencies that reached the caregiver through
+                    their share link and have NOT sent a request — `onboardedAt`
+                    here is when the link was opened. Calling that "Onboarded"
+                    read to Alfonza (1 Oct) as a request waiting in Submitted. */}
+                Opened your profile link on {fmt(entry.onboardedAt)}
               </span>
             )}
             {fmt(entry.downloadedAt) && (

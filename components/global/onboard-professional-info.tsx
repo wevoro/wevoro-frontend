@@ -1,11 +1,13 @@
 'use client';
 import React, {
   forwardRef,
+  useRef,
   useEffect,
   useImperativeHandle,
   useState,
 } from 'react';
 import Title from '@/components/global/title';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import OnboardButton from '@/components/global/onboard-button';
 import { CloudUploadIcon, LinkIcon, Sparkles } from 'lucide-react';
@@ -34,23 +36,41 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
 
   const searchParams = useSearchParams();
   const isEdit = searchParams.get('edit') === 'true';
+  /*
+   * SCRUM-205: the profile's Skills card has its own Edit, and it used to open
+   * this whole form — Role, Education, Experience and the deleted Licenses &
+   * Certifications block — with Skills somewhere down the page. `section=skills`
+   * narrows it to the one card the caregiver asked to edit. Any other entry
+   * (the Professional information card's own Edit, the admin modal, onboarding)
+   * passes nothing and is unchanged.
+   */
+  const section = searchParams.get('section');
+  const skillsOnly = isEdit && section === 'skills';
 
-  const { professionalInfoRef, extractedData, setExtractedData } =
+  const { professionalInfoRef, extractedData, setExtractedData, takeDraft, setDraft } =
     useOnboardContext();
   const { user, refetchUser, isUserLoading } = useUserContext();
+  // SCRUM-152: during onboarding this step is optional and shows only
+  // Education and Experience (Faisal's Figma): the Role is asked on step 1,
+  // and Skills and the Licenses & Certifications block are not part of it.
+  // Next on an untouched form goes straight to the credentials step. The
+  // profile edit form (?edit=true) and the admin modal are unchanged.
+  const onboarding = !isEdit && !from;
   // console.log('🚀 ~ user:', Boolean({}));
   const { refetchUsers, refetchQaUsers } = useAdminContext();
   const { setOpenAutoFillModal } = useUIContext();
   const extractedProfessionalInfo = extractedData?.professionalInformation;
   // console.log('🚀 ~ extractedProfessionalInfo:', extractedProfessionalInfo);
 
-  const userData = extractedProfessionalInfo
-    ? extractedProfessionalInfo
-    : from && userFromAdmin?.professionalInfo
+  // SCRUM-153: the saved profile first; the AI resume data is applied once by
+  // the effect below and consumed on save (see onSubmit).
+  const savedInfo =
+    from && userFromAdmin?.professionalInfo
       ? userFromAdmin?.professionalInfo
       : !from && user?.professionalInfo
         ? user?.professionalInfo
         : {};
+  const userData = savedInfo;
 
   const { education, experience, certifications, skills, role } = userData;
 
@@ -59,13 +79,22 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       extractedProfessionalInfo &&
       Object.keys(extractedProfessionalInfo).length > 0
     ) {
-      reset({
-        education: extractedProfessionalInfo.education,
-        experience: extractedProfessionalInfo.experience,
-        certifications: extractedProfessionalInfo.certifications,
-        skills: extractedProfessionalInfo.skills,
-      });
+      const pick = (v: any) => (Array.isArray(v) && v.length > 0 ? v : undefined);
+      reset(
+        {
+          ...getValues(),
+          education: pick(extractedProfessionalInfo.education) ?? getValues('education'),
+          experience: pick(extractedProfessionalInfo.experience) ?? getValues('experience'),
+          certifications:
+            pick(extractedProfessionalInfo.certifications) ?? getValues('certifications'),
+          skills: pick(extractedProfessionalInfo.skills) ?? getValues('skills'),
+          // The reset used to drop the role the caregiver had already chosen.
+          role: extractedProfessionalInfo.role || getValues('role'),
+        },
+        { keepDefaultValues: true },
+      );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extractedProfessionalInfo]);
 
   const processedCertifications = certifications?.map((certification: any) => {
@@ -91,11 +120,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     setValue,
     control,
     watch,
+    getValues,
     formState: { errors, isDirty },
     reset,
   } = useForm({
     defaultValues: {
-      education: education || [
+      // A saved-but-empty list (step 1 saves the role, which creates the
+      // record with education: [] and experience: []) still shows one blank
+      // block, as in Figma — an empty array used to hide the section's fields.
+      education: education?.length ? education : [
         {
           degree: '',
           institution: '',
@@ -104,7 +137,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           grade: '',
         },
       ],
-      experience: experience || [
+      experience: experience?.length ? experience : [
         {
           jobTitle: '',
           companyName: '',
@@ -153,6 +186,41 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     name: 'certifications',
   });
 
+  // SCRUM-153: a draft left behind by Previous / Back wins over everything;
+  // otherwise, the saved profile that may have arrived after this mounted.
+  const draftRef = useRef<any>(onboarding ? takeDraft('professional') : null);
+  const savedKey = JSON.stringify(savedInfo ?? {});
+  useEffect(() => {
+    if (draftRef.current) {
+      reset(draftRef.current, { keepDefaultValues: true });
+      draftRef.current = null;
+      return;
+    }
+    if (extractedProfessionalInfo || isDirty) return;
+    if (!savedInfo || Object.keys(savedInfo).length === 0) return;
+    reset({
+      education: education?.length ? education : getValues('education'),
+      experience: experience?.length ? experience : getValues('experience'),
+      certifications: processedCertifications || getValues('certifications'),
+      skills: skills || [],
+      role: role || '',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedKey]);
+
+  // SCRUM-153: leaving this step without saving keeps what was typed, so
+  // coming back (Previous from the credentials step, or Back) shows it again.
+  const savedRef = useRef(false);
+  const valuesRef = useRef(getValues);
+  valuesRef.current = getValues;
+  useEffect(() => {
+    if (!onboarding) return;
+    return () => {
+      if (!savedRef.current) setDraft('professional', valuesRef.current());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
       const targetElement = document.querySelector(window.location.hash);
@@ -168,7 +236,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
     try {
       // Skip submission if form is not dirty and not in edit mode
       if (!isDirty && !isEdit && !from) {
-        return router.push('/pro/onboard/document-upload');
+        return router.push('/caregiver/onboard/document-upload');
       }
 
       setExtractedData(null);
@@ -176,8 +244,12 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       setIsLoading(true);
       const formData = new FormData();
 
-      // Process certifications: format dates and clean up data
-      const processedCertifications = data.certifications.map(
+      // Process certifications: format dates and clean up data. SCRUM-152: the
+      // block is hidden during onboarding, so an untouched empty row is not a
+      // certification and is not saved.
+      const processedCertifications = (data.certifications || []).filter(
+        (cert: any) => cert?.title || cert?.institution || cert?.credentialId || cert?.certificateFile,
+      ).map(
         (cert: any, index: number) => {
           // Get the actual file if it exists (from file input)
           const uploadedFile = cert.certificateFile?.[0];
@@ -213,6 +285,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
         ...data,
         certifications: processedCertifications,
       };
+      // SCRUM-152: in onboarding the Role is chosen and saved on step 1. This
+      // step never shows it, so its value here is stale ('' on a fresh form or
+      // after Clear All, or the resume's guess) and must not overwrite it.
+      if (onboarding) delete payload.role;
 
       formData.append('data', JSON.stringify(payload));
 
@@ -228,7 +304,9 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       const responseData = await response.json();
 
       if (responseData.status === 200) {
-        refetchUser();
+        savedRef.current = true;
+        setDraft('professional', null);
+        await Promise.resolve(refetchUser());
         if (from === 'admin') {
           refetchUsers();
           refetchQaUsers();
@@ -243,7 +321,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           if (isEdit) {
             router.back();
           } else {
-            router.push('/pro/onboard/document-upload');
+            router.push('/caregiver/onboard/document-upload');
           }
         }
       } else {
@@ -289,17 +367,26 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
   return (
     <form ref={professionalInfoRef} onSubmit={handleSubmit(onSubmit)}>
       <div className='flex items-center justify-between mb-8'>
-        <Title text='Professional Info' className='mb-0' />
+        <Title text={onboarding ? 'Professional information' : 'Professional Info'} className='mb-0' />
         <div className='flex items-center gap-3'>
-          {from !== 'admin' && (
+          {from !== 'admin' && !onboarding && (
             <Button
               type='button'
               variant='outline'
               className='text-sm h-9 px-4 rounded-lg border-gray-300 text-muted-foreground hover:text-red-500 hover:border-red-300'
               onClick={() => {
+                const emptyEducation = [{ degree: '', institution: '', yearOfGraduation: '', fieldOfStudy: '', grade: '' }];
+                const emptyExperience = [{ jobTitle: '', companyName: '', duration: '', responsibilities: '' }];
+                // SCRUM-152: onboarding shows only Education and Experience, so
+                // Clear All must not wipe the role, skills or certifications
+                // the caregiver cannot see on this step.
+                if (onboarding) {
+                  reset({ ...getValues(), education: emptyEducation, experience: emptyExperience });
+                  return;
+                }
                 reset({
-                  education: [{ degree: '', institution: '', yearOfGraduation: '', fieldOfStudy: '', grade: '' }],
-                  experience: [{ jobTitle: '', companyName: '', duration: '', responsibilities: '' }],
+                  education: emptyEducation,
+                  experience: emptyExperience,
                   certifications: [{ title: '', institution: '', issueDate: '', expireDate: '', credentialId: '', credentialUrl: '', certificateFile: null }],
                   skills: [],
                   role: '',
@@ -316,7 +403,9 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
       {isLoading && <LoadingOverlay />}
 
       <div className='flex flex-col gap-10'>
-        {/* SCRUM-60: Role (CNA / PCA) — required; drives [Role] Certificate label */}
+        {/* SCRUM-60: Role (CNA / PCA) — required; drives [Role] Certificate label.
+            SCRUM-152 (Figma): asked on step 1 during onboarding, so not here. */}
+        {!onboarding && !skillsOnly && (
         <div className='flex flex-col gap-3'>
           <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
             Role <span className='text-red-500'>*</span>
@@ -327,7 +416,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           <Controller
             control={control}
             name='role'
-            rules={{ required: 'Please select your role' }}
+            rules={{ required: !onboarding && 'Please select your role' }}
             render={({ field }) => (
               <div className='flex flex-col sm:flex-row gap-3'>
                 {[
@@ -360,8 +449,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             <p className='text-sm text-red-500'>{(errors.role as any).message}</p>
           )}
         </div>
+        )}
 
         {/* Education Section */}
+        {!skillsOnly && (
         <div className='flex flex-col gap-5'>
           <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
             Education
@@ -428,11 +519,11 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-5'>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-tertiary'>
-                    Year of Graduation
+                    Year of graduation
                   </label>
                   <Input
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                    placeholder='e.g. 2024'
+                    placeholder={onboarding ? 'Input Text' : 'e.g. 2024'}
                     type='number'
                     maxLength={4}
                     max={new Date().getFullYear()}
@@ -455,7 +546,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-tertiary'>
-                    Field of Study
+                    Field of study
                   </label>
                   <Input
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
@@ -493,7 +584,10 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           />
         </div>
 
+        )}
+
         {/* Experience Section */}
+        {!skillsOnly && (
         <div className='flex flex-col gap-5'>
           <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
             Experience
@@ -529,7 +623,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                 </div>
                 <div className='flex flex-col gap-3'>
                   <label className='text-base font-medium text-tertiary'>
-                    Company Name
+                    Company name
                   </label>
                   <Input
                     className='rounded-[12px] h-14 bg-[#f9f9f9]'
@@ -563,17 +657,27 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
                 <label className='text-base font-medium text-tertiary'>
                   Responsibilities
                 </label>
-                <Controller
-                  name={`experience.${index}.responsibilities`}
-                  control={control}
-                  render={({ field }) => (
-                    <Editor
-                      value={field.value}
-                      onChange={(content) => field.onChange(content)}
-                      placeholder='Write about your responsibilities...'
-                    />
-                  )}
-                />
+                {/* SCRUM-152 (Figma): a single-line field in onboarding, like
+                    the others; the profile edit form keeps the rich editor. */}
+                {onboarding ? (
+                  <Input
+                    className='rounded-[12px] h-14 bg-[#f9f9f9]'
+                    placeholder='Input Text'
+                    {...register(`experience.${index}.responsibilities`)}
+                  />
+                ) : (
+                  <Controller
+                    name={`experience.${index}.responsibilities`}
+                    control={control}
+                    render={({ field }) => (
+                      <Editor
+                        value={field.value}
+                        onChange={(content) => field.onChange(content)}
+                        placeholder='Write about your responsibilities...'
+                      />
+                    )}
+                  />
+                )}
               </div>
 
               {index > 0 && (
@@ -594,7 +698,15 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
           />
         </div>
 
-        {/* Licenses & Certifications Section */}
+        )}
+
+        {/* SCRUM-205: Licenses & Certifications was removed from the product by
+            SCRUM-152, but this form kept rendering it for the profile edit — so a
+            caregiver changing one skill was sent through a section of mandatory
+            fields that no longer exists anywhere else, and could not get past it.
+            It is gone from the caregiver's edit form. The admin modal keeps it:
+            that surface still reads these records. */}
+        {!onboarding && from === 'admin' && (
         <div className='flex flex-col gap-5'>
           <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
             Licenses & Certifications
@@ -904,9 +1016,11 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             }
           />
         </div>
+        )}
+        {!onboarding && (
         <div className='flex flex-col gap-5' id='skills'>
           <h2 className='text-2xl font-medium leading-[33.6px] text-gray-800'>
-            Skills {from !== 'admin' && <span className='text-red-500'>*</span>}
+            Skills {from !== 'admin' && !onboarding && <span className='text-red-500'>*</span>}
           </h2>
 
           <SkillsSelector
@@ -918,19 +1032,21 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
             type='hidden'
             value={watch('skills')}
             {...register('skills', {
-              required: from !== 'admin' && 'At least one skill is required',
+              // SCRUM-152: optional during onboarding.
+              required: from !== 'admin' && !onboarding && 'At least one skill is required',
             })}
           />
           {errors.skills &&
             errors.skills.message &&
             renderError(errors.skills.message as string)}
         </div>
+        )}
 
         {from !== 'admin' && (
-          <div className='flex gap-5'>
+          <div className='flex items-center gap-5'>
             <OnboardButton
               text={isEdit ? 'Cancel' : 'Previous'}
-              className='w-full bg-white text-tertiary border border-gray-300 hover:text-white'
+              className={cn('w-full bg-white text-tertiary border hover:text-white', onboarding ? 'border-tertiary' : 'border-gray-300')}
               onClick={() => router.back()}
             />
             <OnboardButton
@@ -939,6 +1055,7 @@ const OnboardProfessionalInfo = forwardRef((props: any) => {
               type='submit'
               disabled={!isDirty && isEdit}
             />
+            {onboarding && <span className='ml-auto hidden sm:inline-flex items-center gap-1.5 text-sm text-tertiary'><img src='/info.svg' alt='' className='size-4' /> Need help?</span>}
           </div>
         )}
       </div>

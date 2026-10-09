@@ -12,7 +12,7 @@ const CareerButton = ({
 }) => {
   return (
     <Button
-      href={environmentType === 'waitlist' ? undefined : '/pro/signup'}
+      href={environmentType === 'waitlist' ? undefined : '/caregiver/signup'}
       onClick={() =>
         environmentType === 'waitlist' && scrollToSection('joinwaitlist')
       }

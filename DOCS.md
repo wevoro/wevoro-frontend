@@ -211,15 +211,19 @@ RootLayout (app/layout.tsx)
 | Route                | Component          | Description                      |
 | -------------------- | ------------------ | -------------------------------- |
 | `/`                  | Home page          | Landing page with hero, features |
-| `/pros`              | For Professionals  | Information for job seekers      |
-| `/partners`          | For Partners       | Information for employers        |
-| `/pro/login`         | Pro Login          | Healthcare professional login    |
-| `/partner/login`     | Partner Login      | Organization login               |
-| `/pro/profile`       | Pro Profile        | Job seeker dashboard             |
-| `/partner/profile`   | Partner Profile    | Employer dashboard               |
+| `/caregivers`        | For Caregivers     | Information for job seekers      |
+| `/agencies`          | For Agencies       | Information for employers        |
+| `/caregiver/login`         | Caregiver Login    | Healthcare professional login    |
+| `/agency/login`     | Agency Login       | Organization login               |
+| `/caregiver/profile`       | Caregiver Profile  | Job seeker dashboard             |
+| `/agency/profile`   | Agency Profile     | Employer dashboard               |
 | `/admin`             | Admin Panel        | Platform administration          |
-| `/pro/onboard/*`     | Pro Onboarding     | Multi-step registration          |
-| `/partner/onboard/*` | Partner Onboarding | Multi-step registration          |
+| `/caregiver/onboard/*`     | Caregiver Onboarding | Multi-step registration          |
+| `/agency/onboard/*` | Agency Onboarding  | Multi-step registration          |
+
+The old `/pro/*`, `/partner/*`, `/pros` and `/partners` addresses still work: they
+redirect to the pages above (`next.config.mjs`, SCRUM-144). Account roles are still
+stored as `pro` / `partner`; `lib/routes.ts` converts between roles and URLs.
 
 ---
 
@@ -430,10 +434,10 @@ export async function POST(req: NextRequest) {
 
 **Journey:**
 
-1. Sign up → `/pro/signup`
-2. Login → `/pro/login`
-3. Onboarding → `/pro/onboard/*`
-4. Dashboard → `/pro/profile`
+1. Sign up → `/caregiver/signup`
+2. Login → `/caregiver/login`
+3. Onboarding → `/caregiver/onboard/*`
+4. Dashboard → `/caregiver/profile`
 
 **Dashboard Features:**
 
@@ -448,11 +452,11 @@ export async function POST(req: NextRequest) {
 
 **Journey:**
 
-1. Sign up → `/partner/signup`
-2. Login → `/partner/login`
-3. Onboarding → `/partner/onboard/*`
+1. Sign up → `/agency/signup`
+2. Login → `/agency/login`
+3. Onboarding → `/agency/onboard/*`
 4. Verification → Partner verification process
-5. Dashboard → `/partner/profile`
+5. Dashboard → `/agency/profile`
 
 **Dashboard Features:**
 
@@ -494,16 +498,16 @@ graph LR
 
 | Step | Route                            | Component                       | Description                        |
 | ---- | -------------------------------- | ------------------------------- | ---------------------------------- |
-| 1    | `/pro/onboard/personal-info`     | `onboard-personal-info.tsx`     | Name, contact, location            |
-| 2    | `/pro/onboard/professional-info` | `onboard-professional-info.tsx` | Skills, experience, certifications |
-| 3    | `/pro/onboard/document-upload`   | `onboard-document-upload.tsx`   | Upload required documents          |
-| 4    | `/pro/onboard/completed`         | Completion page                 | Success confirmation               |
+| 1    | `/caregiver/onboard/personal-info`     | `onboard-personal-info.tsx`     | Name, contact, location            |
+| 2    | `/caregiver/onboard/professional-info` | `onboard-professional-info.tsx` | Skills, experience, certifications |
+| 3    | `/caregiver/onboard/document-upload`   | `onboard-document-upload.tsx`   | Upload required documents          |
+| 4    | `/caregiver/onboard/completed`         | Completion page                 | Success confirmation               |
 
 ### Partner Onboarding Flow
 
 | Step | Route                            | Description                     |
 | ---- | -------------------------------- | ------------------------------- |
-| 1    | `/partner/onboard/personal-info` | Organization details            |
+| 1    | `/agency/onboard/personal-info` | Organization details            |
 | 2    | Partner verification             | Document verification process   |
 | 3    | Dashboard access                 | Access to full partner features |
 

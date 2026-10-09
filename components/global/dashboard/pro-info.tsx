@@ -1,18 +1,22 @@
 import moment from 'moment';
-import { CheckCircle2, Share2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import ProfileName from './profile-name';
-import ShareProfileModal from './share-profile-modal';
-import { Button } from '@/components/ui/button';
-import { isSharingEnabled } from '@/lib/credentialing';
+import ShareProfileGate, { useCaregiverChipStatus } from './share-profile-gate';
+import { caregiverShareLink, isSharingEnabled } from '@/lib/credentialing';
 
 const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
   const personalInfo = user?.personalInfo;
-  const status = user?.status;
   const role = user?.role;
+  // SCRUM-133 (Faisal, state 3 — Unlocked): once all 5 credentials are
+  // verified the caregiver's own header chip reads Verified instead of
+  // In Review (or Pending). Only on their own profile, where the share card
+  // lives. The Settings sidebar uses the same hook, so the two never disagree.
+  const isOwnProfile = !isProProfileFromPartner && !isPublicProPage;
+  const status = useCaregiverChipStatus(user, isOwnProfile);
   const name =
     personalInfo?.firstName && personalInfo?.lastName
       ? `${personalInfo?.firstName} ${personalInfo?.lastName}`
@@ -35,9 +39,8 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
   // not the pill row above it (y=40), so offset it when pills are present.
   const hasStatusPills = role === 'pro' && (isRising || !!user?.isRecentlyActive);
 
-  const shareLink = typeof window !== 'undefined'
-    ? `${window.location.origin}/p/${user?.shareId || user?._id}`
-    : `/p/${user?.shareId || user?._id}`;
+  const shareLink = caregiverShareLink(user);
+
 
   return (
     <div className='flex justify-between lg:flex-row flex-col gap-3 sm:gap-6 w-full'>
@@ -84,12 +87,9 @@ const ProInfo = ({ user, isProProfileFromPartner, isPublicProPage }: any) => {
             hasStatusPills && 'lg:mt-10',
           )}
         >
-          <ShareProfileModal shareLink={shareLink}>
-            <Button className='h-11 rounded-xl gap-2 font-semibold px-5'>
-              <Share2 className='size-4' />
-              Share Profile
-            </Button>
-          </ShareProfileModal>
+          {/* SCRUM-133: the link is only handed out once all 5 credentials are
+              confirmed; until then this shows how far along the caregiver is. */}
+          <ShareProfileGate userId={user?._id} shareLink={shareLink} />
         </div>
       )}
     </div>

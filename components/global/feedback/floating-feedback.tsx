@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, ImagePlus, X } from 'lucide-react';
 import Image from 'next/image';
 import TypingIndicator from './typing';
 import Header from './header';
@@ -43,6 +43,11 @@ export default function FloatingFeedback() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
+  // SCRUM-201: the screenshot waiting to go with the next message, already
+  // shrunk to something an email-sized payload can carry.
+  const [screenshot, setScreenshot] = useState<{ dataUri: string; name: string } | null>(null);
+  const [screenshotError, setScreenshotError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [conversationState, setConversationState] = useState<ConversationState>(
     { step: 'initial' }
   );
@@ -291,6 +296,9 @@ export default function FloatingFeedback() {
         message: feedbackMessage,
         feedbackType: conversationState.selectedMainOption || 'Others',
         selections: selections,
+        // SCRUM-201: only sent when something was attached, so feedback
+        // without a picture posts exactly the body it always did.
+        ...(screenshot ? { screenshot: screenshot.dataUri } : {}),
       };
 
       const response = await fetch('/api/user/feedback', {
@@ -303,6 +311,8 @@ export default function FloatingFeedback() {
 
       if (response.ok) {
         setIsBotTyping(false);
+        setScreenshot(null);
+        setScreenshotError('');
         addMessage(
           'Thank you for the feedback! We will have a look on your suggestion. Your time is appreciated.',
           'bot'
@@ -378,9 +388,66 @@ export default function FloatingFeedback() {
     }, 1500);
   };
 
+  /**
+   * SCRUM-201: shrink the picture in the browser before it is sent.
+   *
+   * A phone screenshot is several megabytes, and this goes out as a data URI
+   * inside the feedback body, so it is redrawn at no more than 1600px on its
+   * longest side and saved as JPEG. That is far more than enough to read a
+   * screen, and keeps the request small enough to be reliable on a phone.
+   */
+  const shrinkImage = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('That file could not be read.'));
+      reader.onload = () => {
+        const img = new window.Image();
+        img.onerror = () => reject(new Error('That file is not an image we can read.'));
+        img.onload = () => {
+          const MAX = 1600;
+          const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(String(reader.result));
+            return;
+          }
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const handlePickScreenshot = async (file: File | undefined) => {
+    if (!file) return;
+    setScreenshotError('');
+    if (!file.type.startsWith('image/')) {
+      setScreenshotError('Only an image can be attached.');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setScreenshotError('That image is too large. Please pick one under 20 MB.');
+      return;
+    }
+    try {
+      const dataUri = await shrinkImage(file);
+      setScreenshot({ dataUri, name: file.name });
+    } catch (e: any) {
+      setScreenshotError(e?.message || 'That image could not be attached.');
+    }
+  };
+
   const handleSendMessage = async () => {
     if (message.trim()) {
-      addMessage(message, 'user');
+      addMessage(screenshot ? `${message}\n(screenshot attached)` : message, 'user');
       const currentMessage = message;
       setMessage('');
       setIsBotTyping(true);
@@ -648,7 +715,58 @@ export default function FloatingFeedback() {
 
                 {/* Message Input */}
                 <div className='p-4'>
+                  {/* SCRUM-201: what is attached, and a way to take it off
+                      again, sitting above the box it will be sent with. */}
+                  {screenshot && (
+                    <div className='mb-2 flex items-center gap-2 rounded-xl border border-[#DFE2E0] bg-white p-2'>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={screenshot.dataUri}
+                        alt='The screenshot you attached'
+                        className='size-10 shrink-0 rounded-lg object-cover'
+                      />
+                      <span className='min-w-0 flex-1 truncate text-xs text-muted-foreground'>
+                        {screenshot.name}
+                      </span>
+                      <button
+                        type='button'
+                        onClick={() => setScreenshot(null)}
+                        aria-label='Remove the screenshot'
+                        className='flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-[#F1F4F2]'
+                      >
+                        <X className='size-4' />
+                      </button>
+                    </div>
+                  )}
+                  {screenshotError && (
+                    <p className='mb-2 px-1 text-xs text-red-600'>{screenshotError}</p>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type='file'
+                    accept='image/*'
+                    className='hidden'
+                    onChange={(e) => {
+                      handlePickScreenshot(e.target.files?.[0]);
+                      e.target.value = '';
+                    }}
+                  />
                   <div className='flex h-[60px] items-center w-full px-2 py-2 bg-white rounded-full border border-[#DFE2E0]'>
+                    <button
+                      type='button'
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={!canUseTextInput || conversationState.step === 'ended'}
+                      title='Attach a screenshot'
+                      aria-label='Attach a screenshot'
+                      className={cn(
+                        'flex size-9 shrink-0 items-center justify-center rounded-full transition-colors',
+                        !canUseTextInput || conversationState.step === 'ended'
+                          ? 'cursor-not-allowed text-[#C3CAC6]'
+                          : 'text-[#6C6C6C] hover:bg-[#F1F4F2]'
+                      )}
+                    >
+                      <ImagePlus className='size-5' />
+                    </button>
                     <input
                       type='text'
                       placeholder='Message...'

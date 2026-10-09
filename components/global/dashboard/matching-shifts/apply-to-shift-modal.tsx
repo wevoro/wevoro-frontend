@@ -365,7 +365,7 @@ const ApplyToShiftModal: React.FC<ApplyToShiftModalProps> = ({
                     </div>
                   </div>
                   {partner?._id && (
-                    <Link href={`/pro/partner/${partner._id}`}>
+                    <Link href={`/caregiver/agencies/${partner._id}`}>
                       <Button
                         variant='outline'
                         size='sm'

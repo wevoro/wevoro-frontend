@@ -61,7 +61,7 @@ export default function Caregivers() {
 
         <Reveal className='mt-12'>
           <Link
-            href='/pro/signup'
+            href='/caregiver/signup'
             className='group inline-flex items-center gap-2 text-sm font-semibold text-primary'
           >
             Create your free profile

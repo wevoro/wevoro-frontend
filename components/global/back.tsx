@@ -1,21 +1,25 @@
 'use client';
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { useAuthContext } from '@/lib/contexts';
 
 const Back: React.FC<{ disabled?: boolean }> = ({ disabled }) => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const { shouldStorePro } = useAuthContext();
 
   const handleBack = () => {
     if (shouldStorePro) {
-      router.push('/partner/pros');
+      router.push('/agency/caregivers');
     } else {
       router.back();
     }
   };
+
+  // Figma "9. Onboarding Page - Completed" has no Back.
+  if (pathname?.endsWith('/onboard/completed')) return null;
 
   return (
     <button

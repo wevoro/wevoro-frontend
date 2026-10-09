@@ -57,17 +57,20 @@ export default function GoogleLogin({ source }: GoogleLoginProps) {
           });
         }
 
+        // SCRUM-173: `?autofill=true` is what opens the AI-autofill prompt on
+        // the first onboarding step. Email sign-up added it; this path did not,
+        // so a caregiver who joined with Google never saw the prompt.
         const proPath =
           completionPercentage > 0
-            ? '/pro/profile'
-            : '/pro/onboard/personal-info';
+            ? '/caregiver/profile'
+            : '/caregiver/onboard/personal-info?autofill=true';
 
         const partnerPath =
           completionPercentage > 0
             ? querySuffix
-              ? `/partner/pros/${id}?s=true`
-              : '/partner/profile'
-            : `/partner/onboard/personal-info${querySuffix}`;
+              ? `/agency/caregivers/${id}?s=true`
+              : '/agency/profile'
+            : `/agency/onboard/personal-info${querySuffix}`;
 
         source === 'pro'
           ? (window.location.href = proPath)

@@ -46,13 +46,13 @@ export default function Hero() {
               style={{ animationDelay: '270ms' }}
             >
               <Link
-                href='/pro/signup'
+                href='/caregiver/signup'
                 className='inline-flex h-[50px] items-center justify-center gap-2 rounded-[14px] bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/90'
               >
                 Build Your Profile Free <MoveUpRight className='size-4' />
               </Link>
               <Link
-                href='/partner/access'
+                href='/agency/access'
                 className={cn(
                   'inline-flex h-[50px] items-center justify-center rounded-[14px] border px-6 text-sm font-semibold text-tertiary transition-colors hover:bg-[#f4f9f6]',
                   HAIRLINE

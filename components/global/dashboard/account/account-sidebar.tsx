@@ -6,15 +6,19 @@ import ProfileName from '../profile-name';
 import ProAccountInfo from './pro-account-info';
 import { useAuthContext, useUserContext } from '@/lib/contexts';
 import PartnerAccountInfo from './partner-account-info';
+import { useCaregiverChipStatus } from '../share-profile-gate';
+import { roleBasePath } from '@/lib/routes';
 
 const AccountSidebar = () => {
   const { user, isUserLoading } = useUserContext();
   const { deleteAccount } = useAuthContext();
+  // SCRUM-152: a one-word Full Name has no last name; show what there is.
   const name =
-    user?.personalInfo?.firstName && user?.personalInfo?.lastName
-      ? `${user?.personalInfo?.firstName} ${user?.personalInfo?.lastName}`
-      : 'N/A';
-  const status = user?.status;
+    [user?.personalInfo?.firstName, user?.personalInfo?.lastName].filter(Boolean).join(' ') ||
+    'N/A';
+  // SCRUM-133: the same chip rule as the Profile header, so a caregiver whose
+  // Share Link box below reads Unlocked is not told "In Review" above it.
+  const status = useCaregiverChipStatus(user);
   const role = user?.role;
 
   if (isUserLoading) {
@@ -43,7 +47,8 @@ const AccountSidebar = () => {
         <div className='flex flex-col gap-4'>
           <ProfileImage userProfileImage={user?.personalInfo?.image} />
           <div className='flex flex-col gap-1 sm:gap-3 w-full'>
-            <ProfileName name={name} status={status} role={role} />
+            {/* SCRUM-158: the name is the way back to the profile from Settings. */}
+            <ProfileName name={name} status={status} role={role} href={`${roleBasePath(role)}/profile`} />
             <div className='flex justify-between flex-col gap-12'>
               {user?.role === 'pro' && <ProAccountInfo />}
               {user?.role === 'partner' && <PartnerAccountInfo />}

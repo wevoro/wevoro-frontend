@@ -1,5 +1,6 @@
 'use client';
 
+import { isPrimaryCredentialRow, isSignoffRow } from '@/lib/credential-config';
 import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { useUserContext } from '@/lib/contexts';
 
@@ -18,10 +19,38 @@ const Steps = ({
 }) => {
   const pathname = usePathname();
 
-  const { user, isPersonalInfoCompleted, isProfessionalInfoCompleted } =
-    useUserContext();
+  const { user, isPersonalInfoCompleted } = useUserContext();
   const { data: documents } = useDocuments();
-  const isDocumentUploadCompleted = documents?.length! > 0;
+  // SCRUM-152: step 3 now asks for the role certificate only, so it is done
+  // when that is in — for a PCA both parts — not when any document exists.
+  const isPcaRole = user?.professionalInfo?.role === 'PCA';
+  const certRows = (documents ?? []).filter((d: any) => d?.documentType === 'certifications');
+  const hasPrimaryCert = certRows.some((d: any) => isPrimaryCredentialRow(d));
+  const hasSignoff = certRows.some((d: any) => isSignoffRow(d));
+  const isDocumentUploadCompleted = isPcaRole ? hasPrimaryCert && hasSignoff : hasPrimaryCert;
+
+  // SCRUM-152: step 1 now saves the Role into the professional information,
+  // so "a professionalInfo record exists" (user-context) no longer means step
+  // 2 was filled in — the sidebar showed "Completed" on a step the caregiver
+  // had not opened yet. Step 2 counts as done only when it holds education,
+  // experience or skills; the role alone does not.
+  const hasValue = (v: unknown): boolean =>
+    typeof v === 'number' ||
+    (typeof v === 'string' && v.replace(/<[^>]*>/g, '').trim().length > 0);
+  const hasFilledRow = (rows: unknown): boolean =>
+    Array.isArray(rows) &&
+    rows.some(
+      (row) =>
+        row &&
+        typeof row === 'object' &&
+        Object.entries(row).some(([k, v]) => k !== '_id' && hasValue(v)),
+    );
+  const professionalInfo = user?.professionalInfo;
+  const savedSkills = professionalInfo?.skills;
+  const isProfessionalStepCompleted =
+    hasFilledRow(professionalInfo?.education) ||
+    hasFilledRow(professionalInfo?.experience) ||
+    (Array.isArray(savedSkills) && savedSkills.some(hasValue));
 
   // console.log({ user });
 
@@ -36,29 +65,31 @@ const Steps = ({
       ? user?.professionalInfo?.updatedAt
       : null;
 
+  // SCRUM-152 (Faisal's Figma): sentence-case step names in the sidebar.
   const proSteps = [
     {
       id: 1,
-      name: 'Personal Information',
+      name: 'Personal information',
       icon: <User className='h-[18px] w-[18px]' />,
-      link: '/pro/onboard/personal-info',
+      link: '/caregiver/onboard/personal-info',
       completed: isPersonalInfoCompleted,
     },
     {
       id: 2,
-      name: 'Professional Information',
+      name: 'Professional information',
       icon: <IdCard className='h-[18px] w-[18px]' />,
-      link: '/pro/onboard/professional-info',
-      completed: isProfessionalInfoCompleted,
+      link: '/caregiver/onboard/professional-info',
+      completed: isProfessionalStepCompleted,
       disabled: !isPersonalInfoCompleted,
     },
     {
       id: 3,
       name: 'Credentials',
       icon: <FileText className='h-[18px] w-[18px]' />,
-      link: '/pro/onboard/document-upload',
+      link: '/caregiver/onboard/document-upload',
       completed: isDocumentUploadCompleted,
-      disabled: !isProfessionalInfoCompleted || !isPersonalInfoCompleted,
+      // SCRUM-152: Professional Information can be skipped.
+      disabled: !isPersonalInfoCompleted,
     },
   ];
   const partnerSteps = [
@@ -66,7 +97,7 @@ const Steps = ({
       id: 1,
       name: 'Personal Information',
       icon: <User className='h-[18px] w-[18px]' />,
-      link: '/partner/onboard/personal-info',
+      link: '/agency/onboard/personal-info',
       completed: isPersonalInfoCompleted,
       disabled: false,
     },
@@ -111,14 +142,21 @@ const Steps = ({
       ) : (
         <>
           {steps.map((step) => {
-            const isActive = pathname === step.link || step.completed;
+            // SCRUM-152 (Figma sidebar): a done step is a filled green circle
+            // with a check and "Completed"; the current step a green outline
+            // and "In progress"; a step still ahead is the whole item at 50%
+            // opacity with a dark outline and no status line.
+            // Figma 9: on the Completed page every step reads Completed.
+            const isDone = !!step.completed || pathname.endsWith('/onboard/completed');
+            const isCurrent = !isDone && pathname === step.link;
+            const isFuture = !isDone && !isCurrent;
             return (
               <li key={step.id} className='flex items-center'>
                 <Link
                   href={step.link}
                   className={cn(
-                    'flex items-center',
-                    isActive ? 'text-tertiary' : 'text-[#8d8d8d]',
+                    'flex items-center text-tertiary',
+                    isFuture && 'opacity-50',
                     step.disabled && 'cursor-not-allowed',
                   )}
                   onClick={(e) => {
@@ -131,31 +169,28 @@ const Steps = ({
                   <div
                     className={cn(
                       'h-10 w-10 mr-3 rounded-full border flex items-center justify-center',
-                      isActive
-                        ? 'border-[#33B55B] text-[#33B55B]'
-                        : 'border-[#8e8e8e] text-[#8e8e8e]',
-                      step.completed && 'bg-[#33B55B] text-white',
+                      isDone && 'border-[#33B55B] bg-[#33B55B] text-white',
+                      isCurrent && 'border-[#33B55B] text-[#33B55B]',
+                      isFuture && 'border-tertiary text-tertiary',
                     )}
                   >
-                    {step.completed ? (
-                      <Check className='h-[18px] w-[18px]' />
-                    ) : (
-                      step.icon
-                    )}
+                    {isDone ? <Check className='h-[18px] w-[18px]' /> : step.icon}
                   </div>
                   <div className='flex flex-col gap-[10px]'>
                     <span
                       className={cn(
-                        'text-sm font-medium',
-                        isActive ? 'text-muted-foreground' : 'text-[#b6b6b6]',
+                        'text-sm',
+                        source === 'pro'
+                          ? 'text-[#6C6C6C]'
+                          : 'font-medium text-muted-foreground',
                       )}
                     >
                       Step - {step.id}
                     </span>
                     <p className='text-lg font-medium'>{step.name}</p>
-                    {isActive && (
+                    {!isFuture && (
                       <span className='text-sm font-medium text-[#33B55B]'>
-                        {step.completed ? 'Completed' : 'In progress'}
+                        {isDone ? 'Completed' : 'In progress'}
                       </span>
                     )}
                   </div>

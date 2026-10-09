@@ -2,27 +2,41 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Loader2, Share2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { useUserContext } from '@/lib/contexts';
 import { useCaregiverEngagements } from '@/app/apiHooks/useCaregiverEngagements';
-import ShareProfileModal from '@/components/global/dashboard/share-profile-modal';
-import { isSharingEnabled } from '@/lib/credentialing';
+import ShareProfileGate from '@/components/global/dashboard/share-profile-gate';
+import { caregiverShareLink, isSharingEnabled } from '@/lib/credentialing';
 import { EngagementCard, EngagementEntry } from './engagement-card';
 // SCRUM-118: the approved design puts signing on the offer box, and this tab
 // does not render one in credentialing mode. Reuse the SAME designed card
 // rather than inventing a second surface for it.
 import ReceivedCard from '@/components/global/dashboard/offers-v2/received-card';
 import { useOffers } from '@/app/apiHooks/useOffers';
+import OnboardingFilters, {
+  OnboardingStatusFilter,
+  OnboardingTimeFilter,
+} from './onboarding-filters';
+
+/** Faisal P1/P2: five cards, then "Load more". */
+const PAGE_SIZE = 5;
 
 type SubTab = 'received' | 'submitted';
 
 /**
- * SCRUM-87: caregiver's credentialing-mode Offers tab.
+ * SCRUM-87 / SCRUM-141: the caregiver's Onboarding page (was "Offers").
+ * Faisal's P1/P2 frames:
  *
- *  - Submitted: agencies that onboarded via the caregiver's share link but have
- *    not downloaded any credential yet.
- *  - Received: agencies that have downloaded at least one credential.
+ *  - Received: agencies that clicked Onboard and are waiting for this caregiver
+ *    to Respond (sign their documents). "Continue signing" picks up a packet
+ *    that was started and not finished.
+ *  - Submitted: the onboardings the caregiver has signed — a receipt, no
+ *    further action.
+ *
+ * SCRUM-140 (Faisal): the counts follow signing only. Payment never moves or
+ * hides anyone. Agencies that only opened the share link, with no onboarding
+ * request, are listed under Submitted as "Earlier connections" and are not
+ * counted — nothing was signed for them.
  *
  * Notification CTAs deep-link here via ?tab=submitted / ?tab=received.
  */
@@ -31,93 +45,121 @@ const CaregiverOffersView: React.FC = () => {
   const searchParams = useSearchParams();
   const { data, isLoading } = useCaregiverEngagements();
   const { data: offers = [] } = useOffers();
-  // SCRUM-118: offer ids with a packet that is started but not finished. Step 1
-  // marks the offer responded, so without this the card disappears the moment
-  // signing begins and there is no way back in to finish it.
-  const [unfinishedOfferIds, setUnfinishedOfferIds] = useState<string[]>([]);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/esign/my-packets');
-        if (!res.ok) return;
-        const json = await res.json();
-        if (cancelled || !Array.isArray(json?.data)) return;
-        setUnfinishedOfferIds(
-          json.data
-            .filter((p: any) => p.status !== 'completed' && p.pendingCount > 0)
-            .map((p: any) => String(p.offer))
-        );
-      } catch {
-        // Silent: the offer list must still render if this lookup fails.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const pendingOffers = useMemo(
+  // SCRUM-141: the server resolves when each offer was submitted (signed, or
+  // responded with nothing to sign). Everything not yet submitted waits in
+  // Received — including a packet that was started and not finished.
+  const receivedOffers = useMemo(
     () =>
       (offers ?? []).filter(
-        (o: any) =>
-          (o?.status === 'pending' && !o?.proResponded) ||
-          unfinishedOfferIds.includes(String(o?._id))
+        (o: any) => o?.status !== 'rejected' && !o?.submittedAt
       ),
-    [offers, unfinishedOfferIds]
+    [offers]
+  );
+  const submittedOffers = useMemo(
+    () =>
+      (offers ?? [])
+        .filter((o: any) => o?.status !== 'rejected' && !!o?.submittedAt)
+        .sort(
+          (a: any, b: any) => +new Date(b.submittedAt) - +new Date(a.submittedAt)
+        ),
+    [offers]
+  );
+  // Agencies with an offer are shown by that offer, not twice.
+  const agenciesWithOffers = useMemo(
+    () =>
+      new Set(
+        (offers ?? [])
+          .filter((o: any) => o?.status !== 'rejected')
+          .map((o: any) => String(o?.partner?._id ?? o?.partner))
+      ),
+    [offers]
   );
 
-  const received: EngagementEntry[] = useMemo(
+  // SCRUM-140: share-link agencies, whether or not they have downloaded — a
+  // payment must not move or hide anyone.
+  const shared: EngagementEntry[] = useMemo(
     () =>
-      (data?.received ?? []).map((e: any) => ({
-        partyId: e.agencyId,
-        name: e.name,
-        image: e.image,
-        onboardedAt: e.onboardedAt,
-        downloadedAt: e.downloadedAt,
-      })),
-    [data],
+      [...(data?.submitted ?? []), ...(data?.received ?? [])]
+        .filter((e: any) => !agenciesWithOffers.has(String(e.agencyId)))
+        .map((e: any) => ({
+          partyId: e.agencyId,
+          name: e.name,
+          image: e.image,
+          onboardedAt: e.onboardedAt,
+          downloadedAt: e.downloadedAt,
+        }))
+        .sort(
+          (a, b) => +new Date(b.onboardedAt || 0) - +new Date(a.onboardedAt || 0)
+        ),
+    [data, agenciesWithOffers],
   );
-  const submitted: EngagementEntry[] = useMemo(
-    () =>
-      (data?.submitted ?? []).map((e: any) => ({
-        partyId: e.agencyId,
-        name: e.name,
-        image: e.image,
-        onboardedAt: e.onboardedAt,
-        downloadedAt: e.downloadedAt,
-      })),
-    [data],
-  );
+  const submittedCount = submittedOffers.length;
 
   const initialTab: SubTab =
-    searchParams.get('tab') === 'received' ? 'received' : 'submitted';
+    searchParams.get('tab') === 'submitted' ? 'submitted' : 'received';
   const [subTab, setSubTab] = useState<SubTab>(initialTab);
   useEffect(() => {
     const t = searchParams.get('tab');
     if (t === 'submitted' || t === 'received') setSubTab(t);
   }, [searchParams]);
 
-  const shareLink =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/p/${user?.shareId || user?._id}`
-      : `/p/${user?.shareId || user?._id}`;
+  // P1/P2: search, status and time filters, and "Load more".
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState<OnboardingStatusFilter>('all');
+  const [time, setTime] = useState<OnboardingTimeFilter>('all');
+  const [shown, setShown] = useState(PAGE_SIZE);
+  useEffect(() => setShown(PAGE_SIZE), [subTab, query, status, time]);
 
+  const matches = (o: any) => {
+    const info = o?.partner?.personalInfo ?? {};
+    const haystack = [
+      info.firstName,
+      info.lastName,
+      info.companyName,
+      info.address?.city,
+      info.address?.state,
+      o?.pro?.professionalInfo?.role,
+      user?.professionalInfo?.role,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    if (query.trim() && !haystack.includes(query.trim().toLowerCase())) return false;
+
+    const state = o?.submittedAt
+      ? 'signed'
+      : o?.signing && o.signing.status !== 'completed'
+        ? 'in_progress'
+        : 'not_started';
+    if (status !== 'all' && state !== status) return false;
+
+    if (time !== 'all') {
+      const days = time === 'week' ? 7 : 31;
+      const at = new Date(o?.submittedAt || o?.createdAt || 0).getTime();
+      if (Date.now() - at > days * 24 * 60 * 60 * 1000) return false;
+    }
+    return true;
+  };
+  const list = (subTab === 'received' ? receivedOffers : submittedOffers).filter(matches);
+  const filtering = !!query.trim() || status !== 'all' || time !== 'all';
+
+  const shareLink = caregiverShareLink(user);
+
+  // Faisal P1: the active tab is bold with a mint count; the other is grey.
   const renderSubTab = (tab: SubTab, label: string, count: number) => (
     <button
+      role='tab'
+      aria-selected={subTab === tab}
+      data-testid={`subtab-${tab}`}
       onClick={() => setSubTab(tab)}
-      className={`pb-3 flex items-center gap-2 text-base font-semibold transition-colors ${
-        subTab === tab
-          ? 'text-gray-900 dark:text-neutral-100 border-b-2 border-primary -mb-px'
-          : 'text-gray-500 dark:text-neutral-400'
+      className={`flex items-center gap-2 pb-2 text-base md:text-lg transition-colors ${
+        subTab === tab ? 'font-semibold text-[#1C1C1C]' : 'font-normal text-[#6C6C6C]'
       }`}
     >
       {label}
       <span
-        className={`inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full text-xs font-semibold ${
-          subTab === tab
-            ? 'bg-primary text-white'
-            : 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-300'
+        className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded-[18px] px-2 text-base md:text-lg font-normal ${
+          subTab === tab ? 'bg-[#BBF8DC] text-[#01400F]' : 'bg-[#F9F9FA] text-[#6C6C6C]'
         }`}
       >
         {count}
@@ -127,15 +169,24 @@ const CaregiverOffersView: React.FC = () => {
 
   return (
     <div className='bg-white dark:bg-neutral-950 md:rounded-2xl p-4 md:p-8'>
-      <h2 className='text-xl md:text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-6'>
-        Offers
+      <h2 className='text-xl md:text-2xl font-semibold text-[#1C1C1C] dark:text-neutral-100 mb-6'>
+        Onboarding
       </h2>
 
       {/* Sub-tabs */}
-      <div className='flex items-center gap-8 border-b border-gray-100 dark:border-neutral-800 mb-6'>
-        {renderSubTab('submitted', 'Submitted', submitted.length)}
-        {renderSubTab('received', 'Received', pendingOffers.length)}
+      <div role='tablist' className='flex items-center gap-8 mb-6'>
+        {renderSubTab('received', 'Received', receivedOffers.length)}
+        {renderSubTab('submitted', 'Submitted', submittedCount)}
       </div>
+
+      <OnboardingFilters
+        query={query}
+        onQuery={setQuery}
+        status={status}
+        onStatus={setStatus}
+        time={time}
+        onTime={setTime}
+      />
 
       {/* Body */}
       {isLoading ? (
@@ -143,10 +194,10 @@ const CaregiverOffersView: React.FC = () => {
           <Loader2 className='size-6 animate-spin text-primary' />
         </div>
       ) : subTab === 'received' ? (
-        pendingOffers.length === 0 ? (
+        receivedOffers.length === 0 ? (
           <div className='py-12 text-center'>
             <p className='text-sm text-gray-500 dark:text-neutral-400 max-w-md mx-auto'>
-              When an agency sends you an offer, it&apos;ll appear here.
+              When an agency onboards you, it&apos;ll appear here for you to respond.
             </p>
           </div>
         ) : (
@@ -155,36 +206,87 @@ const CaregiverOffersView: React.FC = () => {
                 shows offers awaiting a response and nothing else. The SCRUM-87/88
                 "agency downloaded your credentials" engagement cards used to sit
                 here too; they are still rendered under Submitted. */}
-            {pendingOffers.map((o: any) => (
+            {list.slice(0, shown).map((o: any) => (
               <ReceivedCard key={o._id} offer={o} />
             ))}
+            {filtering && list.length === 0 && (
+              <p className='py-6 text-center text-sm text-gray-500'>
+                No requests match your search.
+              </p>
+            )}
+            {list.length > shown && (
+              <button
+                type='button'
+                onClick={() => setShown((n) => n + PAGE_SIZE)}
+                className='pb-3 pt-4 text-center text-[18px] text-[#008000] hover:underline'
+              >
+                Load more
+              </button>
+            )}
           </div>
         )
-      ) : submitted.length === 0 ? (
+      ) : submittedCount === 0 && shared.length === 0 ? (
         <div className='py-12 text-center'>
           <p className='text-sm text-gray-500 dark:text-neutral-400 max-w-md mx-auto mb-5'>
             No agencies yet. Share your profile link to invite agencies to view
             your credentials.
           </p>
           {isSharingEnabled() && (
-            <ShareProfileModal shareLink={shareLink}>
-              <Button className='h-11 rounded-xl gap-2 font-semibold'>
-                <Share2 className='size-4' />
-                Share Profile
-              </Button>
-            </ShareProfileModal>
+            // SCRUM-133: same gate as the Profile tab — locked until all 5
+            // credentials are confirmed.
+            <div className='flex justify-center'>
+              <ShareProfileGate
+                userId={user?._id}
+                shareLink={shareLink}
+                className='lg:items-center [&_p]:lg:text-center'
+              />
+            </div>
           )}
         </div>
       ) : (
         <div className='flex flex-col gap-4'>
-          {submitted.map((e) => (
-            <EngagementCard
-              key={e.partyId}
-              entry={e}
-              profileHref={`/pro/partner/${e.partyId}`}
-              profileLabel='View Agency Profile'
-            />
+          {/* SCRUM-141: the same card, now showing "Submitted" and its time
+              in place of the Respond action. */}
+          {list.slice(0, shown).map((o: any) => (
+            <ReceivedCard key={o._id} offer={o} />
           ))}
+          {list.length > shown && (
+            <button
+              type='button'
+              onClick={() => setShown((n) => n + PAGE_SIZE)}
+              className='pb-3 pt-4 text-center text-[18px] text-[#008000] hover:underline'
+            >
+              Load more
+            </button>
+          )}
+          {filtering && submittedOffers.length > 0 && list.length === 0 && (
+            <p className='py-6 text-center text-sm text-gray-500'>
+              Nothing matches your search.
+            </p>
+          )}
+          {submittedOffers.length === 0 && (
+            <p className='py-6 text-center text-sm text-gray-500'>
+              Nothing signed yet. Onboarding requests you sign appear here.
+            </p>
+          )}
+          {shared.length > 0 && (
+            <>
+              <h3 className='mt-4 text-base font-semibold text-[#1C1C1C]'>
+                Earlier connections
+                <span className='ml-2 text-sm font-normal text-[#6C6C6C]'>
+                  Agencies that opened your profile link
+                </span>
+              </h3>
+              {shared.map((e) => (
+                <EngagementCard
+                  key={e.partyId}
+                  entry={e}
+                  profileHref={`/caregiver/agencies/${e.partyId}`}
+                  profileLabel='View Agency Profile'
+                />
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>

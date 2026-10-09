@@ -65,7 +65,7 @@ const ExpandJob = ({
           </div>
           {environmentType !== 'waitlist' ? (
             <Button
-              href='/partner/signup'
+              href='/agency/signup'
               className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto mt-10'
             >
               {buttonText}

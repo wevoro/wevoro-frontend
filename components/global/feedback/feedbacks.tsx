@@ -118,8 +118,8 @@ export default function Feedbacks({
 
             <SelectContent>
               <SelectItem value='all'>All</SelectItem>
-              <SelectItem value='pro'>Pro&apos;s</SelectItem>
-              <SelectItem value='partner'>Partner&apos;s</SelectItem>
+              <SelectItem value='pro'>Caregivers</SelectItem>
+              <SelectItem value='partner'>Agencies</SelectItem>
             </SelectContent>
           </Select>
           <Select

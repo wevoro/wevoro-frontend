@@ -77,6 +77,14 @@ const MarkNotConfirmedModal: React.FC<MarkNotConfirmedModalProps> = ({
 }) => {
   const reasons = useMemo(() => getSelectableReasons(credentialKey), [credentialKey]);
 
+  // The AI's opinion. It arrives as a prop when the credential has already been
+  // read (the admin opened Confirm first, or ran the AI check). When it has
+  // not, this modal reads the document itself on open — an admin who goes
+  // straight to "Not confirmed" should get the same help as one who does not.
+  const [live, setLive] = useState<AiSuggestion | undefined>(undefined);
+  const [aiLoading, setAiLoading] = useState(false);
+  const effectiveAi = aiSuggestion ?? live;
+
   const [reason, setReason] = useState<RejectionReasonCode | ''>('');
   const [message, setMessage] = useState('');
   const [requestReplacement, setRequestReplacement] = useState(true);
@@ -87,23 +95,57 @@ const MarkNotConfirmedModal: React.FC<MarkNotConfirmedModalProps> = ({
   // suggested reason is actually selectable for this credential.
   useEffect(() => {
     if (!open) return;
-    const suggested = aiSuggestion?.reason;
+    const suggested = effectiveAi?.reason;
     const allowed = suggested && reasons.some((r) => r.code === suggested);
     if (allowed) {
       setReason(suggested);
-      setMessage(getFixedMessage(credentialKey, suggested) ?? aiSuggestion?.message ?? '');
+      setMessage(getFixedMessage(credentialKey, suggested) ?? effectiveAi?.message ?? '');
     } else {
       setReason('');
       setMessage('');
     }
     setRequestReplacement(true);
     setError('');
-  }, [open, aiSuggestion, credentialKey, reasons]);
+  }, [open, effectiveAi, credentialKey, reasons]);
+
+  // Read the document when this modal opens on a credential nothing has read
+  // yet. Silent on failure: the admin picks a reason by hand, which is exactly
+  // what they were about to do anyway.
+  useEffect(() => {
+    if (!open) {
+      setLive(undefined);
+      return;
+    }
+    if (aiSuggestion || !documentId) return;
+    let cancelled = false;
+    setAiLoading(true);
+    fetch(`/api/admin/document-ai/${documentId}`, { method: 'POST' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const result = d?.data;
+        if (d?.status !== 200 || !result || result.disabled) return;
+        if (result.suggestion !== 'reject' || !result.suggestedReasonCode) return;
+        setLive({
+          reason: result.suggestedReasonCode as RejectionReasonCode,
+          message: result.caregiverMessage,
+          confidence: typeof result.confidence === 'number' ? result.confidence : undefined,
+        });
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setAiLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, documentId]);
 
   const fixedMessage = reason ? getFixedMessage(credentialKey, reason) : undefined;
   const messageLocked = !!fixedMessage;
   const escalatesToReview = reason ? isAiSuggestOnly(reason) : false;
-  const usedAiSuggestion = !!aiSuggestion && reason === aiSuggestion.reason;
+  const usedAiSuggestion = !!effectiveAi && reason === effectiveAi.reason;
 
   const handleReasonChange = (value: string) => {
     const code = value as RejectionReasonCode;
@@ -139,8 +181,8 @@ const MarkNotConfirmedModal: React.FC<MarkNotConfirmedModalProps> = ({
           rejectionReason: message.trim(),
           requestReplacement,
           // SCRUM-109: accuracy logging — did the admin keep the AI's suggestion?
-          aiSuggestedReason: aiSuggestion?.reason ?? null,
-          adminAgreedWithAi: aiSuggestion ? aiSuggestion.reason === reason : null,
+          aiSuggestedReason: effectiveAi?.reason ?? null,
+          adminAgreedWithAi: effectiveAi ? effectiveAi.reason === reason : null,
         }),
       });
       const data = await res.json();
@@ -185,6 +227,13 @@ const MarkNotConfirmedModal: React.FC<MarkNotConfirmedModalProps> = ({
         </div>
 
         <div className='flex flex-col gap-4'>
+          {aiLoading && (
+            <p className='flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600'>
+              <Sparkles className='size-4 animate-pulse text-emerald-600' />
+              Reading the document&hellip; the reason and the message will fill in.
+            </p>
+          )}
+
           {/* Reason */}
           <div>
             <Label className='text-base font-semibold text-gray-900'>Reason for not confirming</Label>

@@ -23,6 +23,7 @@ import GoogleLogin from './google-login';
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/input-otp';
 import { useAuthContext } from '@/lib/contexts';
+import { roleBasePath, roleFromSegment } from '@/lib/routes';
 
 export default function AuthForm({
   inputFields,
@@ -33,7 +34,8 @@ export default function AuthForm({
 }: any) {
   const { isLoading, setIsLoading, isOtpResend } = useAuthContext();
   const location = usePathname();
-  const locationSource = location.split('/')[1];
+  // SCRUM-144: the URL says caregiver/agency; the role is still pro/partner.
+  const locationSource = roleFromSegment(location.split('/')[1]);
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<{ [key: string]: boolean }>(
@@ -269,7 +271,7 @@ export default function AuthForm({
               </label>
             </div>
             <Link
-              href={`/${source}/forgot-password`}
+              href={`${roleBasePath(source)}/forgot-password`}
               className='text-base text-primary underline hover:text-primary-600 transition'
             >
               Forgot password?

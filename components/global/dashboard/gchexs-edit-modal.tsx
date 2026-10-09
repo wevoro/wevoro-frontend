@@ -1,8 +1,9 @@
 'use client';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { shortFileName } from '@/utils/file';
 
 interface GchexsEditModalProps {
   isOpen: boolean;
@@ -30,6 +31,17 @@ const GchexsEditModal: React.FC<GchexsEditModalProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // SCRUM-145: this component stays mounted while closed (it only renders
+  // null), so a file picked on an earlier edit was still selected the next time
+  // the modal opened — and saving, even just to switch No to Yes, uploaded it
+  // again. Start every opening from the saved answer with no file chosen.
+  useEffect(() => {
+    if (!isOpen) return;
+    setFile(null);
+    setStatus(currentStatus === 'not_set' ? 'no' : (currentStatus as 'yes' | 'no'));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [isOpen, currentStatus]);
 
   if (!isOpen) return null;
 
@@ -132,8 +144,11 @@ const GchexsEditModal: React.FC<GchexsEditModalProps> = ({
               {file ? (
                 <div className='flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2'>
                   <FileText className='size-4 text-green-600' />
-                  <span className='text-sm text-green-700 flex-1 truncate'>
-                    {file.name}
+                  <span
+                    title={file.name}
+                    className='min-w-0 flex-1 truncate text-sm text-green-700'
+                  >
+                    {shortFileName(file.name)}
                   </span>
                   <button
                     onClick={() => {

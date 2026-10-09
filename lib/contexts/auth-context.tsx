@@ -18,6 +18,12 @@ import { EVENTS, resetAnalytics, track } from '../analytics';
 
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+// Always show Google's account chooser. Without this, a browser with one
+// Google session skips the chooser and signs in with that account at once —
+// the popup flashes and closes, and someone whose Gmail already has a
+// password account on WeVoro only ever sees "User already exists with email!"
+// with no way to pick another account.
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 interface AuthContextValue {
   // Auth handlers
@@ -98,7 +104,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const proId = searchParams.get('proId');
   const shouldStorePro = searchParams.get('s') === 'true';
   // SCRUM-87/88: caregiver share-link attribution. Agencies arrive at signup via
-  // /p/[shareId] -> /partner/signup?shareId=...; capture it so the backend can
+  // /p/[shareId] -> /agency/signup?shareId=...; capture it so the backend can
   // attribute this agency to the caregiver who referred them.
   const shareId = searchParams.get('shareId');
   const queryString = searchParams.toString();
@@ -190,7 +196,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         toast.success('Logged in successfully', { position: 'top-center' });
         // Flow 2 (arrived via a caregiver's share link): land on that caregiver's
         // pack — a Non-confirmed agency can view general credentials there, no
-        // completion form required. Flow 1 (direct /partner/access): a new agency
+        // completion form required. Flow 1 (direct /agency/access): a new agency
         // goes to the short "Complete your agency account" form; a returning,
         // already-completed agency goes straight to their dashboard.
         const caregiverTarget = id || proId;
@@ -198,10 +204,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // completionPercentage scores nine fields the form never collects, so a
         // completed agency scored 44% and was bounced back here every login.
         const partnerPath = caregiverTarget
-          ? `/partner/pros/${caregiverTarget}?s=true`
+          ? `/agency/caregivers/${caregiverTarget}?s=true`
           : agencyProfileComplete || completionPercentage > 50
-            ? '/partner/profile'
-            : `/partner/complete${querySuffix}`;
+            ? '/agency/profile'
+            : `/agency/complete${querySuffix}`;
         window.location.href = partnerPath;
         return;
       }
@@ -238,10 +244,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (source === 'admin') {
           window.location.href = '/admin';
         } else {
+          // SCRUM-152: only Personal Information (25%) is required to finish
+          // onboarding now that Professional Information can be skipped. At
+          // 50 a caregiver who skipped it was sent back into onboarding on
+          // every sign-in.
           const proPath =
-            completionPercentage >= 50
-              ? '/pro/profile'
-              : '/pro/onboard/personal-info?autofill=true';
+            completionPercentage >= 25
+              ? '/caregiver/profile'
+              : '/caregiver/onboard/personal-info?autofill=true';
 
           // Same null-`id` guard as the onboarding redirect: the share-link
           // journey passes ?proId=, not ?id=, so `id` is null there.
@@ -250,9 +260,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const partnerPath =
             responseData.agencyProfileComplete || completionPercentage > 50
               ? querySuffix && id
-                ? `/partner/pros/${id}?s=true`
-                : '/partner/profile'
-              : `/partner/onboard/personal-info${querySuffix}`;
+                ? `/agency/caregivers/${id}?s=true`
+                : '/agency/profile'
+              : `/agency/onboard/personal-info${querySuffix}`;
 
           // SCRUM-108: middleware parks the intended destination in ?redirect=
           // when a signed-out user opens a protected link (e.g. the CTA in a
@@ -298,9 +308,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (responseData.status === 200) {
         if (source === 'pro') {
-          router.push('/pro/login');
+          router.push('/caregiver/login');
         } else {
-          // Fired before the redirect: signup routes to /partner/login, and a
+          // Fired before the redirect: signup routes to /agency/login, and a
           // full navigation would drop a queued event. `viaShareLink` tells us
           // whether a caregiver's link brought this agency in — the key number
           // for the share funnel.
@@ -308,7 +318,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             method: 'password',
             viaShareLink: !!shareId,
           });
-          router.push(`/partner/login${querySuffix}`);
+          router.push(`/agency/login${querySuffix}`);
         }
         toast.success(responseData.message || 'Signup successful', {
           position: 'top-center',
@@ -344,9 +354,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         window.localStorage.setItem('otpExpiry', otpExpiry);
 
         if (source === 'pro') {
-          window.location.href = `/pro/verify-otp?email=${data.email}`;
+          window.location.href = `/caregiver/verify-otp?email=${data.email}`;
         } else {
-          window.location.href = `/partner/verify-otp?email=${data.email}`;
+          window.location.href = `/agency/verify-otp?email=${data.email}`;
         }
         toast.success(responseData.message || 'OTP sent successfully', {
           position: 'top-center',
@@ -404,8 +414,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (responseData.status === 200) {
         source === 'pro'
-          ? (window.location.href = `/pro/reset-password?email=${email}`)
-          : (window.location.href = `/partner/reset-password?email=${email}`);
+          ? (window.location.href = `/caregiver/reset-password?email=${email}`)
+          : (window.location.href = `/agency/reset-password?email=${email}`);
         toast.success(responseData.message || 'OTP verified successfully', {
           position: 'top-center',
         });
@@ -437,9 +447,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (responseData.status === 200) {
         if (source === 'pro') {
-          window.location.href = '/pro/login';
+          window.location.href = '/caregiver/login';
         } else {
-          window.location.href = '/partner/login';
+          window.location.href = '/agency/login';
         }
         toast.success(responseData.message || 'Password reset successful', {
           position: 'top-center',

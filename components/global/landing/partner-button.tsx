@@ -12,7 +12,7 @@ const PartnerButton = ({
 }) => {
   return (
     <Button
-      href={environmentType === 'waitlist' ? undefined : '/partner/signup'}
+      href={environmentType === 'waitlist' ? undefined : '/agency/signup'}
       onClick={() =>
         environmentType === 'waitlist' && scrollToSection('joinwaitlist')
       }

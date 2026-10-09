@@ -4,9 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCredentialStatus } from '@/app/actions';
-import CredentialStatusCard from './credential-status-card';
+import CredentialStatusCard, { getUrgencyPill, resolveCardStatus } from './credential-status-card';
+import DocumentPreviewModal from './document-preview-modal';
 import { OPEN_PACKET_EVENT } from './payment/packet-download-action';
-import type { CredentialStatus } from '@/lib/credential-config';
+import {
+  byCredentialDisplayOrder,
+  PCA_EXAM,
+  PCA_SIGNOFF,
+  type CredentialStatus,
+} from '@/lib/credential-config';
 
 interface AgencyCredentialStatusProps {
   userId: string;
@@ -18,6 +24,31 @@ interface AgencyCredentialStatusProps {
    */
   caregiverRole?: string;
 }
+
+/*
+ * SCRUM-165: the PCA certification block's tint, copied verbatim from the
+ * caregiver's own section (credential-status-section.tsx) so the two surfaces
+ * are the same block, not two blocks that merely resemble each other. Weakest
+ * shown part wins: red, then yellow, then neutral, and green only when every
+ * part is confirmed. No new colours — changing either surface's tint means
+ * changing both.
+ */
+const PCA_GROUP_TINTS = [
+  'border-[#FCE8E8] bg-[#FEFCFC]',
+  'border-[#FCFFDD] bg-[#FFFDF6]',
+  'border-[#DFE2E0] bg-white',
+  'border-[#BBF8DC] bg-[#F4FDF8]',
+];
+
+const pcaGroupTintRank = (c: CredentialStatus) => {
+  const status = resolveCardStatus(c);
+  // SCRUM-136: "expiring soon" is the urgency pill now, not a status, so the
+  // group tint reads it from there.
+  const urgency = getUrgencyPill(c);
+  if (status === 'expired') return 0;
+  if (urgency) return 1;
+  return status === 'confirmed' ? 3 : 2;
+};
 
 /**
  * SCRUM-63: agency's view of a caregiver's Credentials Status.
@@ -37,6 +68,12 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [credentials, setCredentials] = useState<CredentialStatus[]>([]);
   const [loading, setLoading] = useState(true);
+  // SCRUM-130: paid agencies open a credential directly; unpaid ones read it in
+  // the preview below, which carries no download control.
+  const [packetPaid, setPacketPaid] = useState(false);
+  const [preview, setPreview] = useState<{ documentId: string; title: string } | null>(
+    null
+  );
 
   useEffect(() => {
     if (!userId) return;
@@ -46,6 +83,22 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
     });
   }, [userId]);
 
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    fetch(`/api/payment/packet/${userId}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (!cancelled) setPacketPaid(!!j?.data?.paid);
+      })
+      // A failure here means the preview is shown rather than the direct link.
+      // That is the safe side to fail to: nothing is given away.
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
   // SCRUM-63 Scenario 1 and 4: the agency sees ALL five required credentials,
   // including the ones the caregiver has not uploaded — that is the deliberate
   // Model C difference from the caregiver's own section, which lists only what
@@ -53,7 +106,11 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
   // TB Test is missing, not just be shown the four that exist. The card itself
   // renders the not-uploaded state as a name plus a badge with no metadata and
   // no View Credential action.
-  const shownCredentials = credentials ?? [];
+  // SCRUM-137: this section rendered REQUIRED_CREDENTIALS order (Certificate,
+  // Driver's License, Auto Insurance, CPR, TB) while the caregiver's own section
+  // used the design order, so one caregiver's credentials appeared in two
+  // different orders. Both now sort by the same shared display order.
+  const shownCredentials = [...(credentials ?? [])].sort(byCredentialDisplayOrder);
 
   // SCRUM-123: a credential's file is withheld until the packet is bought, so
   // "View Credential" opens the locked documents list with its unlock action.
@@ -144,26 +201,99 @@ const AgencyCredentialStatus: React.FC<AgencyCredentialStatusProps> = ({
               const titleOverride =
                 cred.key === 'certifications'
                   ? isPca
-                    ? 'PCA Certification'
+                    ? cred.document?.part === 'written_exam'
+                      ? PCA_EXAM.label
+                      : 'PCA Certification'
                     : 'CNA Certification'
                   : cred.key === 'driver_license'
                     ? 'Driving License'
                     : undefined;
 
-              return (
+              const cardFor = (c: CredentialStatus, title?: string) => (
                 <CredentialStatusCard
-                  key={cred.key}
-                  credential={cred}
+                  credential={c}
                   index={idx}
-                  titleOverride={titleOverride}
+                  titleOverride={title}
                   readOnly
                   onLockedView={openLockedPacket}
+                  packetPaid={packetPaid}
+                  onPreview={setPreview}
                 />
               );
+
+              // SCRUM-165: a PCA's certificate is two documents. The written
+              // exam is the item itself — it alone decides the header counts
+              // and the share gate — and the RN/LPN practical sign-off follows
+              // it as a second card built from its own row, so an agency sees
+              // the sign-off's own status rather than the exam's. It is
+              // read-only like the rest, opens under the same rule (confirmed
+              // only), and ships in the paid packet once approved.
+              //
+              // The two cards used to sit flat in the list, side by side with
+              // the other credentials, so an agency read them as two separate
+              // requirements — the screenshot the client sent. They now share
+              // one tinted block under a "PCA Certifications" heading, the same
+              // block the caregiver sees on their own profile and the admin
+              // sees in review, so the certification reads as ONE credential
+              // made of two parts everywhere.
+              //
+              // The sign-off card still appears only once a sign-off exists:
+              // existing PCA caregivers uploaded one certificate, and a blank
+              // second card would read as something missing that was never
+              // asked of them. The block itself is drawn either way, as it is
+              // on the caregiver's section and in admin review — it names the
+              // credential, so dropping it for a one-part PCA would make the
+              // same caregiver look like a different kind of credential once
+              // the sign-off landed.
+              //
+              // A CNA is untouched: one certificate card, no block, no heading
+              // change (SCRUM-110 — the two tracks are exclusive).
+              if (cred.key === 'certifications' && isPca) {
+                const signoff: CredentialStatus | null = cred.signoff?.document
+                  ? {
+                      ...cred,
+                      label: PCA_SIGNOFF.label,
+                      state: cred.signoff.state ?? 'not_uploaded',
+                      document: cred.signoff.document,
+                    }
+                  : null;
+                const parts = [cred, signoff].filter((c): c is CredentialStatus => !!c);
+                const tint =
+                  PCA_GROUP_TINTS[Math.min(...parts.map(pcaGroupTintRank))] ?? PCA_GROUP_TINTS[2];
+                return (
+                  <div key={cred.key} className={`rounded-2xl border p-4 ${tint}`}>
+                    <h3 className='mb-3 text-lg md:text-2xl font-semibold text-[#1C1C1C]'>
+                      PCA Certifications
+                    </h3>
+                    <div className='grid gap-3'>
+                      {cardFor(cred, titleOverride)}
+                      {signoff && cardFor(signoff, PCA_SIGNOFF.label)}
+                    </div>
+                  </div>
+                );
+              }
+
+              return <React.Fragment key={cred.key}>{cardFor(cred, titleOverride)}</React.Fragment>;
             })}
           </div>
         )}
       </div>
+
+      {/* SCRUM-130: the free view. The file is readable, and nothing here hands
+          over a copy — no download button, and the iframe suppresses the
+          browser's own PDF toolbar, which is where the download used to be. */}
+      <DocumentPreviewModal
+        open={!!preview}
+        onOpenChange={(next) => {
+          if (!next) setPreview(null);
+        }}
+        fileName={preview?.title || 'Credential'}
+        fileUrl={preview ? `/api/document/view/${preview.documentId}` : ''}
+        allowDownload={false}
+        forceFrame
+        readOnly
+        footerNote='Preview only — unlock this caregiver’s packet to download the file.'
+      />
     </div>
   );
 };

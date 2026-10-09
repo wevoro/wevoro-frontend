@@ -74,7 +74,7 @@ const Chart = ({ pros, partners }: any) => {
             ).length || 0
           : 0;
 
-      return { month: label, PRO: proCount, PARTNER: partnerCount };
+      return { month: label, Caregivers: proCount, Agencies: partnerCount };
     });
 
     setChartData(dataByMonth);
@@ -149,7 +149,7 @@ const Chart = ({ pros, partners }: any) => {
               <Legend />
               <Line
                 type='monotone'
-                dataKey='PRO'
+                dataKey='Caregivers'
                 stroke='#008000'
                 strokeWidth={2}
                 dot={{ r: 4 }}
@@ -157,7 +157,7 @@ const Chart = ({ pros, partners }: any) => {
               />
               <Line
                 type='monotone'
-                dataKey='PARTNER'
+                dataKey='Agencies'
                 stroke='#BBF8DC'
                 strokeWidth={2}
                 dot={{ r: 4 }}

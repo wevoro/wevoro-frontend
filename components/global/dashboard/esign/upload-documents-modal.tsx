@@ -282,7 +282,18 @@ export default function UploadDocumentsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[560px] p-6 rounded-2xl max-h-[calc(100vh-4rem)] overflow-y-auto'>
+      {/*
+        SCRUM-127. DialogContent is a grid whose implicit column is sized to its
+        widest item, so a long filename widened the column past the 560px panel.
+        The replace modal had the same fault and drew its buttons outside the
+        box; here the panel also has overflow-y-auto, and a non-visible overflow
+        on one axis makes the other axis scroll too — so instead of spilling out,
+        the modal grew a horizontal scrollbar and the agency had to slide sideways
+        to reach the filename and the buttons. Pinning the column to
+        minmax(0,1fr) keeps it at the panel width, which is what lets the
+        filename's truncate engage and show "…".
+      */}
+      <DialogContent className='grid-cols-[minmax(0,1fr)] sm:max-w-[560px] p-6 rounded-2xl max-h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden'>
         <DialogHeader>
           <DialogTitle className='text-xl text-start font-semibold text-tertiary'>
             {validFiles.length > 1
@@ -292,7 +303,10 @@ export default function UploadDocumentsModal({
           {/* The design shows no subtitle, but the quota still has to reach a
               screen reader through the dialog's description. */}
           <DialogDescription className='sr-only'>
-            PDF or Word files, up to {MAX_ESIGN_UPLOAD_MB} MB each.{' '}
+            {/* Word was never accepted here — pdf-lib cannot stamp a
+                signature into a .docx — so the screen-reader line must not
+                offer it either. */}
+            PDF files, up to {MAX_ESIGN_UPLOAD_MB} MB each.{' '}
             {existingCount} of {MAX_DOCUMENTS_PER_ROLE} used in the {role} group
             {remainingSlots > 0
               ? ` — you can add ${remainingSlots} more.`
@@ -309,7 +323,9 @@ export default function UploadDocumentsModal({
                   Upload failed
                 </p>
                 {rejectedFiles.map((item) => (
-                  <p key={item.id} className='text-sm text-[#5E6864]'>
+                  // A filename is one unbroken word; without anywhere-wrapping
+                  // it cannot break and would widen the panel again (SCRUM-127).
+                  <p key={item.id} className='text-sm text-[#5E6864] [overflow-wrap:anywhere]'>
                     {rejectedFiles.length > 1
                       ? `${item.file.name} · ${item.error}`
                       : item.error}

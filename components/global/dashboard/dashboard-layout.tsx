@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, useEffect, useRef } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import ProfileInfo from './profile-info';
 import Tabs from './tabs';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
@@ -14,6 +14,8 @@ import { useUIContext, useUserContext } from '@/lib/contexts';
 import { OfferRequestModal } from './offer-request-modal';
 import PartnerVerificationModal from './partner-verification-modal';
 import { isCredentialingMode } from '@/lib/credentialing';
+import OnboardActionBar from './onboard/onboard-action-bar';
+import { isAgencyCaregiverPath, isCaregiverAgencyPath, isCaregiverPublicPath } from '@/lib/routes';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -61,19 +63,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
   }, [shouldStorePro, id]);
 
-  const isProProfileFromPartner =
-    pathname.includes('partner/pros/') && id ? true : false;
+  // SCRUM-144: /agency/caregivers/:id, /caregiver/:id and
+  // /caregiver/agencies/:id (were /partner/pros/:id, /pro/:id, /pro/partner/:id).
+  const isProProfileFromPartner = isAgencyCaregiverPath(pathname) && !!id;
 
-  const isPublicProPage = pathname.includes('pro/') && id ? true : false;
+  const isPublicProPage = isCaregiverPublicPath(pathname) && !!id;
 
-  const isPartnerFromPro =
-    pathname.includes('pro/partner/') && id ? true : false;
+  const isPartnerFromPro = isCaregiverAgencyPath(pathname) && !!id;
 
   const { data: userById, isLoading } = useQuery({
     queryKey: [`userById`, id],
     queryFn: async () => await getUserById(id as string),
     enabled: !!id,
   });
+
+  // SCRUM-141: an agency viewing a caregiver gets the Onboard action in the
+  // Back row, and that row stays pinned under the fixed nav while the profile
+  // scrolls. The nav's height changes with the breakpoint, so measure it.
+  const showOnboardBar =
+    isProProfileFromPartner && user?.role === 'partner' && isCredentialingMode();
+  const [navHeight, setNavHeight] = useState(0);
+  useEffect(() => {
+    if (!showOnboardBar) return;
+    const nav = document.querySelector('nav.fixed') as HTMLElement | null;
+    if (!nav) return;
+    const measure = () => setNavHeight(nav.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [showOnboardBar]);
 
   return (
     <div
@@ -84,7 +103,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       )}
     >
       {(isProProfileFromPartner || isPublicProPage) && (
-        <div className='flex items-center justify-between px-4 md:px-0'>
+        <div
+          className={cn(
+            'flex items-center justify-between px-4 md:px-0',
+            showOnboardBar &&
+              'sticky z-40 -my-3 gap-3 bg-[#F9F9FA] py-3 md:-mx-8 md:px-8 2xl:mx-0 2xl:px-0'
+          )}
+          style={showOnboardBar ? { top: navHeight } : undefined}
+          data-testid={showOnboardBar ? 'onboard-bar' : undefined}
+        >
           {!isPublicProPage || isPartnerFromPro ? (
             <Back disabled={isPublicProPage && !isPartnerFromPro} />
           ) : (
@@ -92,6 +119,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           )}
 
           <div className='flex items-center gap-4'>
+            {showOnboardBar && id && (
+              <OnboardActionBar caregiverId={id as string} caregiver={userById} />
+            )}
             {/* SCRUM-87/88: the scheduling-era "Send Offer" flow is hidden in
                 credentialing mode. Partners engage via share-link onboarding +
                 the "Download Credential Package" button instead — a sent Offer

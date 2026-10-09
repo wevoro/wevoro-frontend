@@ -70,7 +70,7 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
     >
       <div className='flex items-center justify-between border-b pb-4 mb-8'>
         <Title text='Documents' className='mb-0 !text-lg md:!text-2xl' />
-        {from !== 'admin' && <EditBtn href={`/pro/edit/documents?edit=true`} />}
+        {from !== 'admin' && <EditBtn href={`/caregiver/edit/documents?edit=true`} />}
       </div>
 
       {!noData ? (

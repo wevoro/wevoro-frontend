@@ -23,7 +23,7 @@ export function AutoFillAlert({ source }: { source: string }) {
         <Button
           type='button'
           variant={'special'}
-          className='inline-flex items-center gap-2 font-medium text-[#008000]'
+          className='inline-flex items-center gap-2 font-medium text-[#008000] underline underline-offset-2'
         >
           Fill Automatically{' '}
           <span className='italic font-normal'>(AI-Auto Filling)</span>{' '}

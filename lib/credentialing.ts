@@ -25,3 +25,23 @@ export const isCredentialingMode = (): boolean =>
  */
 export const isSharingEnabled = (): boolean =>
   process.env.NEXT_PUBLIC_SHARING_ENABLED !== 'false';
+
+/**
+ * SCRUM-156: the one place a caregiver's share link is spelled out.
+ *
+ * The profile header, the Onboarding page and the Settings box each built
+ * this string themselves. Settings was rewritten on 21 Sep to read `shareId`
+ * only, while the other two kept the database-id fallback — so a caregiver
+ * who signed up with Google or a passwordless code (no shareId is minted on
+ * those paths) got a grey box that never resolved in Settings and a working
+ * button everywhere else. Same link, same fallback, everywhere.
+ */
+export const caregiverShareLink = (
+  user?: { shareId?: string | null; _id?: string | null } | null,
+): string => {
+  const key = user?.shareId || user?._id;
+  if (!key) return '';
+  return typeof window !== 'undefined'
+    ? `${window.location.origin}/p/${key}`
+    : `/p/${key}`;
+};

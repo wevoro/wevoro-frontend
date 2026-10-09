@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 
 import { useAuthContext } from '@/lib/contexts';
+import { roleBasePath } from '@/lib/routes';
 
 const averia = Averia_Serif_Libre({
   subsets: ['latin'],
@@ -82,7 +83,7 @@ export default function Auth({
                       <p className='text-base'>
                         New to Wevoro?{' '}
                         <Link
-                          href={`/${source}/signup${querySuffix}`}
+                          href={`${roleBasePath(source)}/signup${querySuffix}`}
                           className='text-primary font-semibold underline underline-offset-4'
                         >
                           Create an account
@@ -92,7 +93,7 @@ export default function Auth({
                       <p className='text-base'>
                         {alreadyHaveAccount}{' '}
                         <Link
-                          href={`/${source}/login${querySuffix}`}
+                          href={`${roleBasePath(source)}/login${querySuffix}`}
                           className='text-primary font-semibold underline underline-offset-4'
                         >
                           Login

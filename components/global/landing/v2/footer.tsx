@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { toCurrentPath } from '@/lib/routes';
 
 const platform = [
   { label: 'For Caregivers', href: '#caregivers' },
@@ -28,7 +29,7 @@ function FooterCol({
         {links.map((l) => (
           <li key={l.label}>
             <Link
-              href={l.href}
+              href={toCurrentPath(l.href)}
               className='text-sm text-white/75 transition-colors hover:text-white'
             >
               {l.label}

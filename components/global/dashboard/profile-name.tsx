@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/tooltip';
 import { BadgeCheck, Dot, Info, Zap } from 'lucide-react';
 import React from 'react';
+import Link from 'next/link';
 import PartnerVerificationModal from './partner-verification-modal';
 
 const QuestionMarkIcon = React.forwardRef<
@@ -103,6 +104,7 @@ const ProfileName = ({
   isRecentlyActive,
   isRising,
   partnerVerification,
+  href,
 }: {
   name?: string;
   status?: string;
@@ -110,6 +112,14 @@ const ProfileName = ({
   role?: string;
   isRecentlyActive?: boolean;
   isRising?: boolean;
+  /**
+   * SCRUM-158: where clicking the name goes. Settings and Notifications swap
+   * out the layout that carries the Profile tabs, and the logo goes to the
+   * public home page, so from those screens there was no way back to the
+   * profile. The account sidebar passes the profile path; the profile header
+   * itself passes nothing and the name stays plain text.
+   */
+  href?: string;
   partnerVerification?: {
     licenseNumber?: string;
     ein?: string;
@@ -147,7 +157,18 @@ const ProfileName = ({
         </div>
       )}
       <h1 className='text-xl sm:text-2xl font-semibold flex items-center gap-2'>
-        {name || 'N/A'}
+        {href ? (
+          <Link
+            href={href}
+            title='Click to return to your profile'
+            className='hover:underline underline-offset-4'
+            data-testid='profile-name-link'
+          >
+            {name || 'N/A'}
+          </Link>
+        ) : (
+          name || 'N/A'
+        )}
         {status === 'pending' && role === 'pro' && (
           <span className='flex items-center gap-1'>
             <BadgeCheck className='w-7 h-7 fill-[#e0e2e1] text-white' />
@@ -196,7 +217,7 @@ const ProfileName = ({
               <StatusTooltip
                 trigger={<QuestionMarkIcon />}
                 title='Not Verified'
-                description='Your business is not yet verified. Complete the verification to unlock all features and communicate with Pro&rsquo;s.'
+                description='Your business is not yet verified. Complete the verification to unlock all features and communicate with caregivers.'
               />
             </Button>
           </PartnerVerificationModal>
@@ -228,6 +249,10 @@ const ProfileName = ({
                 />
               </svg>
             </button>
+            {/* SCRUM-133 (Faisal, Unlocked): the chip reads "Verified" in
+                words, as Pending and In Review show theirs. It used to be the
+                tick alone, with the word only in the hover tooltip. */}
+            <span className='text-sm font-light text-[#008000]'>Verified</span>
             <StatusTooltip
               trigger={<QuestionMarkIcon />}
               title='Verified!'

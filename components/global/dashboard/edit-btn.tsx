@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
+import { isAgencyCaregiverPath, isCaregiverPublicPath } from '@/lib/routes';
 
 const EditBtn = ({
   href,
@@ -15,9 +16,8 @@ const EditBtn = ({
   const params = useParams();
   const pathname = usePathname();
 
-  const isProProfileFromPartner =
-    pathname.includes('partner/pros/') && params.id ? true : false;
-  const isPublicProPage = pathname.includes('pro/') && params.id ? true : false;
+  const isProProfileFromPartner = isAgencyCaregiverPath(pathname) && !!params.id;
+  const isPublicProPage = isCaregiverPublicPath(pathname) && !!params.id;
 
   if (isProProfileFromPartner || isPublicProPage) return null;
 

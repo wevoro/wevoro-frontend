@@ -38,6 +38,15 @@ interface UIContextValue {
   autoFillClicked: string;
   setOpenAutoFillModal: React.Dispatch<React.SetStateAction<boolean>>;
   setAutoFillClicked: React.Dispatch<React.SetStateAction<string>>;
+
+  // SCRUM-154: the Completing Profile modal (SCRUM-40) opens once, by itself,
+  // after sign-up and is then gone for good. "Complete credentials" reopens it
+  // through this flag when there is no credential section to scroll to yet.
+  openCompleteProfile: boolean;
+  setOpenCompleteProfile: React.Dispatch<React.SetStateAction<boolean>>;
+  // SCRUM-154: asks the floating Credentials box (SCRUM-40) to expand once.
+  expandCredentialsPanel: boolean;
+  setExpandCredentialsPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const UIContext = createContext<UIContextValue | null>(null);
@@ -74,6 +83,8 @@ export function UIProvider({ children }: UIProviderProps) {
 
   // AutoFill Modal
   const [openAutoFillModal, setOpenAutoFillModal] = useState(false);
+  const [openCompleteProfile, setOpenCompleteProfile] = useState(false);
+  const [expandCredentialsPanel, setExpandCredentialsPanel] = useState(false);
   const [autoFillClicked, setAutoFillClicked] = useState('');
 
   // Alert Modal handlers
@@ -143,6 +154,11 @@ export function UIProvider({ children }: UIProviderProps) {
       setOpenAutoFillModal,
       autoFillClicked,
       setAutoFillClicked,
+
+      openCompleteProfile,
+      setOpenCompleteProfile,
+      expandCredentialsPanel,
+      setExpandCredentialsPanel,
     }),
     [
       isOpenAlert,
@@ -162,6 +178,8 @@ export function UIProvider({ children }: UIProviderProps) {
       openAutoFillModal,
       autoFillClicked,
       setAutoFillClicked,
+      openCompleteProfile,
+      expandCredentialsPanel,
     ],
   );
 

@@ -19,8 +19,16 @@ export async function POST(req: Request) {
     const title = bodyData.get('title');
     const isPublic = bodyData.get('isPublic');
     const consent = bodyData.get('consent');
+    // SCRUM-177: the version of the medical-consent wording the caregiver
+    // ticked. Like `part` below, it only reaches the backend if it is copied
+    // into the rebuilt form — without this the consent record has no version.
+    const consentVersion = bodyData.get('consentVersion');
     const file = bodyData.get('file');
     const documentId = bodyData.get('documentId'); // For updates
+    // SCRUM-165: which half of a PCA certificate this is. The form is rebuilt
+    // field by field below, so anything not copied across never reaches the
+    // backend — the sign-off would be stored as a second plain certificate.
+    const part = bodyData.get('part');
 
     // Create new FormData to send to backend
     const formData = new FormData();
@@ -38,6 +46,14 @@ export async function POST(req: Request) {
     // Append documentId if updating existing document
     if (documentId) {
       formData.append('documentId', documentId as string);
+    }
+
+    if (part) {
+      formData.append('part', part as string);
+    }
+
+    if (consentVersion) {
+      formData.append('consentVersion', consentVersion as string);
     }
 
     // Use QA API URL if env is qa, otherwise use default

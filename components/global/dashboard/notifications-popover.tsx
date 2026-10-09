@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNotifications } from '@/app/apiHooks/useNotifications';
+import { NOTIFICATION_TONE, toneOf } from '@/lib/notification-tone';
 
 /**
  * The approved design (Figma 10544:3982) puts notifications in a popover on the
@@ -25,9 +26,16 @@ const stripHtml = (s: string): string =>
     .trim();
 
 const NotificationsPopover: React.FC<{ basePath: string }> = ({ basePath }) => {
-  const { data: notifications } = useNotifications();
+  const { data: notifications, refetch } = useNotifications();
   const queryClient = useQueryClient();
   const [open, setOpen] = React.useState(false);
+
+  // SCRUM-167: opening the bell asks for the latest list, so what drops down
+  // is current rather than the last poll.
+  const onOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) void refetch();
+  };
 
   const items = React.useMemo(
     () => (notifications ?? []).slice(0, 5),
@@ -49,7 +57,7 @@ const NotificationsPopover: React.FC<{ basePath: string }> = ({ basePath }) => {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <button
           type='button'
@@ -96,14 +104,21 @@ const NotificationsPopover: React.FC<{ basePath: string }> = ({ basePath }) => {
             {items.map((n: any) => (
               <Link
                 key={n._id}
-                href={n.ctaLink || `${basePath}/notifications`}
+                // SCRUM-167: a notification opens the notifications page (the
+                // "See all" list), not the caregiver's profile its deep link
+                // pointed at. The link is still there as "View" on that page.
+                href={`${basePath}/notifications#n-${n._id}`}
                 onClick={() => setOpen(false)}
                 className={`flex gap-3 rounded-xl px-3 py-3 transition-colors ${
                   n.isRead ? 'hover:bg-[#F7F8F8]' : 'bg-[#E9FBF0]'
                 }`}
               >
-                <span className='relative mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-[#F2F4F3]'>
-                  <FileText className='size-4 text-[#5E6864]' />
+                {/* SCRUM-168: the icon takes the notification's tone — green for
+                    routine events, yellow / red only for expiry alerts. */}
+                <span
+                  className={`relative mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full ${NOTIFICATION_TONE[toneOf(n.type)].iconBg}`}
+                >
+                  <FileText className={`size-4 ${NOTIFICATION_TONE[toneOf(n.type)].iconText}`} />
                   <CheckCircle2 className='absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white text-[#008000]' />
                 </span>
                 <span className='min-w-0'>

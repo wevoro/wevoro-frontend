@@ -64,15 +64,15 @@ export default function Navbar({
     };
   }, []);
 
-  const loginPath = pathname === '/partners' ? '/partner/login' : '/pro/login';
+  const loginPath = pathname === '/agencies' ? '/agency/login' : '/caregiver/login';
   // SCRUM-99: agencies register passwordlessly — email, then an emailed code.
-  // Sending them to /partner/signup added a password they can never use again,
+  // Sending them to /agency/signup added a password they can never use again,
   // because agency password login was retired by the same ticket.
   const registerPath =
-    pathname === '/partners' ? '/partner/access' : '/pro/signup';
+    pathname === '/agencies' ? '/agency/access' : '/caregiver/signup';
 
   const profilePath =
-    user?.role === 'partner' ? '/partner/profile' : '/pro/profile';
+    user?.role === 'partner' ? '/agency/profile' : '/caregiver/profile';
 
   return (
     <nav

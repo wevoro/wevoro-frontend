@@ -81,7 +81,7 @@ export default function OverviewPage() {
           </Card>
         ))}
 
-        <Link href='/admin/pros?status=pending'>
+        <Link href='/admin/caregivers?status=pending'>
           <Card className='shadow-none border-none rounded-[12px] sm:rounded-[16px]'>
             <CardContent className='p-4 sm:p-8'>
               <div className='flex justify-between items-start'>

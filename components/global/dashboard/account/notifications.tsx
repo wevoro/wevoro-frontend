@@ -21,90 +21,64 @@ import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { toCurrentPath } from '@/lib/routes';
+import { NOTIFICATION_TONE, toneOf } from '@/lib/notification-tone';
 
-// SCRUM-65: Notification type config
-const NOTIFICATION_CONFIG: Record<
-  string,
-  { icon: React.ReactNode; bgColor: string; borderColor: string; label: string }
-> = {
+// SCRUM-65: Notification type config — icon and label per type. SCRUM-168:
+// the colours come from lib/notification-tone, not from here.
+const NOTIFICATION_CONFIG: Record<string, { icon: React.ReactNode; label: string }> = {
   credential_yellow: {
     icon: <Clock className='size-4 text-amber-600' />,
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-l-4 border-amber-400',
     label: 'Expiring Soon',
   },
   credential_red: {
     icon: <AlertTriangle className='size-4 text-red-600' />,
-    bgColor: 'bg-red-50',
-    borderColor: 'border-l-4 border-red-500',
     label: 'Urgent',
   },
   credential_expired: {
     icon: <ShieldX className='size-4 text-red-700' />,
-    bgColor: 'bg-red-50',
-    borderColor: 'border-l-4 border-red-700',
     label: 'Expired',
   },
   credential_rejected: {
     icon: <ShieldAlert className='size-4 text-orange-600' />,
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-l-4 border-orange-500',
     label: 'Action Required',
   },
   private_access_request: {
     icon: <FileCheck className='size-4 text-blue-600' />,
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-l-4 border-blue-500',
     label: 'Access Request',
   },
   private_access_granted: {
     icon: <ShieldCheck className='size-4 text-green-600' />,
-    bgColor: 'bg-green-50',
-    borderColor: 'border-l-4 border-green-500',
     label: 'Access Granted',
   },
   private_access_revoked: {
     icon: <ShieldX className='size-4 text-gray-600' />,
-    bgColor: 'bg-gray-50',
-    borderColor: 'border-l-4 border-gray-400',
     label: 'Access Revoked',
   },
   // SCRUM-87/88: credentialing-mode engagement notifications
   agency_onboarded: {
     icon: <UserPlus className='size-4 text-indigo-600' />,
-    bgColor: 'bg-indigo-50',
-    borderColor: 'border-l-4 border-indigo-500',
     label: 'Agency Onboarded',
   },
   credentials_downloaded: {
     icon: <Download className='size-4 text-emerald-600' />,
-    bgColor: 'bg-emerald-50',
-    borderColor: 'border-l-4 border-emerald-500',
     label: 'Credentials Downloaded',
   },
   // SCRUM-117/118: e-signature flow
   esign_reminder: {
     icon: <PenLine className='size-4 text-amber-600' />,
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-l-4 border-amber-400',
     label: 'Signature Needed',
   },
   esign_completed: {
     icon: <CheckCircle className='size-4 text-green-600' />,
-    bgColor: 'bg-green-50',
-    borderColor: 'border-l-4 border-green-500',
     label: 'Signing Complete',
   },
   esign_replaced: {
     icon: <RefreshCw className='size-4 text-amber-700' />,
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-l-4 border-amber-500',
     label: 'Document Updated',
   },
   general: {
     icon: null,
-    bgColor: '',
-    borderColor: '',
     label: '',
   },
 };
@@ -155,7 +129,7 @@ const Notifications = () => {
 
   const handleCtaClick = (ctaLink: string) => {
     if (ctaLink) {
-      router.push(ctaLink);
+      router.push(toCurrentPath(ctaLink));
     }
   };
 
@@ -186,11 +160,13 @@ const Notifications = () => {
         {notifications?.length > 0 ? (
           notifications?.map((noti: Notification, index: number) => {
             const config = NOTIFICATION_CONFIG[noti.type || 'general'] || NOTIFICATION_CONFIG.general;
+            const tone = NOTIFICATION_TONE[toneOf(noti.type)];
 
             return (
               <div
                 key={index}
-                className={`flex flex-col gap-1.5 justify-between p-3 rounded-lg transition-colors ${config.bgColor} ${config.borderColor}`}
+                id={`n-${noti._id}`}
+                className={`flex flex-col gap-1.5 justify-between p-3 rounded-lg transition-colors scroll-mt-24 target:ring-2 target:ring-[#008000] ${tone.bg} ${tone.border}`}
               >
                 <div className='flex justify-between items-start gap-4'>
                   <div className='flex items-start gap-2.5 flex-1'>

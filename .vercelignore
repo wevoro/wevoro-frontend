@@ -1,0 +1,26 @@
+# Files that must never be uploaded to Vercel.
+#
+# The Vercel CLI does NOT read .gitignore when it uploads a deployment - only its
+# own built-in list plus this file - so anything kept out of git must be listed
+# here too, or a manual `vercel` deploy ships it anyway.
+#
+# Generated reports, guides, walkthroughs, invoices, proposals and proof screenshots.
+# Root-anchored on purpose: public/ holds real site images (public/email/*.png is
+# used by the emails), so an unanchored *.png or *.pdf rule would break the site.
+/*.html
+/*.pdf
+/*.png
+/*.jpg
+/*.jpeg
+/*.docx
+/*.xlsx
+/*.csv
+qa-shots/
+qa-evidence/
+qa-regression/
+figma-refs/
+
+# Generated end-to-end test reports.
+/e2e-report/
+/test-results/
+/playwright-report/

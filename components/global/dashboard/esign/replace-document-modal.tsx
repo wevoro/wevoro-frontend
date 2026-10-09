@@ -126,7 +126,16 @@ export default function ReplaceDocumentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[600px] gap-5 rounded-2xl p-7 sm:rounded-2xl'>
+      {/*
+        SCRUM-127. DialogContent is a grid, and its implicit column is auto
+        sized, so it grows to the widest item rather than to the panel. A long
+        replacement filename took that column to ~995px inside a 600px box, and
+        because every row shares the column, the justify-end button row was
+        drawn ~424px past the modal's right edge, over the page behind it.
+        Pinning the column to minmax(0,1fr) keeps it at the panel width, which
+        is also what lets the filename's existing truncate take effect.
+      */}
+      <DialogContent className='grid-cols-[minmax(0,1fr)] sm:max-w-[600px] gap-5 rounded-2xl p-7 sm:rounded-2xl'>
         <DialogHeader>
           <DialogTitle className='text-start text-[20px] font-semibold text-[#1C1C1C]'>
             Replace {role ? `${role} ` : ''}signing document?

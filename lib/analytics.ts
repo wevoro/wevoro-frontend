@@ -5,7 +5,7 @@ import posthog from 'posthog-js';
  *
  * Scope is deliberately narrow: autocapture, session recording and automatic
  * pageviews are all OFF. This is health-adjacent data and URLs carry caregiver
- * ids (e.g. /partner/pros/<caregiverId>), so nothing is sent that we did not
+ * ids (e.g. /agency/caregivers/<caregiverId>), so nothing is sent that we did not
  * explicitly choose to send. Pageviews can be added later, but only behind a
  * path-sanitising helper that strips ids.
  *

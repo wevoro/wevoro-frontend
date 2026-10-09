@@ -44,7 +44,7 @@ export default function ProfessionalInformation({
           className='mb-0 !text-lg md:!text-2xl'
         />
         {from !== 'admin' && (
-          <EditBtn href={`/pro/edit/professional-information?edit=true`} />
+          <EditBtn href={`/caregiver/edit/professional-information?edit=true`} />
         )}
       </div>
 

@@ -9,6 +9,7 @@ import NoData from '../no-data';
 import { useParams, usePathname } from 'next/navigation';
 import SectionDescription from '../section-description';
 import { useUserContext } from '@/lib/contexts';
+import { isAgencyCaregiverPath, isCaregiverPublicPath } from '@/lib/routes';
 
 const PersonalInformation = ({
   proUser,
@@ -21,9 +22,8 @@ const PersonalInformation = ({
   // console.log('🚀 ~ PersonalInformation ~ user:', user);
   const { id } = useParams();
   const pathname = usePathname();
-  const isPublicProPage = pathname.includes('pro/') && id ? true : false;
-  const isFromPartnerPage =
-    pathname.includes('partner/pros') && id ? true : false;
+  const isPublicProPage = isCaregiverPublicPath(pathname) && !!id;
+  const isFromPartnerPage = isAgencyCaregiverPath(pathname) && !!id;
 
   const userData = proUser ? proUser : user;
   const isPartnerApproved = user?.status === 'approved';
@@ -45,6 +45,17 @@ const PersonalInformation = ({
   );
   const hasContactDetails = !!(userData?.email || phone);
   const bio = userData?.personalInfo?.bio;
+  // SCRUM-190: Bio printed a literal "N/A" when the caregiver had not written
+  // one — the only field on this page that did. Every other field here is
+  // simply left out when it is empty (see the ADDRESS note above), so Bio now
+  // follows the same rule rather than adding a third style. The value comes
+  // from the Quill editor, which stores an emptied bio as "<p><br></p>", so the
+  // check has to look past the markup or the heading would render on its own
+  // above a blank line — the very thing the note above guards against.
+  const hasBio = !!String(bio ?? '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim();
 
   const noData = !userData?.personalInfo;
 
@@ -61,18 +72,17 @@ const PersonalInformation = ({
           className='mb-0 !text-lg md:!text-2xl'
         />
         {from !== 'admin' && (
-          <EditBtn href={`/pro/edit/personal-information?edit=true`} />
+          <EditBtn href={`/caregiver/edit/personal-information?edit=true`} />
         )}
       </div>
       {!noData ? (
         <div className='space-y-6'>
-          <div className='border-b pb-6 flex flex-col gap-1.5 md:gap-2.5'>
-            <SectionTitle text='Bio' />
-            <SectionDescription
-              text={bio || 'N/A'}
-              from={from}
-            />
-          </div>
+          {hasBio && (
+            <div className='border-b pb-6 flex flex-col gap-1.5 md:gap-2.5'>
+              <SectionTitle text='Bio' />
+              <SectionDescription text={bio} from={from} />
+            </div>
+          )}
 
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6'>
             {(firstName || lastName) && (

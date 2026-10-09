@@ -41,11 +41,25 @@ export function SendMessageModal({
     };
 
     try {
-      await fetch('/api/user/notification', {
+      const res = await fetch('/api/user/notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(notificationPayload),
       });
+      // SCRUM-180: the route answers 200 and reports a refused send in the body
+      // as { status: 4xx/5xx }, so only a network failure ever reached the catch
+      // below — every other outcome toasted "Message sent successfully" while
+      // nothing had been delivered. The send has to be read before it is
+      // reported, the same way the rest of the app reads data.status.
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.status !== 200) {
+        toast({
+          variant: 'destructive',
+          title: data?.message || 'Failed to send message',
+        });
+        setIsLoading(false);
+        return;
+      }
 
       toast({ variant: 'success', title: 'Message sent successfully' });
       setIsLoading(false);

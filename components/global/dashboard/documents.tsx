@@ -5,14 +5,13 @@ import {
   Plus,
   MoreHorizontal,
   LockKeyhole,
-  Globe,
   Trash2,
   Pencil,
   Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import UploadDocumentModal from './upload-document-modal';
+import UploadDocumentModal, { SHARING_NOTE } from './upload-document-modal';
 import DocumentViewer from './document-viewer';
 import { downloadFile } from '@/utils/download';
 
@@ -37,7 +36,6 @@ import {
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getUserDocuments } from '@/app/actions';
-import { useDocuments } from '@/app/apiHooks/useDocuments';
 import { REQUIRED_CREDENTIALS } from '@/lib/credential-config';
 
 // SCRUM-61: documents that belong to the locked credential list never appear in
@@ -69,7 +67,22 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
   proUser,
   from,
 }) => {
-  const { data: documents, refetch: refetchDocuments } = useDocuments();
+  // Whose documents these are. On the caregiver's own profile there is no
+  // proUser and this is the logged-in user's list. On an agency's view of a
+  // caregiver, proUser IS the caregiver — it used to be accepted and ignored, so
+  // the section listed the AGENCY's own documents, offered an upload card that
+  // filed into the agency's account, and put Update / Remove on every card.
+  const viewedUserId: string | undefined = proUser?._id;
+  const readOnly = !!viewedUserId;
+
+  const { data: documents, refetch: refetchDocuments } = useQuery({
+    // The own-profile key stays ['documents'] so the upload modal's
+    // invalidation keeps refreshing it exactly as before.
+    queryKey: readOnly ? ['documents', viewedUserId] : ['documents'],
+    queryFn: () => getUserDocuments(viewedUserId),
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000,
+  });
 
   // SCRUM-61: single combined Documents section — supporting docs only.
   // Credential rows (CNA Certificate, Driver's License, Auto Insurance, CPR Test,
@@ -77,6 +90,12 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
   const supportingDocuments = (documents ?? []).filter(
     (d: Document) => !CREDENTIAL_DOCUMENT_TYPES.includes(d.documentType),
   );
+
+  // Someone else's profile with no supporting documents: nothing to list and
+  // nothing they may add, so show no empty box.
+  if (readOnly && supportingDocuments.length === 0) {
+    return null;
+  }
 
   return (
     <div
@@ -93,15 +112,26 @@ const Documents: React.FC<{ proUser?: any; from?: string }> = ({
         )}
       />
 
+      {/* SCRUM-177: replaces the per-document Private toggle — the caregiver
+          controls who sees these by choosing who gets the profile link. Own
+          profile only; on an agency's view of a caregiver "your profile" is
+          the wrong voice. */}
+      {!readOnly && (
+        <p className='mt-3 mb-4 text-xs sm:text-sm font-medium text-muted-foreground'>
+          {SHARING_NOTE}
+        </p>
+      )}
+
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6'>
         {supportingDocuments.map((document: any, index: number) => (
           <EachDocument
             document={document}
             key={index}
             refetchDocuments={refetchDocuments}
+            readOnly={readOnly}
           />
         ))}
-        {from !== 'onboard' && (
+        {from !== 'onboard' && !readOnly && (
           <UploadDocumentButton
             category='non_medical'
             hasDocumets={supportingDocuments.length > 0}
@@ -117,55 +147,78 @@ export default Documents;
 const EachDocument = ({
   document,
   refetchDocuments,
+  readOnly = false,
 }: {
   document: any;
   refetchDocuments: () => void;
+  /** Someone else's document: view only, no Update / Remove. */
+  readOnly?: boolean;
 }) => {
   const fileName = document.url?.split('/').pop()?.split('?')[0] || '';
+  // The paywall withholds the file link until the agency buys the credential
+  // package, so a locked document has no url. Show the card, but never open a
+  // viewer onto nothing.
+  const locked = !document.url;
 
-  return (
-    <DocumentViewer documents={document} title='View Document'>
-      <div className='flex flex-col gap-6 justify-between p-4 md:p-6 border rounded-[24px] w-full cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all'>
-        <div className='flex justify-between gap-2'>
-          <img
-            src={fileIcons[getFileType(document.url)]}
-            alt={document.title}
-            className='size-[30px] md:size-[40px] lg:size-[60px]'
-          />
+  const card = (
+    <div
+      className={cn(
+        'flex min-w-0 flex-col gap-6 justify-between p-4 md:p-6 border rounded-[24px] w-full',
+        locked
+          ? 'cursor-default'
+          : 'cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all',
+      )}
+    >
+      <div className='flex justify-between gap-2'>
+        <img
+          // A locked document has no url to read a file type from.
+          src={fileIcons[getFileType(document.url)] || '/file.svg'}
+          alt={document.title}
+          className='size-[30px] md:size-[40px] lg:size-[60px]'
+        />
 
-          <div
-            className='flex items-center'
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              size='icon'
-              variant='ghost'
-              className='size-6 md:size-8 lg:size-10 cursor-pointer bg-accent hover:bg-gray-100 md:rounded-xl'
-            >
-              {document.privacy === 'public' ? (
-                <Globe className='size-3 md:size-5' />
-              ) : (
+        <div
+          className='flex items-center'
+          onClick={(e) => e.stopPropagation()}
+        >
+          {readOnly ? (
+            // SCRUM-177: this padlock is NOT the caregiver's privacy flag — it
+            // is drawn only when the url was withheld (SCRUM-119 packet paywall
+            // / SCRUM-99 tier gate), and it stays, because a card with no url
+            // has no file to open. The caregiver-facing privacy indicator that
+            // used to sit on the owner's own cards is gone.
+            locked && (
+              <span className='size-6 md:size-8 lg:size-10 flex items-center justify-center bg-accent md:rounded-xl'>
                 <LockKeyhole className='size-3 md:size-5' />
-              )}
-            </Button>
+              </span>
+            )
+          ) : (
             <MoreDropdown
               document={document}
               refetchDocuments={refetchDocuments}
             />
-          </div>
-        </div>
-
-        <div>
-          <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
-            {document.title}
-          </p>
-          <p className='text-xs sm:text-sm font-medium text-muted-foreground truncate'>
-            {document.category === 'medical' ? 'Medical' : 'Non Medical'}
-            {document.fileSize ? ` . ( ${formatFileSize(document.fileSize)} )` : ''}
-            {fileName ? ` ${fileName}` : ''}
-          </p>
+          )}
         </div>
       </div>
+
+      <div className='min-w-0'>
+        <p className='text-sm sm:text-base md:text-xl font-medium text-tertiary truncate'>
+          {document.title}
+        </p>
+        <p className='text-xs sm:text-sm font-medium text-muted-foreground truncate'>
+          {document.category === 'medical' ? 'Medical' : 'Non Medical'}
+          {document.fileSize ? ` . ( ${formatFileSize(document.fileSize)} )` : ''}
+          {fileName ? ` ${fileName}` : ''}
+        </p>
+      </div>
+    </div>
+  );
+
+  return locked ? (
+    card
+  ) : (
+    <DocumentViewer documents={document} title='View Document'>
+      {card}
     </DocumentViewer>
   );
 };
@@ -183,6 +236,9 @@ const UploadDocumentButton = ({
     <UploadDocumentModal addMore>
       <Button
         variant='special'
+        // Stable hook for the end-to-end upload test; the button is icon-only,
+        // so there is no text for a test to find it by.
+        data-testid='add-document'
         className={cn(
           'flex flex-col items-center justify-center p-4 md:p-8 border border-[#BBF8DC] rounded-3xl w-full cursor-pointer',
           hasDocumets ? 'h-full' : 'h-[186px]',

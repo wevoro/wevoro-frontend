@@ -203,7 +203,7 @@ export function ProRequestModal({
         position: 'top-center',
       });
       queryClient.invalidateQueries({ queryKey: ['offers'] });
-      router.push(`/pro/jobs`);
+      router.push(`/caregiver/jobs`);
       setOpen(false);
       handleCancel();
     } catch (error) {

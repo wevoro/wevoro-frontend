@@ -10,14 +10,16 @@ export async function middleware(req: NextRequest) {
   // console.log('🚀 ~ middleware ~ isAuthenticatedUser:', isAuthenticatedUser);
   // Define all protected routes with patterns
   const protectedRoutes = [
-    /^\/pro\/onboard\/(personal-info|professional-info|document-upload|completed)$/,
-    /^\/pro\/(profile|offers|jobs|notifications|settings)$/,
-    // SCRUM-117: /partner/documents is the agency signing library.
-    /^\/partner\/(profile|pros|offers|notifications|settings|documents)$/,
-    /^\/partner\/pros\/\d+$/, // Matches /partner/pros/:id (numeric)
+    // SCRUM-144: /caregiver and /agency (were /pro and /partner; the old
+    // addresses redirect here before middleware runs).
+    /^\/caregiver\/onboard\/(personal-info|professional-info|document-upload|completed)$/,
+    /^\/caregiver\/(profile|offers|jobs|notifications|settings)$/,
+    // SCRUM-117: /agency/documents is the agency signing library.
+    /^\/agency\/(profile|caregivers|offers|notifications|settings|documents)$/,
+    /^\/agency\/caregivers\/\d+$/, // Matches /agency/caregivers/:id (numeric)
     /^\/admin$/,
-    /^\/admin\/pros$/,
-    /^\/admin\/partners$/,
+    /^\/admin\/caregivers$/,
+    /^\/admin\/agencies$/,
   ];
 
   // Check if the current path matches any of the protected routes
@@ -52,9 +54,9 @@ export async function middleware(req: NextRequest) {
     // login page instead, carrying where they were headed so we can return
     // them there once they are in.
     const intended = req.nextUrl.pathname + req.nextUrl.search;
-    const loginPath = req.nextUrl.pathname.startsWith('/partner')
-      ? '/partner/login'
-      : '/pro/login';
+    const loginPath = req.nextUrl.pathname.startsWith('/agency')
+      ? '/agency/login'
+      : '/caregiver/login';
     const to = new URL(loginPath, req.url);
     to.searchParams.set('redirect', intended);
     return NextResponse.redirect(to);
@@ -70,6 +72,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Match all routes under `/pro` and `/partner`
-  matcher: ['/pro/:path*', '/partner/:path*', '/admin/:path*'],
+  // Match all routes under `/caregiver` and `/agency`
+  matcher: ['/caregiver/:path*', '/agency/:path*', '/admin/:path*'],
 };

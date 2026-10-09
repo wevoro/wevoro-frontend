@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useUserContext } from '@/lib/contexts';
 import { useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Send, Loader2 } from 'lucide-react';
+import { roleLabel } from '@/lib/routes';
 
 interface Note {
   role: 'partner' | 'pro';
@@ -116,7 +117,7 @@ const NotesPopup = ({
                   >
                     {isOwnNote(note.role)
                       ? 'You'
-                      : note.role.charAt(0).toUpperCase() + note.role.slice(1)}
+                      : roleLabel(note.role)}
                   </span>
 
                   {/* Message Bubble */}

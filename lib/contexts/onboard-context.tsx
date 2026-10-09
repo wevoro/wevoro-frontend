@@ -19,8 +19,16 @@ interface OnboardContextValue {
   professionalInfoRef: React.RefObject<FormRef>;
   documentUploadRef: React.RefObject<FormRef>;
   extractedData: any;
-  setExtractedData: (data: any) => void;
+  setExtractedData: React.Dispatch<React.SetStateAction<any>>;
   handleSavePersonalInfo: (source: string) => Promise<void>;
+  /**
+   * SCRUM-153: what a caregiver typed on a step and then left with Previous or
+   * Back, before pressing Next. Each step has its own form and reads its saved
+   * profile on mount, so anything unsaved was simply gone. The step keeps a
+   * draft here on unmount and takes it back when it mounts again.
+   */
+  takeDraft: (step: string) => any;
+  setDraft: (step: string, values: any) => void;
 }
 
 const OnboardContext = createContext<OnboardContextValue | null>(null);
@@ -39,6 +47,16 @@ interface OnboardProviderProps {
 
 export function OnboardProvider({ children }: OnboardProviderProps) {
   const [extractedData, setExtractedData] = useState<any>(null);
+  const drafts = useRef<Record<string, any>>({});
+  const setDraft = useCallback((step: string, values: any) => {
+    if (values === undefined || values === null) delete drafts.current[step];
+    else drafts.current[step] = values;
+  }, []);
+  const takeDraft = useCallback((step: string) => {
+    const v = drafts.current[step];
+    delete drafts.current[step];
+    return v;
+  }, []);
 
   // Form refs for onboarding
   const personalInfoRef = useRef<FormRef>(null);
@@ -73,8 +91,10 @@ export function OnboardProvider({ children }: OnboardProviderProps) {
       handleSavePersonalInfo,
       extractedData,
       setExtractedData,
+      takeDraft,
+      setDraft,
     }),
-    [handleSavePersonalInfo, extractedData],
+    [handleSavePersonalInfo, extractedData, takeDraft, setDraft],
   );
 
   return (

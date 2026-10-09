@@ -65,14 +65,14 @@ export default function WhyWevoro({
           {!source && (
             <div className='md:mt-20 mt-16 flex flex-col items-center justify-center md:gap-16 gap-14 sm:flex-row'>
               <Link
-                href='/pro/signup'
+                href='/caregiver/signup'
                 className='inline-flex items-center font-medium underline text-primary hover:text-primary/80'
               >
                 <MoveLeft className='mr-3 size-6' />
                 {getStartedProText}
               </Link>
               <Link
-                href='/partner/signup'
+                href='/agency/signup'
                 className='inline-flex items-center font-medium underline text-secondary hover:text-secondary/80'
               >
                 {getStartedPartnerText}

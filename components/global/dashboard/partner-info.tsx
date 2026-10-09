@@ -1,6 +1,7 @@
 import React from 'react';
 import ProfileName from './profile-name';
 import { isCredentialingMode } from '@/lib/credentialing';
+import { useAgencyEngagements } from '@/app/apiHooks/useAgencyEngagements';
 import { CircleHelp, Star } from 'lucide-react';
 import {
   Tooltip,
@@ -72,12 +73,63 @@ const PartnerInfo = ({
             jobConversionPercentage={user?.jobConversionPercentage}
           />
         )}
+        {/* SCRUM-141 (Faisal, agency page): the header counts the
+            credentialing funnel instead — who was onboarded, and who signed
+            and was downloaded. */}
+        {!isPartnerFromPro && isCredentialingMode() && <OnboardingStats />}
       </div>
     </div>
   );
 };
 
 export default PartnerInfo;
+
+const OnboardingStats = () => {
+  const { data } = useAgencyEngagements();
+  // Nothing until the list is in: a flash of "0" reads as a real count.
+  if (!data) return null;
+  const all = [...(data?.submitted ?? []), ...(data?.received ?? [])];
+  const onboarded = all.filter(
+    (e: any) => e?.onboard?.state && !['none', 'declined'].includes(e.onboard.state)
+  ).length;
+  const downloaded = all.filter((e: any) => e?.paid).length;
+  return (
+    // Same slots, icons and type as the Offers Sent / Jobs Conversion pair
+    // they replace (Faisal P4/P5).
+    <div data-testid='agency-onboarding-stats' className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+      <div className='flex flex-col gap-1'>
+        <p className='text-muted-foreground text-sm md:text-base flex items-center gap-2'>
+          Caregivers onboarded{' '}
+          <Star className='size-5 fill-[#FAB607] stroke-[#FAB607]' />
+        </p>
+        <p className='text-tertiary font-medium text-lg md:text-2xl'>{onboarded}</p>
+      </div>
+      <div className='flex flex-col gap-1'>
+        <p className='text-muted-foreground text-sm md:text-base flex items-center gap-2'>
+          Signed &amp; downloaded{' '}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type='button' className='focus:outline-none' aria-label='What this counts'>
+                  <CircleHelp className='size-5' />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side='bottom'
+                className='bg-[#161616] border-none text-white p-4 rounded-2xl max-w-[260px]'
+              >
+                <p className='text-sm font-light leading-snug'>
+                  Caregivers who signed your documents and whose credential package you bought.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </p>
+        <p className='text-tertiary font-medium text-lg md:text-2xl'>{downloaded}</p>
+      </div>
+    </div>
+  );
+};
 
 const Tracks = ({
   offersSent,

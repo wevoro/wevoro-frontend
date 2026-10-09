@@ -14,6 +14,7 @@ import { CloudUpload } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import { MAX_UPLOAD_MB } from '@/utils/download';
+import { shortFileName } from '@/utils/file';
 
 const PartnerVerificationModal = ({
   children,
@@ -262,9 +263,12 @@ const PartnerVerificationModal = ({
                   errors.file ? 'text-red-500' : 'text-green-600'
                 }`}
               />
-              <p className='font-semibold text-base'>
+              <p
+                title={formData.file?.name}
+                className='max-w-full break-all text-center font-semibold text-base'
+              >
                 {formData.file
-                  ? formData.file.name
+                  ? shortFileName(formData.file.name)
                   : existingData?.licenseFile
                     ? 'Upload New File (Optional)'
                     : 'Upload Proof of Licensure'}

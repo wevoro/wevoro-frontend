@@ -333,31 +333,46 @@ export async function getCountry() {
 
 export async function getCredentialStatus(userId: string) {
   try {
-    const { REQUIRED_CREDENTIALS } = await import('@/lib/credential-config');
+    const { REQUIRED_CREDENTIALS, isPrimaryCredentialRow, isSignoffRow } = await import(
+      '@/lib/credential-config'
+    );
     const response = await api.get(`/document`, {
       params: { userId },
     });
     const documents = response.data.data || [];
 
+    // SCRUM-165: the PCA sign-off is a second 'certifications' row. Keyed by
+    // type alone, whichever row came last became the "PCA Certificate", so a
+    // pending sign-off could keep a verified caregiver's share link locked and
+    // an approved one could stand in for a rejected exam. Only the primary row
+    // stands for the credential; the sign-off is attached beside it.
     const docByType: Record<string, any> = {};
     documents.forEach((doc: any) => {
-      docByType[doc.documentType] = doc;
+      if (isPrimaryCredentialRow(doc)) docByType[doc.documentType] = doc;
     });
+    const signoffDoc = documents.find((doc: any) => isSignoffRow(doc)) || null;
 
+    // One ladder for the credential and the sign-off alike.
+    const stateOf = (doc: any): 'not_uploaded' | 'pending' | 'verified' | 'rejected' => {
+      if (!doc) return 'not_uploaded';
+      if (doc.reviewStatus === 'approved') return 'verified';
+      if (doc.reviewStatus === 'rejected') return 'rejected';
+      return 'pending';
+    };
+
+    // Still exactly 5 items: the share gate takes the list length as its
+    // total, so the sign-off rides on the certifications item instead.
     return REQUIRED_CREDENTIALS.map((cred) => {
       const doc = docByType[cred.key] || null;
-      let state: 'not_uploaded' | 'pending' | 'verified' | 'rejected' = 'not_uploaded';
-      if (doc) {
-        if (doc.reviewStatus === 'approved') state = 'verified';
-        else if (doc.reviewStatus === 'rejected') state = 'rejected';
-        else state = 'pending';
-      }
       return {
         key: cred.key,
         label: cred.label,
         category: cred.category,
-        state,
+        state: stateOf(doc),
         document: doc,
+        ...(cred.key === 'certifications'
+          ? { signoff: { state: stateOf(signoffDoc), document: signoffDoc } }
+          : {}),
       };
     });
   } catch (error) {

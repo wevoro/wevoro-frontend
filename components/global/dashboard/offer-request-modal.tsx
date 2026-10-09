@@ -242,7 +242,7 @@ export function OfferRequestModal({
       reset();
       queryClient.invalidateQueries({ queryKey: ['offers'] });
       setOpen(false);
-      router.push(`/partner/onboardings`);
+      router.push(`/agency/onboardings`);
       setIsLoading(false);
       toast.success(
         offerData?._id
@@ -469,7 +469,7 @@ export function OfferRequestModal({
                 render={({ field }) => (
                   <Textarea
                     {...field}
-                    placeholder='Write your message and more details for the pro..'
+                    placeholder='Write your message and more details for the caregiver...'
                     className='rounded-xl h-40'
                   />
                 )}

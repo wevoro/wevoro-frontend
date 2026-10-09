@@ -16,7 +16,10 @@ const Skills: React.FC<{ proUser?: any }> = ({ proUser }) => {
     <div className='px-4 p-6 md:p-8 bg-white md:rounded-[16px]'>
       <div className='flex items-center justify-between border-b pb-4 mb-8'>
         <Title text='Skills' className='mb-0 !text-lg md:!text-2xl' />
-        <EditBtn href={`/pro/edit/professional-information?edit=true#skills`} />
+        {/* SCRUM-205: `section` scopes the edit form to Skills. The hash alone
+            could not do it — it never reaches the server and the form rendered
+            every other section alongside. */}
+        <EditBtn href={`/caregiver/edit/professional-information?edit=true&section=skills#skills`} />
       </div>
       {skills ? (
         <div className='flex flex-wrap gap-3'>

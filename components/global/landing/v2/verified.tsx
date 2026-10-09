@@ -31,7 +31,7 @@ export default function Verified() {
               complete, verified credential pack — no back-and-forth, no waiting.
             </p>
             <Link
-              href='/pro/signup'
+              href='/caregiver/signup'
               className='mt-8 inline-flex h-11 items-center rounded-[14px] bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary/90'
             >
               Start uploading credentials

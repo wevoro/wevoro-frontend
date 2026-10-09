@@ -39,22 +39,45 @@ const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, childr
     }
   };
 
-  const handleShareSMS = () => {
-    const message = encodeURIComponent(
-      `Check out my caregiver profile on Wevoro: ${shareLink}`
-    );
-    track(EVENTS.SHARE_LINK_GENERATED, { method: 'sms' });
-    window.open(`sms:?body=${message}`, '_blank');
-  };
+  /**
+   * SCRUM-174: this used to be window.open('sms:…', '_blank').
+   *
+   * A browser cannot render an sms: address — it hands it to the messaging
+   * app. Opening one in a NEW TAB leaves that tab behind with nothing in it,
+   * which is the blank page the tester saw. It is a plain link now, so the
+   * hand-off happens in place and no empty tab is ever created.
+   */
+  const smsHref = `sms:?body=${encodeURIComponent(
+    `Check out my caregiver profile on Wevoro: ${shareLink}`
+  )}`;
 
-  const handleShareEmail = () => {
-    const subject = encodeURIComponent('View my Wevoro caregiver profile');
-    const body = encodeURIComponent(
-      `Hi,\n\nI'd like to share my confirmed caregiver profile with you on Wevoro.\n\nView my profile here: ${shareLink}\n\nBest regards`
-    );
-    track(EVENTS.SHARE_LINK_GENERATED, { method: 'email' });
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
-  };
+  const subject = 'View my Wevoro caregiver profile';
+  const message =
+    `Hi,
+
+I'd like to share my confirmed caregiver profile with you on Wevoro.` +
+    `
+
+View my profile here: ${shareLink}
+
+Best regards`;
+
+  /*
+   * SCRUM-174: email sharing goes through Gmail, not a mailto.
+   *
+   * A mailto hands the address to whatever mail program the computer has set
+   * up to answer one. On a machine that reads mail in a browser tab there is
+   * no such program: Windows asks which app should take it, Chrome offers,
+   * Chrome shows its profile picker, and after all that nothing opens. That
+   * dead end is why the mailto button is gone.
+   *
+   * Gmail is an ordinary web page, so this always opens — the compose window
+   * appears in a new tab with the subject, the message and the link already
+   * written.
+   */
+  const gmailHref =
+    'https://mail.google.com/mail/?view=cm&fs=1' +
+    `&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
 
   return (
     <Dialog>
@@ -102,23 +125,29 @@ const ShareProfileModal: React.FC<ShareProfileModalProps> = ({ shareLink, childr
             </Button>
           </div>
 
-          {/* Share via buttons */}
+          {/* Two ways to pass the link on: a text message, or Gmail. */}
           <div className='flex gap-3'>
-            <Button
-              variant='outline'
-              className='flex-1 gap-2'
-              onClick={handleShareSMS}
-            >
-              <MessageSquare className='w-4 h-4' />
-              Share via SMS
+            <Button asChild variant='outline' className='flex-1 gap-2'>
+              <a
+                href={smsHref}
+                data-testid='share-sms'
+                onClick={() => track(EVENTS.SHARE_LINK_GENERATED, { method: 'sms' })}
+              >
+                <MessageSquare className='w-4 h-4' />
+                Share via SMS
+              </a>
             </Button>
-            <Button
-              variant='outline'
-              className='flex-1 gap-2'
-              onClick={handleShareEmail}
-            >
-              <Mail className='w-4 h-4' />
-              Share via Email
+            <Button asChild variant='outline' className='flex-1 gap-2'>
+              <a
+                href={gmailHref}
+                target='_blank'
+                rel='noopener noreferrer'
+                data-testid='share-gmail'
+                onClick={() => track(EVENTS.SHARE_LINK_GENERATED, { method: 'gmail' })}
+              >
+                <Mail className='w-4 h-4' />
+                Share via Gmail
+              </a>
             </Button>
           </div>
 

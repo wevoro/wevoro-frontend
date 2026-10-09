@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Container from '../container';
 import { Button } from '@/components/ui/button';
 import { scrollToSection } from '@/lib/utils';
+import { toCurrentPath } from '@/lib/routes';
 
 const Grow = ({
   source,
@@ -37,7 +38,7 @@ const Grow = ({
         ? '/pro-grow.webp'
         : '/home-grow.webp';
 
-  // const buttonHref = source === 'partner' ? '/partner/signup' : '/pro/signup';
+  // const buttonHref = source === 'partner' ? '/agency/signup' : '/caregiver/signup';
 
   // const buttons = [
   //   {
@@ -80,7 +81,7 @@ const Grow = ({
               {buttons?.map((button, index) => (
                 <Button
                   key={index}
-                  href={button.href}
+                  href={toCurrentPath(button.href)}
                   className='px-9 h-14 rounded-[12px] w-fit text-base md:text-lg font-semibold mx-auto md:mx-0'
                 >
                   {button.text}

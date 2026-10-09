@@ -11,7 +11,7 @@ const SignupNow = () => {
         <h3 className='text-lg font-semibold text-gray-900'>Sign up now!</h3>
         <p className='text-sm text-gray-600'>
           Complete your profile now in a few seconds! Enjoy our platform by
-          viewing handpicked verified Pro CNA's.
+          viewing handpicked verified CNAs.
         </p>
         <button
           className='bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg transition duration-200'

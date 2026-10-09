@@ -27,6 +27,23 @@ interface DocumentPreviewModalProps {
   readOnly?: boolean;
   /** Agency: offered in the footer, per the design. */
   onReplace?: () => void;
+  /**
+   * SCRUM-130: false while the agency has not bought the packet. The file is
+   * readable — that is what SCRUM-119 means by free viewing — but nothing in
+   * this modal hands over a copy. The browser's own PDF toolbar is already
+   * suppressed on the iframe, so the download button, the DOCX download CTA and
+   * the toolbar are all gone together; otherwise the paywall could be stepped
+   * over from inside the preview.
+   */
+  allowDownload?: boolean;
+  /**
+   * Render the file in the frame even when the name carries no extension —
+   * credential previews are streamed from /api/document/view/:id, which has no
+   * filename in the url to sniff.
+   */
+  forceFrame?: boolean;
+  /** Replaces the default footer sentence. */
+  footerNote?: string;
 }
 
 const KB = 1024;
@@ -76,10 +93,13 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   uploadedAt,
   readOnly = false,
   onReplace,
+  allowDownload = true,
+  forceFrame = false,
+  footerNote,
 }) => {
   const [pages, setPages] = useState<number | null>(null);
   const [page, setPage] = useState(1);
-  const pdf = isPdf(fileName, fileUrl);
+  const pdf = isPdf(fileName, fileUrl) || forceFrame;
 
   useEffect(() => {
     if (!open) return;
@@ -147,7 +167,10 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
 
           <div className='min-w-0 flex-1'>
             <div className='flex flex-wrap items-center gap-2.5'>
-              <h2 className='truncate text-[19px] font-semibold text-[#1C1C1C]'>
+              <h2
+                title={fileName}
+                className='min-w-0 max-w-full truncate text-[19px] font-semibold text-[#1C1C1C]'
+              >
                 {fileName}
               </h2>
               {readOnly && (
@@ -160,17 +183,19 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
           </div>
 
           <div className='flex shrink-0 items-center gap-2'>
-            <a
-              href={fileUrl}
-              download={fileName}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label={`Download ${fileName}`}
-              title='Download'
-              className='flex size-10 items-center justify-center rounded-lg border border-[#DFE2E0] text-[#1C1C1C] transition-colors hover:bg-[#F9F9FA]'
-            >
-              <Download className='size-5' />
-            </a>
+            {allowDownload && (
+              <a
+                href={fileUrl}
+                download={fileName}
+                target='_blank'
+                rel='noopener noreferrer'
+                aria-label={`Download ${fileName}`}
+                title='Download'
+                className='flex size-10 items-center justify-center rounded-lg border border-[#DFE2E0] text-[#1C1C1C] transition-colors hover:bg-[#F9F9FA]'
+              >
+                <Download className='size-5' />
+              </a>
+            )}
             <button
               type='button'
               onClick={() => onOpenChange(false)}
@@ -237,19 +262,22 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 This file type can&apos;t be shown here
               </p>
               <p className='max-w-[380px] text-[13.5px] text-[#6C6C6C]'>
-                Word documents open in Word rather than the browser. Download it to
-                read the contents.
+                {allowDownload
+                  ? 'Word documents open in Word rather than the browser. Download it to read the contents.'
+                  : 'Word documents open in Word rather than the browser, so there is nothing to show here. Unlock the packet to open this file.'}
               </p>
-              <a
-                href={fileUrl}
-                download={fileName}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='mt-1 inline-flex h-11 items-center gap-2 rounded-xl bg-[#008000] px-5 text-[15px] font-semibold text-white transition-colors hover:bg-[#016b01]'
-              >
-                <Download className='size-4' />
-                Download
-              </a>
+              {allowDownload && (
+                <a
+                  href={fileUrl}
+                  download={fileName}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='mt-1 inline-flex h-11 items-center gap-2 rounded-xl bg-[#008000] px-5 text-[15px] font-semibold text-white transition-colors hover:bg-[#016b01]'
+                >
+                  <Download className='size-4' />
+                  Download
+                </a>
+              )}
             </div>
           )}
         </div>
@@ -257,9 +285,10 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
         {/* Footer */}
         <div className='flex flex-wrap items-center justify-between gap-3 border-t border-[#DFE2E0] bg-white px-5 py-4 sm:px-6'>
           <p className='min-w-0 flex-1 text-[13.5px] text-[#6C6C6C]'>
-            {readOnly
-              ? "Monitoring view — admin can't approve, reject or change this agency's documents."
-              : 'Preview only — replacing a document sends the new version to caregivers who have not signed yet.'}
+            {footerNote ??
+              (readOnly
+                ? "Monitoring view — admin can't approve, reject or change this agency's documents."
+                : 'Preview only — replacing a document sends the new version to caregivers who have not signed yet.')}
           </p>
           <div className='flex shrink-0 items-center gap-3'>
             {!readOnly && onReplace && (

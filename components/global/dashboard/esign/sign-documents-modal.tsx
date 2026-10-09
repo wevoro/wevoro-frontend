@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Check, Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import DrawSignatureModal from './draw-signature-modal';
 
 interface SignDocumentsModalProps {
@@ -23,6 +24,14 @@ interface SignDocumentsModalProps {
   onOpenChange: (v: boolean) => void;
   packet: any;
   onComplete?: () => void;
+  /** C4: named in the confirmation — "sent back to {agency}". */
+  agencyName?: string;
+  /**
+   * SCRUM-141: whether this packet belongs to an Onboard offer
+   * (offer.source === 'onboard'). When left out, the offer is looked up in the
+   * caregiver's cached offer list by the packet's offer id.
+   */
+  onboard?: boolean;
 }
 
 // Browsers report fractional scroll heights on zoomed / hi-dpi displays, so an
@@ -66,7 +75,10 @@ export default function SignDocumentsModal({
   onOpenChange,
   packet,
   onComplete,
+  agencyName,
+  onboard,
 }: SignDocumentsModalProps) {
+  const queryClient = useQueryClient();
   const [localPacket, setLocalPacket] = useState<any>(packet);
   const [index, setIndex] = useState(0);
   // Scroll gate and applied stamps are keyed by item id, so advancing to the
@@ -223,6 +235,23 @@ export default function SignDocumentsModal({
 
   if (!packet) return null;
 
+  const signedTotal = items.filter((item) => item.status === 'signed').length;
+  const doneCount = signedTotal || items.length;
+  // SCRUM-141: signing releases the credential package only on an Onboard
+  // offer. On a scheduling-era offer markOfferSubmitted does nothing — the
+  // agency is not told and its checkout stays shut — so "sent back to the
+  // agency … available for them to download" would be untrue there. Anything
+  // not known to be an Onboard offer gets the plain confirmation.
+  const offerRef = localPacket?.offer ?? packet?.offer;
+  const packetOfferId = String(offerRef?._id ?? offerRef ?? '');
+  const cachedOffers = queryClient.getQueryData<any[]>(['offers']);
+  const isOnboardOffer =
+    typeof onboard === 'boolean'
+      ? onboard
+      : Array.isArray(cachedOffers) &&
+        cachedOffers.some(
+          (o: any) => String(o?._id) === packetOfferId && o?.source === 'onboard'
+        );
   const stampName = localPacket?.stampName ?? '';
   const stampId = localPacket?.stampId ?? '';
   const stampTime =
@@ -231,16 +260,20 @@ export default function SignDocumentsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[960px] gap-0 overflow-hidden rounded-2xl p-0'>
+      <DialogContent
+        className={`grid-cols-[minmax(0,1fr)] gap-0 overflow-hidden rounded-2xl p-0 ${completed ? 'sm:max-w-[560px]' : 'sm:max-w-[960px]'}`}
+      >
         <DialogHeader className='px-6 pb-4 pt-6'>
-          <div className='flex items-center gap-3'>
-            <DialogTitle className='text-xl font-semibold text-[#1C1C1C]'>
-              Sign your documents
-            </DialogTitle>
-            <span className='rounded-full bg-[#ECFAF0] px-3 py-1 text-[12px] font-medium text-[#008000]'>
-              Step 2 of 2
+          {/* SCRUM-141 (Faisal C2): Respond opens signing directly, so the
+              old upload step and its "Step 2 of 2" chip are gone. */}
+          {completed && (
+            <span className='mb-3 w-fit rounded-full bg-[#BBF8DC] px-2.5 py-1.5 text-[11px] font-semibold text-[#01400F]'>
+              SIGNED
             </span>
-          </div>
+          )}
+          <DialogTitle className='text-[18px] font-semibold text-[#1C1C1C]'>
+            {completed ? 'Documents signed' : 'Sign your documents'}
+          </DialogTitle>
           <DialogDescription className='sr-only'>
             Read each document and apply your signature to complete your onboarding
             paperwork.
@@ -248,22 +281,32 @@ export default function SignDocumentsModal({
         </DialogHeader>
 
         {completed ? (
-          <div className='flex flex-col items-center px-6 pb-8 pt-4 text-center'>
-            <div className='flex h-16 w-16 items-center justify-center rounded-full bg-[#ECFAF0]'>
-              <Check className='h-8 w-8 text-[#008000]' strokeWidth={3} />
-            </div>
-            <h3 className='mt-5 text-lg font-semibold text-[#1C1C1C]'>
-              All documents signed
-            </h3>
-            <p className='mt-2 max-w-sm text-sm text-[#6C6C6C]'>
-              Your agency has been notified. Nothing else is needed from you.
+          // C4 — the consequence in plain words: on an Onboard offer, signing
+          // is what releases the credential package.
+          <div
+            data-testid='signing-complete'
+            data-onboard={isOnboardOffer ? 'yes' : 'no'}
+            className='flex flex-col items-start gap-[18px] px-6 pb-6'
+          >
+            <p className='text-[14px] leading-[22px] text-[#6C6C6C]'>
+              All {doneCount} {doneCount === 1 ? 'document is' : 'documents are'} signed
+              {isOnboardOffer ? (
+                <>
+                  {' '}and sent back to {agencyName || 'the agency'}. Your credential package is
+                  now available for them to download.
+                </>
+              ) : (
+                '.'
+              )}
             </p>
-            <Button
-              className='mt-6 h-11 rounded-xl bg-[#008000] px-8 font-semibold text-white hover:bg-[#01400F]'
-              onClick={handleDone}
-            >
-              Done
-            </Button>
+            <div className='flex w-full justify-end'>
+              <Button
+                className='h-11 rounded-[10px] bg-[#008000] px-5 text-[14px] font-medium text-white hover:bg-[#01400F]'
+                onClick={handleDone}
+              >
+                Done
+              </Button>
+            </div>
           </div>
         ) : (
           <>
@@ -272,7 +315,7 @@ export default function SignDocumentsModal({
                 <Lock className='h-4 w-4' />
                 Secure signing powered by SignWell
               </span>
-              <span className='text-[13px] font-semibold text-[#008000]'>
+              <span className='rounded-full bg-[#E0FDED] px-2.5 py-1 text-[12px] font-semibold text-[#008000]'>
                 Document {index + 1} of {items.length}
               </span>
             </div>
@@ -290,10 +333,10 @@ export default function SignDocumentsModal({
                     type='button'
                     disabled={!clickable}
                     onClick={() => setIndex(i)}
-                    className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] transition-colors ${
-                      isActive
-                        ? 'bg-[#ECFAF0] text-[#008000]'
-                        : 'bg-[#F4F5F6] text-[#6C6C6C]'
+                    className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] transition-colors ${
+                      isActive || isSigned
+                        ? 'bg-[#E0FDED] font-semibold text-[#008000]'
+                        : 'bg-[#F2F4F3] font-medium text-[#5E6864]'
                     } ${clickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}
                   >
                     {isSigned && !isActive ? (
@@ -305,7 +348,9 @@ export default function SignDocumentsModal({
                         }`}
                       />
                     )}
-                    <span className='max-w-[180px] truncate'>{item.title}</span>
+                    <span title={item.title} className='max-w-[180px] truncate'>
+                      {item.title}
+                    </span>
                   </button>
                 );
               })}
@@ -317,7 +362,7 @@ export default function SignDocumentsModal({
                 onScroll={evaluateScrollGate}
                 className='max-h-[300px] overflow-y-auto rounded-xl border border-[#DFE2E0] bg-white p-6'
               >
-                <h3 className='text-[17px] font-semibold text-[#1C1C1C]'>
+                <h3 className='break-words text-[17px] font-semibold text-[#1C1C1C]'>
                   {currentItem?.title}
                 </h3>
 
@@ -396,31 +441,23 @@ export default function SignDocumentsModal({
               </div>
             </div>
 
-            <div className='mt-5 flex flex-col gap-3 border-t border-[#DFE2E0] px-6 py-4 sm:flex-row sm:items-center sm:justify-between'>
-              <p className='text-[13px] text-[#6C6C6C]'>
-                {!isReadOnly && !hasRead
-                  ? 'Scroll to the end of the document to enable signing.'
-                  : ''}
-              </p>
-              <div className='flex items-center gap-3'>
-                <Button
-                  variant='outline'
-                  className='h-11 rounded-xl border-[#DFE2E0] px-6 font-semibold text-[#1C1C1C]'
-                  disabled={index === 0 || submitting}
-                  onClick={() => setIndex((prev) => Math.max(prev - 1, 0))}
-                >
-                  Back
-                </Button>
+            <div className='mt-5 flex flex-col gap-2 border-t border-[#DFE2E0] px-6 pb-5 pt-4'>
+              {!isReadOnly && !hasRead && (
+                <p className='text-[13px] text-[#6C6C6C]'>
+                  Scroll to the end of the document to enable signing.
+                </p>
+              )}
+              <div className='flex flex-col-reverse gap-3 sm:flex-row sm:items-center'>
                 {isReadOnly ? (
                   <Button
-                    className='h-11 rounded-xl bg-[#008000] px-6 font-semibold text-white hover:bg-[#01400F]'
+                    className='h-12 flex-1 rounded-[10px] bg-[#008000] px-6 text-[15px] font-semibold text-white hover:bg-[#01400F]'
                     onClick={() => setIndex(activeIndex)}
                   >
                     Return to current document
                   </Button>
                 ) : (
                   <Button
-                    className='h-11 rounded-xl bg-[#008000] px-6 font-semibold text-white hover:bg-[#01400F]'
+                    className='h-12 flex-1 rounded-[10px] bg-[#008000] px-6 text-[15px] font-semibold text-white hover:bg-[#01400F]'
                     disabled={!hasRead || !hasStamp || submitting}
                     onClick={handleSign}
                   >
@@ -433,6 +470,14 @@ export default function SignDocumentsModal({
                     )}
                   </Button>
                 )}
+                <Button
+                  variant='outline'
+                  className='h-12 rounded-[10px] border-[#DFE2E0] px-6 text-[15px] font-medium text-[#1C1C1C] sm:w-[200px]'
+                  disabled={index === 0 || submitting}
+                  onClick={() => setIndex((prev) => Math.max(prev - 1, 0))}
+                >
+                  Back
+                </Button>
               </div>
             </div>
           </>

@@ -16,6 +16,7 @@ import moment from 'moment';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminContext } from '@/lib/contexts';
+import { roleLabel } from '@/lib/routes';
 
 interface FeedbackModalProps {
   data: any;
@@ -182,7 +183,7 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
                   Type
                 </div>
                 <div className='text-right text-tertiary font-normal'>
-                  {data.user?.role}
+                  {roleLabel(data.user?.role)}
                 </div>
                 <div className='text-muted-foreground font-medium flex items-center'>
                   Email
@@ -221,6 +222,28 @@ export function FeedbackModal({ data, children }: FeedbackModalProps) {
             </h3>
             <div className='bg-[#F9F9FA] rounded-lg py-4 px-6'>
               <p className='text-gray-800 leading-relaxed'>{data.message}</p>
+              {/* SCRUM-201: the screenshot the sender attached, if any. Opens
+                  full size in a new tab, since a bug report is usually only
+                  readable at the original scale. */}
+              {data.screenshot && (
+                <a
+                  href={data.screenshot}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='mt-4 block w-fit'
+                  title='Open the screenshot full size'
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={data.screenshot}
+                    alt='Screenshot sent with this feedback'
+                    className='max-h-64 rounded-lg border border-[#DFE2E0] object-contain'
+                  />
+                  <span className='mt-1 block text-xs text-gray-500'>
+                    Screenshot sent with this feedback. Click to open it full size.
+                  </span>
+                </a>
+              )}
             </div>
           </div>
 

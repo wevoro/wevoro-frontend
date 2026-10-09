@@ -21,7 +21,24 @@ import { getUserDocuments } from '@/app/actions';
 import {
   REQUIRED_CREDENTIALS as REQUIRED_CREDENTIALS_BASE,
   getCredentialLabel,
+  isPrimaryCredentialRow,
 } from '@/lib/credential-config';
+
+// SCRUM-176: last wins, the way app/actions.ts#getCredentialStatus and the
+// admin credential card resolve a credential — keyed by type in a forEach, so
+// the LAST matching row stands for it. This gate took the first, so for a
+// caregiver with a duplicate row it judged an older file than the one the
+// admin confirmed on the card: an approved older row could let the application
+// through with the newest upload still pending, and a rejected older row could
+// block an application the admin had just confirmed. The predicate keeps
+// isPrimaryCredentialRow (SCRUM-165) — the PCA sign-off never gates Approve.
+const lastPrimaryRow = (docs: any[], documentType: string) => {
+  for (let i = docs.length - 1; i >= 0; i -= 1) {
+    const d = docs[i];
+    if (d?.documentType === documentType && isPrimaryCredentialRow(d)) return d;
+  }
+  return undefined;
+};
 
 // SCRUM-60: admin Approve is gated on all 5 required credentials being Verified.
 // Role-driven label is resolved from the caregiver's professionalInfo.role.
@@ -122,9 +139,17 @@ export default function AdminAlertModal({
         const docs = await getUserDocuments(data._id);
         const required = buildRequiredCredentials(data?.professionalInfo?.role);
         const missing = required.filter((cred) => {
-          const doc = (docs ?? []).find(
-            (d: any) => d.documentType === cred.key
-          );
+          // SCRUM-165: judge the certificate by its primary row. The PCA
+          // sign-off is a second 'certifications' row; taken for the
+          // certificate, an approved sign-off let a caregiver through with the
+          // exam still pending, and a pending one blocked a caregiver whose
+          // exam was confirmed.
+          // SCRUM-176: and of those primary rows, the last one — the row the
+          // admin card shows and confirms.
+          const doc = lastPrimaryRow(docs ?? [], cred.key);
+          // The gate stays on reviewStatus alone: it asks whether the admin has
+          // reviewed the credential, not whether it is still in date. Expiry is
+          // the card's ladder (stateOf), not this one.
           return !doc || doc.reviewStatus !== 'approved';
         }).map((c) => c.key);
         setMissingReviews(missing);

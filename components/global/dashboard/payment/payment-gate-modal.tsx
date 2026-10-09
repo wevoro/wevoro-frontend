@@ -13,8 +13,9 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { rememberCheckoutOrigin } from '@/lib/checkout-return';
 
 /**
  * SCRUM-119 — the payment gate.
@@ -25,8 +26,10 @@ import { Button } from '@/components/ui/button';
  * evidence of anything.
  *
  * The summary deliberately separates what is being PAID for (the credential
- * packet) from what is INCLUDED (e-signature tracking), which is acceptance
+ * packet) from what is INCLUDED (the signed documents), which is acceptance
  * criterion #7 — the agency must never think they are buying signatures.
+ * SCRUM-141: the gate only opens once the caregiver has signed, so the signed
+ * documents are finished by the time anyone pays, and ship in the same ZIP.
  */
 
 type GateState =
@@ -41,7 +44,7 @@ type GateState =
 const money = (cents?: number | null) =>
   cents === null || cents === undefined ? '—' : `$${(cents / 100).toFixed(2)}`;
 
-const firstName = (full?: string) => (full || '').trim().split(/\s+/)[0] || 'this caregiver';
+const firstName = (full?: string) => (full || '').trim().split(/\s+/)[0] || '';
 
 /** " · 3 files" / " · 1 file" / "" — a packet of one should not read "1 files". */
 const fileLine = (n?: number | null) =>
@@ -69,8 +72,13 @@ interface PaymentGateModalProps {
   caregiverImage?: string;
   caregiverRole?: string;
   caregiverLocation?: string;
-  /** Called after a confirmed payment so the caller can retry the download. */
-  onPaid?: () => void | Promise<void>;
+  /**
+   * Called after a confirmed payment so the caller can retry the download.
+   * Carries the name the packet knows, because the page around the gate may
+   * still be loading the profile — that is how a download ended up named
+   * "-credentials.zip" and a toast read "Preparing 5 documents for".
+   */
+  onPaid?: (caregiverName?: string) => void | Promise<void>;
   /**
    * Set when the agency has just come back from Stripe's checkout page.
    * 'success' means Stripe reported the payment taken — the gate still confirms
@@ -90,17 +98,27 @@ const Wordmark = () => (
   </div>
 );
 
-/** The included-not-charged row. Present on the form and the receipt. */
+/** " · 2 signed" — what the caregiver signed for this agency. */
+const signedLine = (packet: any) => {
+  const n = packet?.onboard?.signedCount ?? 0;
+  return n > 0 ? `${n} signed ${n === 1 ? 'document' : 'documents'}` : 'Nothing to sign';
+};
+
+/**
+ * The included-not-charged row. Present on the form and the receipt.
+ * SCRUM-141: was "E-signature tracking · In progress", which no longer
+ * happens — the caregiver has finished signing before the gate can open.
+ */
 const EsignRow: React.FC<{ subtitle: string }> = ({ subtitle }) => (
   <div className='flex items-center justify-between gap-3 rounded-lg border border-[#DFE2E0] px-4 py-3'>
     <div className='min-w-0'>
-      <p className='text-[14px] font-semibold text-[#1C1C1C]'>E-signature tracking</p>
+      <p className='text-[14px] font-semibold text-[#1C1C1C]'>Signed documents</p>
       <p className='truncate text-[12.5px] text-[#6C6C6C]'>{subtitle}</p>
     </div>
     <div className='flex shrink-0 items-center gap-2'>
-      <span className='inline-flex items-center gap-1.5 rounded-full bg-[#FDF4E3] px-2.5 py-1 text-[11.5px] font-medium text-[#8A5D06]'>
-        <span className='size-1.5 rounded-full bg-[#C8901A]' />
-        In progress
+      <span className='inline-flex items-center gap-1.5 rounded-full bg-[#E0FDED] px-2.5 py-1 text-[11.5px] font-medium text-[#046A22]'>
+        <span className='size-1.5 rounded-full bg-[#22B14C]' />
+        Signed
       </span>
       <span className='rounded-full bg-[#DDF3E4] px-2.5 py-1 text-[11.5px] font-medium text-[#046A22]'>
         Included
@@ -131,8 +149,12 @@ const GateShell: React.FC<{
         with translate-y(-50%), so it overflows off the top AND the bottom with
         nothing to scroll — the pay button becomes unreachable. */}
     <DialogContent
-      className={`${wide ? 'max-w-[560px]' : 'max-w-[520px]'} max-h-[92vh] overflow-y-auto overscroll-contain border-0 bg-transparent p-0 shadow-none`}
+      className={`${wide ? 'max-w-[560px]' : 'max-w-[520px]'} grid-cols-[minmax(0,1fr)] max-h-[92vh] overflow-y-auto overscroll-contain border-0 bg-transparent p-0 shadow-none`}
     >
+      {/* Each screen writes its own heading inside the card, so the dialog
+          needs one for screen readers — and without it Radix logs an error
+          into the console every time the gate opens. */}
+      <DialogTitle className='sr-only'>Credential package payment</DialogTitle>
       <Wordmark />
       <div className='rounded-2xl bg-white p-8 shadow-sm'>{children}</div>
     </DialogContent>
@@ -159,7 +181,16 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   // to the agency as one.
   const [failureKind, setFailureKind] = useState<'start' | 'payment'>('payment');
 
-  const name = packet?.caregiverName || caregiverName || 'This caregiver';
+  /**
+   * The profile passes a placeholder while the caregiver is still loading, and
+   * the packet only names them once it has answered. Taking a first name from
+   * either without checking produced "This's documents are still locked", so
+   * the possessive is built once, here, and falls back to a whole phrase.
+   */
+  const realName = (n?: string) => (n && n !== 'This caregiver' ? n.trim() : '');
+  const fullName = realName(packet?.caregiverName) || realName(caregiverName);
+  const name = fullName || 'This caregiver';
+  const theirs = fullName ? `${firstName(fullName)}'s` : "the caregiver's";
   const price = checkout?.priceCents ?? packet?.priceCents;
   // Prefer what the server knows; the props are only a fallback for callers
   // that already have the caregiver loaded.
@@ -167,6 +198,20 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   const role = packet?.caregiverRole || caregiverRole;
   const location = packet?.caregiverLocation || caregiverLocation;
   const [avatarFailed, setAvatarFailed] = useState(false);
+
+  /**
+   * Hand the agency to Stripe's hosted page. SCRUM-134: the origin is recorded
+   * first, so the return from Stripe can step back past the Stripe entry and
+   * Back keeps working as the agency expects — see lib/checkout-return.
+   */
+  const goToStripe = useCallback(
+    (url: string) => {
+      setState('redirecting');
+      rememberCheckoutOrigin(caregiverId);
+      window.location.assign(url);
+    },
+    [caregiverId]
+  );
 
   /** Load the price and open (or resume) the purchase. */
   const start = useCallback(async (): Promise<any> => {
@@ -190,7 +235,17 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         return null;
       }
       setCheckout(json.data);
-      setState(json.data?.alreadyPaid ? 'success' : 'form');
+      if (json.data?.alreadyPaid) {
+        setState('success');
+      } else if (json.data?.checkoutUrl && !json.data?.testMode) {
+        // The summary screen that used to sit here repeated what the documents
+        // modal had just shown and what Stripe's own page shows next, so the
+        // agency now goes straight on to Stripe. The form screen remains for
+        // the QA simulator, which has no Stripe page to go to.
+        goToStripe(json.data.checkoutUrl);
+      } else {
+        setState('form');
+      }
       return json.data;
     } catch {
       setFailureKind('start');
@@ -200,7 +255,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
     } finally {
       setBusy(false);
     }
-  }, [caregiverId]);
+  }, [caregiverId, goToStripe]);
 
   /**
    * Ask our own server what Stripe says about this transaction, until it
@@ -256,7 +311,10 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           .catch(() => null);
         setPacket(p?.data ?? null);
         if (outcome === 'paid') {
-          await finishAsPaid();
+          // The name straight from this answer: `packet` above is still the
+          // value from before it arrived, and on a return from Stripe the page
+          // has not loaded the profile yet, so the toast said "for caregiver".
+          await finishAsPaid(realName(p?.data?.caregiverName));
         } else if (outcome === 'failed') {
           setState('payment-failed');
         } else {
@@ -277,10 +335,16 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   }, [open, start, resume, caregiverId, awaitConfirmation]);
 
   /** Confirm the charge, then hand control back so the download can run. */
-  const finishAsPaid = async () => {
+  const finishAsPaid = async (knownName?: string) => {
     setState('processing');
     try {
-      await onPaid?.();
+      await onPaid?.(knownName || fullName || undefined);
+      // SCRUM-142: the receipt is sent while the payment is confirmed, so the
+      // fresh packet status says where it went.
+      await fetch(`/api/payment/packet/${caregiverId}`)
+        .then((r) => r.json())
+        .then((p) => p?.data && setPacket(p.data))
+        .catch(() => {});
       setState('success');
     } catch {
       // Paid but the file did not arrive. The purchase is safe — this is the
@@ -322,8 +386,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         setState('payment-failed');
         return;
       }
-      setState('redirecting');
-      window.location.assign(checkout.checkoutUrl);
+      goToStripe(checkout.checkoutUrl);
     } catch {
       setFailureKind('start');
       setFailure(START_ERROR);
@@ -367,17 +430,17 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
     setFailure('');
     setCheckout(null);
     setState('form');
-    const data = await start();
-    if (toStripe && data?.checkoutUrl) {
-      setState('redirecting');
-      window.location.assign(data.checkoutUrl);
-    }
+    // start() carries straight on to Stripe's page for a live session, which is
+    // where a different card is chosen, so "Try again" and "Use a different
+    // card" now both lead there. `toStripe` is kept for the callers' sake.
+    void toStripe;
+    await start();
   };
 
   const retryDownload = async () => {
     setBusy(true);
     try {
-      await onPaid?.();
+      await onPaid?.(fullName || undefined);
       setState('success');
     } catch {
       toast.error('The download still could not be prepared');
@@ -386,22 +449,22 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
     }
   };
 
-  /** Bound to this gate's open state; GateShell itself lives outside the
-      component so the dialog is never torn down between screens. */
-  const Shell: React.FC<{ children: React.ReactNode; wide?: boolean }> = useCallback(
-    ({ children, wide }) => (
-      <GateShell open={open} onOpenChange={onOpenChange} wide={wide}>
-        {children}
-      </GateShell>
-    ),
-    [open, onOpenChange]
-  );
+  /**
+   * 20 Sep: this used to be a Shell component built here with useCallback.
+   * Its deps included onOpenChange, which every caller passes as an inline
+   * arrow — a new function on each render of the parent — so a new COMPONENT
+   * TYPE was produced each time and React threw the whole dialog away and
+   * mounted a fresh one. During a payment the parent re-renders several times
+   * (download, status reload, unlocked flag), so the card visibly flashed in
+   * and out, several times in a row. GateShell is used directly below, which
+   * keeps the dialog mounted while only its contents change.
+   */
 
   // ---------------------------------------------------------------- processing
   // --------------------------------------------------------------- redirecting
   if (state === 'redirecting') {
     return (
-      <Shell>
+      <GateShell open={open} onOpenChange={onOpenChange}>
         <div className='flex flex-col items-center text-center'>
           <Loader2 className='size-10 animate-spin text-[#22B14C]' />
           <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>
@@ -412,7 +475,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             back here once the payment is done.
           </p>
         </div>
-      </Shell>
+      </GateShell>
     );
   }
 
@@ -422,7 +485,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
   // but the agency must be told plainly why the packet is still locked.
   if (state === 'incomplete') {
     return (
-      <Shell>
+      <GateShell open={open} onOpenChange={onOpenChange}>
         <div className='flex flex-col items-center text-center'>
           <span className='flex size-14 items-center justify-center rounded-full bg-[#FDF4E3]'>
             <AlertCircle className='size-7 text-[#8A5D06]' />
@@ -432,7 +495,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           </h2>
           <p className='mt-3 max-w-[430px] text-[14px] leading-[22px] text-[#6C6C6C]'>
             You left the checkout before it finished, so <b>you have not been charged</b> and{' '}
-            {firstName(name)}&apos;s documents are still locked. You can pick up where you
+            {theirs} documents are still locked. You can pick up where you
             left off whenever you&apos;re ready.
           </p>
           {failure && (
@@ -460,39 +523,39 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         >
           Not now
         </Button>
-      </Shell>
+      </GateShell>
     );
   }
 
   if (state === 'processing') {
     return (
-      <Shell>
+      <GateShell open={open} onOpenChange={onOpenChange}>
         <div className='flex flex-col items-center text-center'>
           <Loader2 className='size-10 animate-spin text-[#22B14C]' />
           <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>
             Preparing your download
           </h2>
           <p className='mt-3 max-w-[420px] text-[14px] leading-[22px] text-[#6C6C6C]'>
-            Payment received. We&apos;re getting {name}&apos;s documents ready — this usually
+            Payment received. We&apos;re getting {theirs} documents ready — this usually
             takes just a few seconds.
           </p>
           <p className='mt-4 text-[13px] text-[#6C6C6C]'>Please keep this window open.</p>
         </div>
-      </Shell>
+      </GateShell>
     );
   }
 
   // ------------------------------------------------------------------- success
   if (state === 'success') {
     return (
-      <Shell>
+      <GateShell open={open} onOpenChange={onOpenChange}>
         <div className='flex flex-col items-center text-center'>
           <span className='flex size-14 items-center justify-center rounded-full bg-[#046A22]'>
             <Check className='size-7 text-white' strokeWidth={3} />
           </span>
           <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>Payment successful</h2>
           <p className='mt-3 max-w-[430px] text-[14px] leading-[22px] text-[#6C6C6C]'>
-            Your download is starting automatically. {firstName(name)}&apos;s documents are now
+            Your download is starting automatically. {theirs} documents are now
             unlocked — re-download anytime for free.
           </p>
         </div>
@@ -517,10 +580,10 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           </div>
           <div className='flex items-center justify-between gap-3 border-t border-[#E4E8E6] px-4 py-3.5'>
             <div className='flex items-center gap-2.5'>
-              <p className='text-[14px] text-[#1C1C1C]'>E-signature tracking</p>
-              <span className='inline-flex items-center gap-1.5 rounded-full bg-[#FDF4E3] px-2.5 py-1 text-[11.5px] font-medium text-[#8A5D06]'>
-                <span className='size-1.5 rounded-full bg-[#C8901A]' />
-                In progress
+              <p className='text-[14px] text-[#1C1C1C]'>Signed documents</p>
+              <span className='inline-flex items-center gap-1.5 rounded-full bg-[#E0FDED] px-2.5 py-1 text-[11.5px] font-medium text-[#046A22]'>
+                <span className='size-1.5 rounded-full bg-[#22B14C]' />
+                {signedLine(packet)}
               </span>
             </div>
             <span className='rounded-full bg-[#DDF3E4] px-2.5 py-1 text-[11.5px] font-medium text-[#046A22]'>
@@ -529,11 +592,24 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           </div>
         </div>
 
+        {/* SCRUM-142: WeVoro's own receipt. This said "Stripe has emailed your
+            receipt" and "View receipt" did nothing — Stripe never sent one. */}
         <div className='mt-4 flex items-center justify-between gap-3 rounded-lg bg-[#F4F6F5] px-4 py-3'>
-          <p className='truncate text-[13px] text-[#6C6C6C]'>
-            Stripe has emailed your receipt
+          <p className='min-w-0 truncate text-[13px] text-[#6C6C6C]'>
+            {packet?.receiptEmailSentAt
+              ? `Receipt ${packet.receiptNumber} emailed to ${packet.receiptSentTo}`
+              : 'Your WeVoro receipt is on its way to your email'}
           </p>
-          <span className='shrink-0 text-[13px] font-semibold text-[#046A22]'>View receipt</span>
+          {packet?.transactionId && (
+            <a
+              href={`/api/payment/receipt/${packet.transactionId}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='shrink-0 text-[13px] font-semibold text-[#046A22] hover:underline'
+            >
+              View receipt
+            </a>
+          )}
         </div>
 
         <Button
@@ -544,14 +620,14 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         >
           {busy ? 'Starting…' : 'Download again'}
         </Button>
-      </Shell>
+      </GateShell>
     );
   }
 
   // ------------------------------------------------------------ payment failed
   if (state === 'payment-failed') {
     return (
-      <Shell>
+      <GateShell open={open} onOpenChange={onOpenChange}>
         <div className='flex flex-col items-center text-center'>
           <span className='flex size-14 items-center justify-center rounded-full bg-[#FCEBEA]'>
             <X className='size-7 text-[#A72019]' strokeWidth={3} />
@@ -598,14 +674,14 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             Use a different card
           </Button>
         )}
-      </Shell>
+      </GateShell>
     );
   }
 
   // ----------------------------------------------------------- delivery failed
   if (state === 'delivery-failed') {
     return (
-      <Shell>
+      <GateShell open={open} onOpenChange={onOpenChange}>
         <div className='flex flex-col items-center text-center'>
           <span className='flex size-14 items-center justify-center rounded-full bg-[#FDF4E3]'>
             <Download className='size-7 text-[#C8901A]' />
@@ -635,13 +711,30 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
         >
           Contact support
         </a>
-      </Shell>
+      </GateShell>
+    );
+  }
+
+  // The checkout is still being opened, and for a live session the next thing
+  // that happens is the move to Stripe's page. Rendering the summary here would
+  // flash a screen the agency never asked for (and was asked to remove) just
+  // before leaving it.
+  if (state === 'form' && !checkout) {
+    return (
+      <GateShell open={open} onOpenChange={onOpenChange}>
+        <div className='flex flex-col items-center py-12 text-center'>
+          <Loader2 className='size-10 animate-spin text-[#22B14C]' />
+          <p className='mt-5 text-[15px] text-[#6C6C6C]'>Opening secure checkout…</p>
+        </div>
+      </GateShell>
     );
   }
 
   // ---------------------------------------------------------------------- form
+  // Reached for the QA simulator (no Stripe page to go to), or when a live
+  // session could not be sent on — see the fallback at the end.
   return (
-    <Shell wide>
+    <GateShell open={open} onOpenChange={onOpenChange} wide>
       <div className='flex flex-col items-center text-center'>
         {/* The server supplies the photo, role and city, so the card is
             complete no matter which surface opened the gate. `alt=""` matters:
@@ -692,7 +785,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
       </div>
 
       <div className='mt-3'>
-        <EsignRow subtitle='Runs in the background — no extra charge' />
+        <EsignRow subtitle={`${signedLine(packet)} · in the same ZIP · no extra charge`} />
       </div>
 
       <p className='mt-6 text-[15px] font-semibold text-[#1C1C1C]'>Pay with card</p>
@@ -700,8 +793,8 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
       {/* Payment happens on Stripe's own hosted page rather than in this modal.
           A card form embedded in a supplier's dialog is exactly where agencies
           hesitate; a stripe.com address is the strongest trust signal available
-          at the moment of payment. Stripe collects the card and the receipt
-          email, so neither is asked for here. */}
+          at the moment of payment. Stripe collects the card; the receipt is
+          WeVoro's own (SCRUM-142), sent to the account's email. */}
       {!checkout ? (
         <div className='mt-3 animate-pulse space-y-2.5' aria-busy='true'>
           <div className='h-[68px] rounded-xl bg-[#F2F4F3]' />
@@ -716,8 +809,8 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
                 You&apos;ll finish on Stripe
               </p>
               <p className='mt-0.5 text-[13px] leading-[19px] text-[#6C6C6C]'>
-                Card details are entered on Stripe&apos;s secure page, never on WeVoro. Your
-                receipt is emailed by Stripe, and we bring you straight back here.
+                Card details are entered on Stripe&apos;s secure page, never on WeVoro. We
+                bring you straight back here and email your WeVoro receipt.
               </p>
             </div>
           </div>
@@ -736,11 +829,13 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             Charged once · Re-downloads are always free
           </p>
         </>
-      ) : (
+      ) : checkout.testMode ? (
         <>
           {/* No Stripe credentials on this environment — the fields are inert
               placeholders so the layout still reads correctly, and the button
-              drives the simulated path instead. */}
+              drives the simulated path instead. Gated on testMode: these fields
+              are a QA prop, and an agency on a real environment must never be
+              shown a card form WeVoro does not honour. */}
           <div className='mt-1.5 flex items-center gap-2.5 rounded-lg border border-[#DFE2E0] px-3.5 py-3'>
             <CreditCard className='size-4 shrink-0 text-[#6C6C6C]' />
             <input
@@ -776,6 +871,22 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
             Secure payment via Stripe · Charged once · Re-downloads are always free
           </p>
         </>
+      ) : (
+        // A live environment returned no Stripe page to send the agency to —
+        // most often a tab still running an older build. Say what to do rather
+        // than show a dead form.
+        <div className='mt-3 rounded-xl border border-[#F3D9A6] bg-[#FDF8EC] px-4 py-3.5'>
+          <p className='text-[14px] font-semibold text-[#8A5D06]'>This page is out of date</p>
+          <p className='mt-0.5 text-[13px] leading-[19px] text-[#6C6C6C]'>
+            Refresh the page to load the current checkout. Nothing has been charged.
+          </p>
+          <Button
+            onClick={() => window.location.reload()}
+            className='mt-3 h-11 w-full rounded-xl bg-[#008000] text-[14px] font-semibold text-white hover:bg-[#016b01]'
+          >
+            Refresh
+          </Button>
+        </div>
       )}
 
       {checkout?.testMode && (
@@ -795,7 +906,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           </button>
         </div>
       )}
-    </Shell>
+    </GateShell>
   );
 };
 

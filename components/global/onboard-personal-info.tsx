@@ -40,20 +40,43 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
   const { user, refetchUser } = useUserContext();
   const { refetchUsers, refetchQaUsers } = useAdminContext();
   const { querySuffix, id } = useAuthContext();
-  const { personalInfoRef, extractedData } = useOnboardContext();
+  const { personalInfoRef, extractedData, setExtractedData } = useOnboardContext();
   const { setOpenAutoFillModal } = useUIContext();
 
   const extractedPersonalInfo = extractedData?.personalInformation;
-  // console.log('🚀 ~ OnboardPersonalInfo ~ extractedData:', extractedData);
+  const extractedProfessionalRole = extractedData?.professionalInformation?.role;
 
-  const userData = extractedPersonalInfo
-    ? extractedPersonalInfo
-    : from && userFromAdmin?.personalInfo
+  // SCRUM-153: the saved profile is the source of truth for this form. The AI
+  // resume data used to come first, so a caregiver who filled a few fields by
+  // hand, pressed Next (saving them) and came back saw the AI's nulls again.
+  // The AI data is applied once, by the effect below, and consumed on save.
+  const savedInfo =
+    from && userFromAdmin?.personalInfo
       ? userFromAdmin?.personalInfo
       : !from && user?.personalInfo
         ? user?.personalInfo
         : {};
-  // console.log('🚀 ~ userData:', userData);
+  const userData = savedInfo;
+
+  // SCRUM-152: the caregiver's onboarding asks for one Full Name (Faisal's
+  // design); the agency form and the admin's edit modal keep First / Last.
+  // Onboarding only: the profile edit form keeps First / Last name, so an
+  // existing two-word first name is never re-split by a save.
+  const useFullName = source === 'pro' && !from;
+  // SCRUM-152: About/Bio is not part of caregiver onboarding any more. It
+  // stays on the profile edit form, where the saved text is still shown.
+  const showBio = !(source === 'pro' && !from);
+  // SCRUM-152 (Faisal, Figma "3. Onboarding Page - Personal Info"): the
+  // caregiver's first step is Full Name | Role, Date of Birth | Gender, Phone,
+  // Address — no photo upload, no Bio. Role (CNA / PCA) is asked here and
+  // saved with the professional information, where it lives.
+  const caregiverOnboarding = source === 'pro' && !isEdit && !from;
+  // The caregiver's own form in both places it opens — onboarding and "Edit
+  // information" on the profile — uses the same new design. The agency form
+  // and the admin's edit modal keep theirs. Previous / Need help? stay
+  // onboarding-only (the edit form has Cancel / Save & Exit).
+  const caregiverForm = source === 'pro' && !from;
+  const savedRole = !from ? user?.professionalInfo?.role || '' : '';
 
   const {
     image,
@@ -74,6 +97,8 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
     bio: bio || '',
     firstName: firstName || '',
     lastName: lastName || '',
+    fullName: [firstName, lastName].filter(Boolean).join(' '),
+    role: savedRole,
     dateOfBirth: source === 'pro' ? dateOfBirth?.split('T')[0] : '',
     gender: gender || (from === 'admin' ? 'Male' : ''),
     phone: phone || '',
@@ -104,14 +129,61 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
     },
   };
 
+  // The AI-autofill result replaces what is on the form (the prompt says so).
+  // Empty values are skipped so a field the resume did not have keeps what the
+  // caregiver typed, and the form is left dirty against the saved profile so
+  // Next actually saves it — it used to reset the dirty flag, and "Next"
+  // straight after an autofill saved nothing at all.
   useEffect(() => {
     if (
       extractedPersonalInfo &&
       Object.keys(extractedPersonalInfo).length > 0
     ) {
-      reset(extractedPersonalInfo);
+      const filled: any = {};
+      Object.entries(extractedPersonalInfo).forEach(([k, v]) => {
+        if (v === null || v === undefined || v === '') return;
+        if (k === 'address' && typeof v === 'object') {
+          const addr: any = {};
+          Object.entries(v as any).forEach(([ak, av]) => {
+            if (av !== null && av !== undefined && av !== '') addr[ak] = av;
+          });
+          filled.address = { ...getValues('address'), ...addr };
+          return;
+        }
+        filled[k] = v;
+      });
+      if (filled.dateOfBirth && typeof filled.dateOfBirth === 'string') {
+        filled.dateOfBirth = filled.dateOfBirth.split('T')[0];
+      }
+      if (filled.firstName || filled.lastName) {
+        filled.fullName = [filled.firstName ?? getValues('firstName'), filled.lastName ?? getValues('lastName')]
+          .filter(Boolean)
+          .join(' ');
+      }
+      // SCRUM-152: Role is asked on this step now (step 2 no longer shows
+      // it), so the resume's role pre-selects it here. It is applied together
+      // with the personal data, which is consumed on save, so coming Back to
+      // this step never puts the resume's role over the one that was saved.
+      const extractedRole = String(extractedProfessionalRole || '').trim().toUpperCase();
+      if (caregiverForm && (extractedRole === 'CNA' || extractedRole === 'PCA')) {
+        filled.role = extractedRole;
+      }
+      reset({ ...getValues(), ...filled }, { keepDefaultValues: true });
     }
-  }, [extractedPersonalInfo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extractedPersonalInfo, extractedProfessionalRole]);
+
+  // SCRUM-153: the profile can arrive after this form mounted (Back from the
+  // next step, or a reload), in which case the fields were left empty even
+  // though everything had been saved. Fill them in once it is here, unless
+  // the caregiver has already started typing.
+  const savedKey = JSON.stringify(savedInfo ?? {});
+  useEffect(() => {
+    if (extractedPersonalInfo || isDirty) return;
+    if (!savedInfo || Object.keys(savedInfo).length === 0) return;
+    reset(source === 'partner' ? partnerDefaultValues : proDefaultValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedKey]);
 
   const {
     register,
@@ -120,6 +192,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
     watch,
     control,
     reset,
+    getValues,
     formState: { errors, isDirty },
   } = useForm({
     defaultValues:
@@ -133,14 +206,14 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
     try {
       // `id` is null on the credentialing share-link journey (that flow passes
       // ?proId=, while auth-context reads ?id=), which sent new agencies to
-      // /partner/pros/null -> redirect -> the old Available Caregivers list.
+      // /agency/caregivers/null -> redirect -> the old Available Caregivers list.
       // Only take the caregiver-profile branch when we actually have an id.
       const path =
         source === 'pro'
-          ? '/pro/onboard/professional-info'
+          ? '/caregiver/onboard/professional-info'
           : querySuffix && id
-            ? `/partner/pros/${id}?s=true`
-            : '/partner/profile?onboarded=true';
+            ? `/agency/caregivers/${id}?s=true`
+            : '/agency/profile?onboarded=true';
       if (!isDirty && !isEdit && !from) {
         return router.push(path);
       }
@@ -150,9 +223,19 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
         data.dateOfBirth &&
         (data.dateOfBirth = new Date(data.dateOfBirth).toISOString());
 
+      // SCRUM-152: one Full Name field on the caregiver form; the profile,
+      // emails and the share preview still read first and last name, so the
+      // name is split on save (first word, then the rest).
+      const savedFullName = [firstName, lastName].filter(Boolean).join(' ');
+      if (useFullName && String(data.fullName || '').trim() !== savedFullName) {
+        const [first = '', ...rest] = String(data.fullName || '').trim().split(/\s+/);
+        data.firstName = first;
+        data.lastName = rest.join(' ');
+      }
+
       const formData = new FormData();
 
-      const { image, ...rest } = data;
+      const { image, fullName: _fullName, role: chosenRole, ...rest } = data;
 
       if (typeof data.image === 'object' && data.image?.length > 0) {
         formData.append('image', data.image[0]);
@@ -173,7 +256,21 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
 
       const responseData = await response.json();
       if (responseData.status === 200) {
-        refetchUser();
+        // The role chosen on this step is professional information; the
+        // backend merges ($set), so education and experience are untouched.
+        if (caregiverForm && chosenRole && chosenRole !== savedRole) {
+          const roleData = new FormData();
+          roleData.append('data', JSON.stringify({ role: chosenRole }));
+          await fetch('/api/user/professional-information', { method: 'POST', body: roleData }).catch(() => {});
+        }
+        // SCRUM-153: wait for the fresh profile, so the next step — and this
+        // one, on Back — read what was just saved. And the AI resume data has
+        // now been applied and saved; drop it so a return to this step shows
+        // the saved values, not the resume's blanks.
+        await Promise.resolve(refetchUser());
+        setExtractedData((prev: any) =>
+          prev && prev.personalInformation ? { ...prev, personalInformation: null } : prev,
+        );
         if (from === 'admin') {
           refetchUsers();
           refetchQaUsers();
@@ -225,7 +322,9 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
     <form onSubmit={handleSubmit(onSubmit)} ref={personalInfoRef}>
       {isLoading && <LoadingOverlay />}
       <div className='flex items-center justify-between mb-8'>
-        <Title text='Personal Information' className='mb-0' />
+        {/* SCRUM-152: sentence case in Faisal's onboarding frame; the profile
+            edit form and the agency form keep their heading. */}
+        <Title text={caregiverForm ? 'Personal information' : 'Personal Information'} className='mb-0' />
         <div className='flex items-center gap-3'>
           {from !== 'admin' && (
             <Button
@@ -254,6 +353,9 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                         dateOfBirth: '',
                         gender: '',
                         phone: '',
+                        fullName: '',
+                        // SCRUM-152: the Role select is on this step too.
+                        role: '',
                         address: { street: '', city: '', state: '', zipCode: '', country: '' },
                       },
                 );
@@ -269,30 +371,55 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
       </div>
 
       <div className='flex flex-col gap-8'>
-        <div className='text-center flex flex-col gap-3'>
-          <Upload register={register} image={watch('image') === '' ? null : image} imageFile={imageFile} />
-        </div>
+        {!caregiverForm && (
+          <div className='text-center flex flex-col gap-3'>
+            <Upload register={register} image={watch('image') === '' ? null : image} imageFile={imageFile} />
+          </div>
+        )}
 
-        <div className='flex flex-col gap-3'>
-          <h2 className='text-lg font-medium leading-[25.2px] text-gray-800'>
-            About/Bio
-          </h2>
-          <Controller
-            name='bio'
-            control={control}
-            render={({ field }) => (
-              <Editor
-                value={field.value}
-                onChange={(content) =>
-                  setValue('bio', content, { shouldDirty: true })
-                }
-                placeholder='Write about yourself...'
-              />
-            )}
-          />
-        </div>
+        {showBio && (
+          <div className='flex flex-col gap-3'>
+            <h2 className='text-lg font-medium leading-[25.2px] text-gray-800'>
+              About/Bio
+            </h2>
+            <Controller
+              name='bio'
+              control={control}
+              render={({ field }) => (
+                <Editor
+                  value={field.value}
+                  onChange={(content) =>
+                    setValue('bio', content, { shouldDirty: true })
+                  }
+                  placeholder='Write about yourself...'
+                />
+              )}
+            />
+          </div>
+        )}
 
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
+          {useFullName ? (
+            <div className={cn('flex flex-col gap-3', !caregiverForm && 'sm:col-span-2')}>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
+                Full Name <span className='text-red-500'>*</span>
+              </label>
+              <Input
+                {...register('fullName', {
+                  required: 'Full name is required',
+                  validate: (v: string) =>
+                    String(v || '').trim().length > 0 || 'Full name is required',
+                })}
+                className='rounded-[12px] h-14 bg-[#f9f9f9]'
+                placeholder='Enter your first and last name'
+                name='fullName'
+                autoComplete='name'
+                isError={!!errors.fullName}
+              />
+              {errors.fullName && renderError(errors.fullName.message as string)}
+            </div>
+          ) : (
+            <>
           <div className='flex flex-col gap-3'>
             <label className='text-base font-medium leading-[22.4px] text-tertiary'>
               First name{' '}
@@ -326,6 +453,37 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
             />
             {errors.lastName && renderError(errors.lastName.message as string)}
           </div>
+            </>
+          )}
+          {caregiverForm && (
+            <div className='flex flex-col gap-3'>
+              <label className='text-base font-medium leading-[22.4px] text-tertiary'>
+                Role <span className='text-red-500'>*</span>
+              </label>
+              <Controller
+                name='role'
+                control={control}
+                rules={{ required: 'Please select your role' }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                    <SelectTrigger
+                      className={cn('rounded-[12px] h-14 bg-[#f9f9f9]', !field.value && 'text-muted-foreground')}
+                      isError={!!errors.role}
+                    >
+                      <SelectValue placeholder='CNA or PCA'>{field.value}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value='CNA'>CNA — Certified Nursing Assistant</SelectItem>
+                        <SelectItem value='PCA'>PCA — Personal Care Assistant</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.role && renderError((errors.role as any).message as string)}
+            </div>
+          )}
           {source === 'pro' && (
             <>
               <div className='flex flex-col gap-3'>
@@ -349,7 +507,13 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </div>
 
               <div className='flex flex-col gap-3'>
-                <label className='text-base font-medium'>
+                <label
+                  className={cn(
+                    'text-base font-medium',
+                    // SCRUM-152: same label style as Date of Birth next to it.
+                    caregiverForm && 'leading-[22.4px] text-tertiary',
+                  )}
+                >
                   Gender{' '}
                   {from !== 'admin' && <span className='text-red-500'>*</span>}
                 </label>
@@ -362,7 +526,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
                   render={({ field }) => (
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || undefined}
                     >
                       <SelectTrigger
                         className={cn(
@@ -519,14 +683,17 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
           </h2>
           <div className='flex flex-col gap-3'>
             <label className='text-base font-medium leading-[22.4px] text-tertiary'>
-              Street address{' '}
-              {from !== 'admin' && <span className='text-red-500'>*</span>}
+              {/* SCRUM-152: label case as in Faisal's onboarding frame. */}
+              {caregiverForm ? 'Street Address' : 'Street address'}{' '}
+              {from !== 'admin' && !caregiverForm && <span className='text-red-500'>*</span>}
             </label>
             <Input
               className='rounded-[12px] h-14 bg-[#f9f9f9]'
               placeholder='Input Text'
               {...register('address.street', {
-                required: from !== 'admin' && 'Street address is required',
+                // SCRUM-152: not required for caregivers.
+                // SCRUM-152: optional in caregiver onboarding (Figma); the edit forms keep it required.
+                required: from !== 'admin' && !caregiverForm && 'Street address is required',
               })}
               isError={!!errors.address?.street}
             />
@@ -541,7 +708,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Enter city name'
+                placeholder={caregiverForm ? 'Input Text' : 'Enter city name'}
                 {...register('address.city', {
                   required: from !== 'admin' && 'City is required',
                   pattern: {
@@ -564,7 +731,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Enter state/province'
+                placeholder={caregiverForm ? 'Input Text' : 'Enter state/province'}
                 {...register('address.state', {
                   required: from !== 'admin' && 'State is required',
                   pattern: {
@@ -582,12 +749,12 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
             </div>
             <div className='flex flex-col gap-3'>
               <label className='text-base font-medium leading-[22.4px] text-tertiary'>
-                Postal/Zip code{' '}
+                {caregiverForm ? 'Postal/ZIP code' : 'Postal/Zip code'}{' '}
                 {from !== 'admin' && <span className='text-red-500'>*</span>}
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Enter zip code'
+                placeholder={caregiverForm ? 'Input Text' : 'Enter zip code'}
                 {...register('address.zipCode', {
                   required: from !== 'admin' && 'Zip code is required',
                   pattern: {
@@ -611,7 +778,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               </label>
               <Input
                 className='rounded-[12px] h-14 bg-[#f9f9f9]'
-                placeholder='Enter country'
+                placeholder={caregiverForm ? 'Input Text' : 'Enter country'}
                 {...register('address.country', {
                   required: from !== 'admin' && 'Country is required',
                   pattern: {
@@ -631,12 +798,22 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
         </div>
 
         {from !== 'admin' && (
-          <div className='flex gap-5'>
+          <div className='flex items-center gap-5'>
             {isEdit && (
               <OnboardButton
                 text='Cancel'
                 onClick={() => router.back()}
                 className='w-full bg-white text-tertiary border border-gray-300 hover:text-white'
+              />
+            )}
+            {caregiverOnboarding && (
+              // SCRUM-152 (Figma): there is no step before this one, so
+              // Previous is shown disabled — the outlined button at 50%
+              // opacity, not the grey fill disabled buttons get elsewhere.
+              <OnboardButton
+                text='Previous'
+                disabled
+                className='w-full bg-white text-tertiary border border-tertiary disabled:bg-white disabled:opacity-50'
               />
             )}
             <OnboardButton
@@ -645,6 +822,7 @@ const OnboardPersonalInfo = forwardRef((props: any) => {
               className='w-full'
               disabled={!isDirty && isEdit}
             />
+            {caregiverOnboarding && <span className='ml-auto hidden sm:inline-flex items-center gap-1.5 text-sm text-tertiary'><img src='/info.svg' alt='' className='size-4' /> Need help?</span>}
           </div>
         )}
       </div>

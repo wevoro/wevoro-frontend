@@ -23,10 +23,14 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CloudUpload, Lock, Loader2, Globe } from 'lucide-react';
+import { CloudUpload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { SUPPORTING_DOCUMENT_TITLES } from '@/lib/credential-config';
+import {
+  SUPPORTING_DOCUMENT_TITLES,
+  type CertificatePart,
+} from '@/lib/credential-config';
+import { shortFileName } from '@/utils/file';
 
 // SCRUM-61: credential rows use a different preset list (locked). Add More
 // uses the supporting-document preset list only — credential titles never appear
@@ -52,6 +56,16 @@ const NON_MEDICAL_DOCUMENT_TYPES = [
 const tooLargeMessage = (file: File) =>
   `This file is ${(file.size / 1024 / 1024).toFixed(1)}MB. Please upload a file under ${MAX_UPLOAD_MB}MB.`;
 
+// SCRUM-177: the wording of the medical consent below. Sent with the consent so
+// the backend can record WHICH text the caregiver agreed to; bump both together.
+const CONSENT_VERSION = '2026-09-23';
+
+// SCRUM-177: the one line that replaces the Private toggle. The caregiver's
+// Documents section shows the same sentence and imports it from here, so the
+// two cannot drift apart.
+export const SHARING_NOTE =
+  'Documents in your profile are shared with agencies you send your profile link to.';
+
 interface Document {
   _id: string;
   title: string;
@@ -61,6 +75,7 @@ interface Document {
   url: string;
   consent: boolean;
   reviewStatus?: 'pending' | 'approved' | 'rejected';
+  part?: CertificatePart;
 }
 
 interface UploadDocumentModalProps {
@@ -73,6 +88,20 @@ interface UploadDocumentModalProps {
   /** SCRUM-61: when true, modal opens in Add More mode (default non_medical, supporting-doc list, unlocked). */
   addMore?: boolean;
   document?: Document; // For edit mode
+  /**
+   * SCRUM-165: which half of a PCA certificate this upload is. Only for
+   * documentType 'certifications'; left out for every other credential.
+   */
+  part?: CertificatePart;
+  /**
+   * SCRUM-178: opened from a credential row's Update Verification / Re-upload
+   * action, not as a plain metadata edit. The point of that action is to send a
+   * fresh file, so one is required here even on a Confirmed credential.
+   * Passed explicitly by the caller rather than read off `reviewStatus`, which
+   * cannot tell an Update Verification apart from the Documents section editing
+   * the title of that very same approved document.
+   */
+  updateVerification?: boolean;
 }
 
 const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
@@ -84,6 +113,8 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   defaultTitle,
   addMore,
   document, // Existing document for editing
+  part,
+  updateVerification,
 }) => {
   const queryClient = useQueryClient();
   // Supports both usages: uncontrolled (children act as the DialogTrigger, e.g.
@@ -104,7 +135,6 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     category: initialCategory,
     documentType: defaultDocumentType || '',
     title: defaultTitle || '',
-    isPublic: false,
     consent: false,
     file: null as File | null,
   });
@@ -120,7 +150,14 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   // verdict alone on a metadata-only edit. Submitting with "Current file will be
   // kept" therefore reported success while the credential stayed rejected and
   // the Completing Profile modal kept asking for a re-upload.
-  const requiresNewFile = isEditMode && document?.reviewStatus === 'rejected';
+  const isRejectedReupload = isEditMode && document?.reviewStatus === 'rejected';
+  // SCRUM-178 Scenario 2: Update Verification is the same story one state over.
+  // The credential has to land back on Pending review, and document.service.ts
+  // only resets reviewStatus when a file actually arrives — so on a Confirmed
+  // credential the empty form sailed through isFormValid, showed the success
+  // toast and left the credential Confirmed with its old file.
+  const requiresNewFile =
+    isEditMode && (!!updateVerification || isRejectedReupload);
 
   // Pre-populate form when editing
   useEffect(() => {
@@ -129,7 +166,6 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         category: document.category || '',
         documentType: document.documentType || '',
         title: document.title || '',
-        isPublic: document.privacy === 'public',
         consent: document.consent || false,
         file: null,
       });
@@ -220,7 +256,6 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
       category: category || '',
       documentType: defaultDocumentType || '',
       title: defaultTitle || '',
-      isPublic: false,
       consent: false,
       file: null,
     });
@@ -228,12 +263,15 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
   const handleSubmit = async () => {
     // For edit mode, file is optional (keeps existing if not changed) — except
-    // on a rejected credential, where the existing file is the rejected one.
+    // on a rejected credential, where the existing file is the rejected one,
+    // and on an Update Verification, which exists to send a newer one.
     if (!formData.file && (!isEditMode || requiresNewFile)) {
       toast.error(
-        requiresNewFile
+        isRejectedReupload
           ? 'This document was rejected — please select a new file to replace it.'
-          : 'Please select a file to upload',
+          : requiresNewFile
+            ? 'Updating this verification needs a new file — please select one to replace the current document.'
+            : 'Please select a file to upload',
       );
       return;
     }
@@ -245,12 +283,27 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
       data.append('category', formData.category);
       data.append('documentType', formData.documentType);
       data.append('title', formData.title);
-      data.append('isPublic', String(formData.isPublic));
+      // SCRUM-177 removed the Private choice, but the field stays on the wire:
+      // /api/user/document-upload appends isPublic unconditionally, so leaving it
+      // out sends the string "null" and the backend stores privacy 'private'.
+      data.append('isPublic', 'true');
       data.append('consent', String(formData.consent));
+      // SCRUM-177: record which consent wording was agreed to, for the audit.
+      if (isMedicalCategory && formData.consent) {
+        data.append('consentVersion', CONSENT_VERSION);
+      }
 
       // Add documentId if editing
       if (isEditMode) {
         data.append('documentId', document._id);
+      }
+
+      // SCRUM-165: send the certificate half on create and on edit alike. A
+      // re-upload of an existing sign-off that dropped it would reach the
+      // backend as a plain certificate and could replace the written exam.
+      const certificatePart = part ?? document?.part;
+      if (certificatePart) {
+        data.append('part', certificatePart);
       }
 
       // Only append file if one was selected
@@ -274,6 +327,15 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
         // Invalidate documents query to trigger refetch
         queryClient.invalidateQueries({ queryKey: ['documents'] });
+        // ...and the credential list behind it. Without this the share box on
+        // the profile kept saying "0 of 5 verified" after the fifth upload,
+        // because only the Documents list was being told anything had changed.
+        // refetchType 'all' so the readers that are mounted but behind this
+        // modal refetch now rather than when they are next looked at.
+        queryClient.invalidateQueries({
+          queryKey: ['credentialStatus'],
+          refetchType: 'all',
+        });
 
         resetForm();
         setOpen(false);
@@ -298,7 +360,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     formData.documentType &&
     formData.title &&
     (isMedicalCategory ? formData.consent : true) &&
-    (isEditMode && !requiresNewFile ? true : !!formData.file); // new file required on create + rejected re-upload
+    (isEditMode && !requiresNewFile ? true : !!formData.file); // new file required on create, on a rejected re-upload and on an Update Verification (SCRUM-178)
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -365,11 +427,17 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
               <label className='text-base font-medium text-tertiary'>
                 Title <span className='text-red-500'>*</span>
               </label>
+              {/* SCRUM-44/178: a credential row locks the Document Title as well
+                  as Category and Document Type — the title names the credential
+                  the row stands for, and retyping it on an Update Verification
+                  detached the file from its row. Add More and a supporting
+                  document (no documentType prop) stay free to type. */}
               <Input
                 value={formData.title}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
+                disabled={isCredentialRow}
                 placeholder='Type here..'
                 className='h-12'
               />
@@ -398,21 +466,30 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                 <CloudUpload className='w-10 h-10 text-primary' />
               </div>
               {formData.file ? (
-                <div className='text-center'>
-                  <p className='text-base font-medium text-tertiary'>
-                    {formData.file.name}
+                <div className='w-full min-w-0 text-center'>
+                  <p
+                    title={formData.file.name}
+                    className='mx-auto max-w-full break-all text-base font-medium text-tertiary'
+                  >
+                    {shortFileName(formData.file.name)}
                   </p>
                   <p className='text-base md:text-lg text-muted-foreground'>
                     Click or drag to replace
                   </p>
                 </div>
               ) : requiresNewFile ? (
+                // SCRUM-178: "Current file will be kept" must never show here —
+                // it is what promised the caregiver a successful Update
+                // Verification with nothing uploaded. An Update Verification is
+                // not a rejection either, so only a rejected row is told so.
                 <div className='text-center'>
                   <p className='text-base font-medium text-red-500'>
                     A new file is required
                   </p>
                   <p className='text-base md:text-lg text-muted-foreground'>
-                    Click or drag to replace the rejected document
+                    {isRejectedReupload
+                      ? 'Click or drag to replace the rejected document'
+                      : 'Click or drag to replace the current document'}
                   </p>
                 </div>
               ) : isEditMode && document ? (
@@ -437,54 +514,16 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
             </div>
           </div>
 
-          {/* Private Toggle */}
-          <div className='border border-gray-200 rounded-xl p-4 md:p-5'>
-            <div className='flex items-start justify-between'>
-              <div className='flex items-start flex-col gap-2'>
-                <div className='flex gap-2 items-center'>
-                  {formData.isPublic ? (
-                    <Globe className='w-5 h-5 text-tertiary' />
-                  ) : (
-                    <Lock className='w-5 h-5 text-tertiary' />
-                  )}
-                  <p className='text-base font-medium text-tertiary'>
-                    {formData.isPublic ? 'Public' : 'Private'}
-                  </p>
-                </div>
+          {/* SCRUM-177: the Private toggle is gone from every entry point — the
+              caregiver decides who sees a document by choosing who gets the
+              profile link, not per file. This line stands in its place. */}
+          <p className='text-xs text-muted-foreground'>{SHARING_NOTE}</p>
 
-                <p className='text-xs text-muted-foreground'>
-                  {formData.isPublic
-                    ? 'Visible to registered and logged-in verified agencies on the platform.'
-                    : 'Only visible to expressly authorized, verified agencies, and only after your consent.'}
-                </p>
-              </div>
-
-              <button
-                type='button'
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    isPublic: !prev.isPublic,
-                  }))
-                }
-                className={`
-                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                  ${formData.isPublic ? 'bg-primary' : 'bg-gray-200'}
-                `}
-              >
-                <span
-                  className={`
-                    inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform
-                    ${formData.isPublic ? 'translate-x-5' : 'translate-x-0.5'}
-                  `}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Consent Checkbox — only for medical documents */}
+          {/* Consent Checkbox — only for medical documents. SCRUM-177: the
+              consent text now runs to several lines, so the box aligns to the
+              top of it rather than to its middle. */}
           {isMedicalCategory && (
-          <div className='flex items-center gap-4 py-2'>
+          <div className='flex items-start gap-4 py-2'>
             <Checkbox
               id='consent'
               checked={formData.consent}
@@ -494,15 +533,14 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
                   consent: checked as boolean,
                 }))
               }
-              className='mt-0.5 h-5 w-5 border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary'
+              className='mt-0.5 h-5 w-5 shrink-0 border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary'
             />
-            <label htmlFor='consent' className='text-base leading-snug'>
-              <span className='text-tertiary'>
-                I approve uploading a medical information voluntarily.
-              </span>{' '}
-              <span className='text-muted-foreground'>
-                We do not share your data without your consent.
-              </span>
+            {/* SCRUM-177: the consent now names what is shared and with whom.
+                Still required before Upload for a medical document (isFormValid). */}
+            <label htmlFor='consent' className='text-base leading-snug text-tertiary'>
+              I authorize WeVoro to share this medical document, and the health
+              information in it, with any agency I share my profile with. I
+              understand that I choose who receives my profile.
             </label>
           </div>
           )}

@@ -182,7 +182,7 @@ const SubmittedCard: React.FC<SubmittedCardProps> = ({ offer, status }) => {
             </div>
           </div>
           {partner?._id && (
-            <Link href={`/pro/partner/${partner._id}`}>
+            <Link href={`/caregiver/agencies/${partner._id}`}>
               <Button
                 variant='outline'
                 size='sm'

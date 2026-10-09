@@ -2,15 +2,17 @@
 
 import {
   Check,
+  Loader2,
   MoveUpRight,
   Pencil,
+  Sparkles,
   Trash2,
   UserX,
   UserCheck,
   X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -29,6 +31,19 @@ import AdminAlertModal from './admin-alert-modal';
 import PartnerPersonalInformation from '../dashboard/partner-personal-information';
 import { AdminEditUserModal } from './admin-edit-user-modal';
 import AdminCredentials from './admin-credentials';
+import { SHOW_AI_RUN_CHECK } from '@/lib/feature-flags';
+// Plain names for the Run AI check summary — the results come back keyed by
+// documentType, which is not what the cards below are called.
+const CREDENTIAL_NAME: Record<string, string> = {
+  cpr_test: 'CPR & First Aid',
+  tb_tests: 'TB Test',
+  driver_license: "Driver's License",
+  auto_insurance: 'Auto Insurance',
+};
+// SCRUM-136: the background-check chips use the same accessible pairs as the
+// credential cards (the old amber pending chip was 3.90:1, under 4.5:1).
+import { BADGE_TONE } from '@/lib/credential-expiry';
+import { getUserDocuments } from '@/app/actions';
 import AdminAgencyDocuments from './admin-agency-documents';
 import DownloadAuditTrail from './download-audit-trail';
 import { toast } from 'sonner';
@@ -68,6 +83,34 @@ function BackgroundChecks({
   const [status, setStatus] = useState<string>(
     data?.backgroundCheckStatus ?? 'not_verified'
   );
+  /**
+   * SCRUM-151: the caregiver's own answer and their uploaded GCHEXS
+   * Confirmation were not shown here at all, so the admin was asked to decide
+   * a background check without seeing what the caregiver had submitted — and
+   * the document stayed "pending" forever while the caregiver's page showed
+   * something else. The decision below now also reviews that document.
+   */
+  const [gchexsDoc, setGchexsDoc] = useState<any>(null);
+  const selfReport = data?.professionalInfo?.gchexsStatus as
+    | 'yes'
+    | 'no'
+    | 'not_set'
+    | undefined;
+  const documentUrl = data?.professionalInfo?.gchexsDocumentUrl as string | undefined;
+
+  useEffect(() => {
+    if (!data?._id) return;
+    let cancelled = false;
+    getUserDocuments(data._id)
+      .then((docs: any[]) => {
+        if (cancelled) return;
+        setGchexsDoc((docs || []).find((d) => d.documentType === 'gchexs') || null);
+      })
+      .catch(() => null);
+    return () => {
+      cancelled = true;
+    };
+  }, [data?._id]);
 
   const handleUpdate = async (
     newStatus: 'verified' | 'failed' | 'not_verified'
@@ -96,6 +139,20 @@ function BackgroundChecks({
         );
         setStatus(newStatus);
         onStatusChange(newStatus);
+        // The server puts the uploaded confirmation into the same state; mirror
+        // it here so the card does not need a reload to agree with itself.
+        if (gchexsDoc) {
+          setGchexsDoc((prev: any) => ({
+            ...prev,
+            reviewStatus:
+              newStatus === 'verified'
+                ? 'approved'
+                : newStatus === 'failed'
+                  ? 'rejected'
+                  : 'pending',
+            reviewedAt: newStatus === 'verified' ? new Date().toISOString() : undefined,
+          }));
+        }
       } else {
         toast.error(result.message || 'Could not update the background check');
       }
@@ -112,6 +169,29 @@ function BackgroundChecks({
   const approved = status === 'verified';
   const decidedOn = data?.backgroundCheckUpdatedAt || data?.updatedAt;
 
+  const selfReportLine =
+    selfReport === 'yes'
+      ? `The caregiver says GCHEXS is completed${
+          data?.professionalInfo?.gchexsUpdatedAt
+            ? ` (answered ${new Date(data.professionalInfo.gchexsUpdatedAt).toLocaleDateString(
+                'en-US',
+                { month: 'short', day: 'numeric', year: 'numeric' }
+              )})`
+            : ''
+        }.`
+      : selfReport === 'no'
+        ? 'The caregiver says GCHEXS is not completed.'
+        : 'The caregiver has not answered the GCHEXS question yet.';
+
+  const docState =
+    gchexsDoc?.reviewStatus === 'approved'
+      ? 'approved'
+      : gchexsDoc?.reviewStatus === 'rejected'
+        ? 'rejected'
+        : gchexsDoc
+          ? 'pending'
+          : null;
+
   return (
     <div className='flex flex-col gap-4 rounded-xl border border-[#DFE2E0] bg-white p-5'>
       <div className='flex flex-col gap-2'>
@@ -120,24 +200,54 @@ function BackgroundChecks({
           {decided && (
             <span
               className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1.5 text-xs font-medium leading-[18px] ${
-                approved ? 'bg-[#F2F4F3] text-[#008000]' : 'bg-[#FDE8E8] text-[#D14343]'
+                approved ? BADGE_TONE.green : BADGE_TONE.red
               }`}
             >
               {approved ? 'Approved' : 'Rejected'}
             </span>
           )}
           {!decided && (
-            <span className='inline-flex shrink-0 items-center rounded-full bg-[#FEF6E7] px-2.5 py-1.5 text-xs font-medium leading-[18px] text-[#A9700B]'>
+            <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1.5 text-xs font-medium leading-[18px] ${BADGE_TONE.amber}`}>
               Pending review
             </span>
           )}
         </div>
+        <p className='text-[13px] leading-5 text-[#5E6864]'>{selfReportLine}</p>
         <p className='text-[13px] leading-5 text-[#5E6864]'>
           {decided
             ? `The background check was completed manually and ${approved ? 'approved' : 'rejected'} by an admin.`
             : 'Complete the background check manually, then approve or reject the application.'}
+          {gchexsDoc
+            ? ' Your decision also marks the caregiver\'s GCHEXS Confirmation, so both sides show the same status.'
+            : ''}
         </p>
       </div>
+
+      {/* The caregiver's uploaded confirmation, with its own status. */}
+      {(gchexsDoc || documentUrl) && (
+        <div className='flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#DFE2E0] bg-[#F9F9FA] px-4 py-3'>
+          <div className='min-w-0'>
+            <p className='truncate text-sm font-medium text-[#1C1C1C]'>
+              {gchexsDoc?.title || 'GCHEXS Confirmation'}
+            </p>
+            <p className='text-[12px] text-[#5E6864]'>
+              {docState === 'approved'
+                ? `Reviewed${gchexsDoc?.reviewedAt ? ` on ${new Date(gchexsDoc.reviewedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}`
+                : docState === 'rejected'
+                  ? 'Not confirmed'
+                  : 'Waiting for your review'}
+            </p>
+          </div>
+          <a
+            href={gchexsDoc?.url || documentUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='inline-flex h-[38px] items-center justify-center rounded-[10px] border border-[#B0BCB8] bg-white px-4 text-[13px] font-medium text-[#1C1C1C] transition-colors hover:bg-gray-50'
+          >
+            View document
+          </a>
+        </div>
+      )}
 
       {decided ? (
         <div className='flex items-center gap-4'>
@@ -198,7 +308,7 @@ function BackgroundChecks({
             type='button'
             disabled={loading}
             onClick={() => handleUpdate('failed')}
-            className='inline-flex h-[38px] items-center justify-center rounded-[10px] border border-[#E7A6A6] bg-white px-5 text-[13px] font-medium leading-5 text-[#D14343] transition-colors hover:bg-red-50 disabled:opacity-60'
+            className='inline-flex h-[38px] items-center justify-center rounded-[10px] border border-[#D14343] bg-white px-5 text-[13px] font-medium leading-5 text-[#D14343] transition-colors hover:bg-[#FDF3F3] disabled:opacity-60'
           >
             Reject
           </button>
@@ -229,6 +339,64 @@ export function ReviewApplicationModal({
   };
 
   const [localData, setLocalData] = useState(data);
+
+  // "Run AI check": read and decide every credential this caregiver has
+  // uploaded, in one press. The credential list below reloads on reloadKey
+  // once the run finishes, so it shows the decisions rather than what it read
+  // when the dialog opened.
+  const [aiRunning, setAiRunning] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string>('');
+  // Which credentials the AI would not decide, named, so "waiting for you" is
+  // an instruction rather than a number.
+  const [aiWaiting, setAiWaiting] = useState<string[]>([]);
+  const [credReloadKey, setCredReloadKey] = useState(0);
+
+  const runAiCheck = async () => {
+    if (!localData?._id) return;
+    setAiRunning(true);
+    setAiSummary('');
+    setAiWaiting([]);
+    try {
+      const res = await fetch(`/api/admin/ai-review/${localData._id}`, {
+        method: 'POST',
+      });
+      const body = await res.json();
+      if (body?.status !== 200 || !body.data?.ran) {
+        toast.error(body?.message || 'The credentials could not be checked');
+        return;
+      }
+      const s = body.data.summary || {};
+      const parts = [
+        s.confirmed ? `${s.confirmed} confirmed` : '',
+        s.notConfirmed ? `${s.notConfirmed} marked not confirmed` : '',
+        s.needsHuman
+          ? `${s.needsHuman} ${s.needsHuman === 1 ? 'needs' : 'need'} your decision`
+          : '',
+        s.failed ? `${s.failed} could not be read` : '',
+      ].filter(Boolean);
+      const text = parts.length
+        ? parts.join(' · ')
+        : 'Every credential had already been reviewed';
+      setAiSummary(text);
+      // Name them. "1 needs your decision" leaves the admin hunting for which
+      // card it was.
+      setAiWaiting(
+        (body.data.results || [])
+          .filter((r: any) => r.decision === 'needs_human')
+          .map((r: any) =>
+            r.documentType === 'certifications'
+              ? `${localData?.professionalInfo?.role || 'CNA'} Certification`
+              : CREDENTIAL_NAME[r.documentType] || r.documentType
+          )
+      );
+      toast.success(text);
+      setCredReloadKey((k) => k + 1);
+    } catch {
+      toast.error('The credentials could not be checked');
+    } finally {
+      setAiRunning(false);
+    }
+  };
 
   // Keep localData in sync when the data prop changes — including a STATUS change
   // after an Approve/Reject refetch, not only a different _id. Without the status
@@ -372,6 +540,46 @@ export function ReviewApplicationModal({
                       <MoveUpRight className='size-4' />
                     </Button>
                   </MessageModal>
+
+                  {/* Reads every credential and confirms or marks each one not
+                      confirmed in a single press. Reasons the AI may only
+                      suggest, and credentials an admin has already decided,
+                      are left alone — the summary says how many. */}
+                  {SHOW_AI_RUN_CHECK && from !== 'agency' && (
+                    <Button
+                      variant='outline'
+                      onClick={runAiCheck}
+                      disabled={aiRunning}
+                      className='w-max sm:w-full rounded-lg inline-flex items-center gap-2 border-[#DFE2E0] text-primary hover:bg-[#E9F7EE]'
+                    >
+                      {aiRunning ? (
+                        <>
+                          <Loader2 className='size-4 animate-spin' />
+                          Checking credentials…
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className='size-4' />
+                          Run AI check
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {aiSummary && (
+                    <div className='w-max sm:w-full text-right text-xs text-[#6C6C6C]'>
+                      <p>{aiSummary}</p>
+                      {aiWaiting.length > 0 && (
+                        <p className='mt-0.5'>
+                          The AI would not decide{' '}
+                          <span className='font-semibold text-[#1C1C1C]'>
+                            {aiWaiting.join(', ')}
+                          </span>{' '}
+                          &mdash; confirm or reject {aiWaiting.length === 1 ? 'it' : 'them'}{' '}
+                          below.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -566,6 +774,7 @@ export function ReviewApplicationModal({
                   <AdminCredentials
                     userId={localData?._id}
                     role={localData?.professionalInfo?.role}
+                    reloadKey={credReloadKey}
                   />
                   <DownloadAuditTrail userId={localData?._id} />
                 </>

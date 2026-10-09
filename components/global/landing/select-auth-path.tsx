@@ -25,12 +25,12 @@ export function SelectAuthPath({
         <DropdownMenuGroup>
           {type === 'Register' && (
             <>
-              <Link href='/pro/signup'>
+              <Link href='/caregiver/signup'>
                 <DropdownMenuItem className='cursor-pointer'>
                   <span>Caregiver</span>
                 </DropdownMenuItem>
               </Link>
-              <Link href='/partner/signup'>
+              <Link href='/agency/signup'>
                 <DropdownMenuItem className='cursor-pointer'>
                   <span>Agency</span>
                 </DropdownMenuItem>
@@ -39,12 +39,12 @@ export function SelectAuthPath({
           )}
           {type === 'Login' && (
             <>
-              <Link href='/pro/login'>
+              <Link href='/caregiver/login'>
                 <DropdownMenuItem className='cursor-pointer'>
                   <span>Caregiver</span>
                 </DropdownMenuItem>
               </Link>
-              <Link href='/partner/login'>
+              <Link href='/agency/login'>
                 <DropdownMenuItem className='cursor-pointer'>
                   <span>Agency</span>
                 </DropdownMenuItem>

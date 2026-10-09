@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { MoveUpRight } from 'lucide-react';
 import { cn, scrollToSection } from '@/lib/utils';
 import Link from 'next/link';
+import { toCurrentPath } from '@/lib/routes';
 
 const Banner = ({
   appStoreLink,
@@ -70,7 +71,7 @@ const Banner = ({
               </ul>
               {environmentType !== 'waitlist' && (
                 <Button
-                  href={card.href}
+                  href={toCurrentPath(card.href)}
                   className='px-6 md:px-9 h-12 md:h-14 rounded-[12px] w-full md:w-fit text-sm md:text-base font-semibold'
                 >
                   {card.buttonText}

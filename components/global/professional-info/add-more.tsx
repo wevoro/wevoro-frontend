@@ -8,6 +8,8 @@ interface AddMoreProps {
   textColor?: string;
 }
 
+// SCRUM-152 (Figma, onboarding step 2): a 32px dark circle with a white plus,
+// 12px gap, then "Add More" at 18px.
 const AddMore = ({
   handleAdd,
   iconBgColor = 'bg-tertiary',
@@ -15,18 +17,18 @@ const AddMore = ({
 }: AddMoreProps) => {
   return (
     <div
-      className='flex items-center gap-2 cursor-pointer hover:underline'
+      className='flex items-center gap-3 cursor-pointer hover:underline'
       onClick={handleAdd}
     >
       <div
         className={cn(
-          'rounded-full w-6 h-6 text-white flex items-center justify-center',
+          'rounded-full w-8 h-8 shrink-0 text-white flex items-center justify-center',
           iconBgColor,
         )}
       >
         <Plus className='w-4 h-4 text-white' />
       </div>
-      <span className={cn('leading-[25.2px]', textColor)}>Add more</span>
+      <span className={cn('text-lg leading-[25.2px]', textColor)}>Add More</span>
     </div>
   );
 };

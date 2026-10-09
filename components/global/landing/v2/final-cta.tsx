@@ -19,14 +19,14 @@ export default function FinalCta() {
         </p>
         <div className='mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row'>
           <Link
-            href='/pro/signup'
+            href='/caregiver/signup'
             className='inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-primary px-6 py-2 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 sm:w-auto'
           >
             I&rsquo;m a Caregiver — Build My Profile
             <MoveRight className='size-4 shrink-0' />
           </Link>
           <Link
-            href='/partner/access'
+            href='/agency/access'
             className={cn(
               'inline-flex min-h-[50px] w-full items-center justify-center gap-1 rounded-[14px] border px-6 py-2 text-center text-sm font-semibold text-tertiary transition-colors hover:bg-[#f4f9f6] sm:w-auto',
               HAIRLINE

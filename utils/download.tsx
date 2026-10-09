@@ -1,22 +1,42 @@
 import { toast } from 'sonner';
 
 /**
- * Downloads a file from a URL by fetching it as a blob and triggering
- * a native download instead of opening in a new browser tab.
+ * Save a file to the visitor's computer instead of opening it in a tab.
+ *
+ * SCRUM-148: a file on the CDN cannot be fetched by the browser — the CDN
+ * sends no CORS header, so the fetch is blocked and the caregiver saw
+ * "Failed to download file" on a file they had just uploaded. Anything that
+ * is not on our own origin is fetched by our server instead, which has no
+ * CORS to answer to.
  */
 export const downloadFile = async (url: string, filename?: string) => {
   try {
     toast.loading('Downloading file...', { id: 'download' });
 
-    const response = await fetch(url);
+    const sameOrigin =
+      url.startsWith('/') ||
+      (typeof window !== 'undefined' && url.startsWith(window.location.origin));
+    const response = sameOrigin
+      ? await fetch(url)
+      : await fetch('/api/proxy-download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
     if (!response.ok) throw new Error('Download failed');
 
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);
 
-    // Derive filename from URL if not provided
-    const derivedName =
-      filename || url.split('/').pop()?.split('?')[0] || 'download';
+    // Derive filename from URL if not provided. A title carries no file
+    // type, so the one from the url is kept on the end.
+    const fromUrl = url.split('/').pop()?.split('?')[0] || 'download';
+    const ext = fromUrl.includes('.') ? '.' + fromUrl.split('.').pop() : '';
+    const derivedName = filename
+      ? filename.toLowerCase().endsWith(ext.toLowerCase())
+        ? filename
+        : `${filename}${ext}`
+      : fromUrl;
 
     const link = document.createElement('a');
     link.href = blobUrl;

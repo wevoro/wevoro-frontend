@@ -104,7 +104,7 @@ const OfferLists = ({ offers, source, isLoading }: any) => {
             </div>
 
             <div className='flex items-center gap-3'>
-              <Link href={`/pro/partner/${offer.partner._id}`}>
+              <Link href={`/caregiver/agencies/${offer.partner._id}`}>
                 <Image
                   unoptimized
                   src={offer?.partner?.personalInfo?.image}
@@ -116,7 +116,7 @@ const OfferLists = ({ offers, source, isLoading }: any) => {
               </Link>
               <div>
                 <Link
-                  href={`/pro/partner/${offer.partner._id}`}
+                  href={`/caregiver/agencies/${offer.partner._id}`}
                   className='text-base sm:text-lg text-tertiary inline-flex items-center gap-2 sm:pb-1 hover:underline'
                 >
                   {offer.partner.personalInfo.firstName}{' '}

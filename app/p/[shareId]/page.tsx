@@ -3,7 +3,8 @@ import { getUserByShareId, getUser, recordShareVisit } from '@/app/actions';
 import { redirect } from 'next/navigation';
 import { isSharingEnabled } from '@/lib/credentialing';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, MapPin, User, ArrowRight } from 'lucide-react';
+import { MapPin, User, ArrowRight, Clock } from 'lucide-react';
+import SharePreviewCredentials from '@/components/global/dashboard/share-preview-credentials';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -32,7 +33,6 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
   }
 
   const proUser = await getUserByShareId(shareId);
-  const currentUser = await getUser();
 
   if (!proUser) {
     return (
@@ -45,6 +45,51 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
     );
   }
 
+  // SCRUM-133: the link opens only once all 5 required credentials are
+  // verified. The server already withholds the profile ({ shareable: false });
+  // the count is checked here too so a partial profile can never render, even
+  // against an older API. Everyone gets this screen — a signed-in agency is not
+  // sent on to the profile, and no visit is recorded, because nothing was
+  // shared yet. No name, photo or sign-up buttons: there is nothing to act on.
+  const summary = proUser.credentialsSummary;
+  const isShareable =
+    proUser.shareable !== false &&
+    !!summary &&
+    summary.total > 0 &&
+    summary.verified >= summary.total;
+  if (!isShareable) {
+    return (
+      <div className='min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4'>
+        <div className='w-full max-w-md'>
+          <div className='flex items-center justify-center mb-8'>
+            <div className='relative w-10 h-10 mr-2'>
+              <Image src='/wevoro.png' alt='Wevoro' fill className='object-contain' />
+            </div>
+            <span className='text-xl font-bold text-gray-900'>Wevoro</span>
+          </div>
+          <div
+            data-testid='share-not-ready'
+            className='bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center'
+          >
+            <div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-[#F9F9FA]'>
+              <Clock className='size-6 text-[#6C6C6C]' />
+            </div>
+            <h1 className='text-xl font-bold text-[#1C1C1C] mb-2'>
+              This profile isn&rsquo;t ready to share yet
+            </h1>
+            <p className='text-sm leading-relaxed text-[#6C6C6C]'>
+              This caregiver is still completing their credential verification with WeVoro.
+              Their profile opens here once every required credential is verified, so please
+              check back later.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentUser = await getUser();
+
   // If logged-in partner, redirect to full profile view
   if (currentUser?.role === 'partner') {
     // SCRUM-122: a signed-in agency opening the link has come in through this
@@ -52,17 +97,17 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
     // appear in their Offers › Submitted tab. Best-effort; the redirect happens
     // either way.
     await recordShareVisit(shareId);
-    return redirect(`/partner/pros/${proUser._id}?s=true`);
+    return redirect(`/agency/caregivers/${proUser._id}?s=true`);
   }
 
   // If logged-in pro, redirect to the pro profile view
   if (currentUser?.role === 'pro') {
-    return redirect(`/pro/${proUser._id}`);
+    return redirect(`/caregiver/${proUser._id}`);
   }
 
   // If admin, redirect to admin panel
   if (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') {
-    return redirect(`/admin/pros`);
+    return redirect(`/admin/caregivers`);
   }
 
   const personalInfo = proUser.personalInfo;
@@ -126,25 +171,15 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
             </div>
           )}
 
-          {/* Credentials summary */}
-          <div className='bg-gray-50 rounded-2xl p-4 mb-6'>
-            <div className='flex items-center justify-center gap-2'>
-              <ShieldCheck className='w-5 h-5 text-emerald-500' />
-              <span className='text-sm font-semibold text-gray-700'>
-                {/* SCRUM-99: confirmed can never exceed the total (was showing e.g. "7 of 5"). */}
-                {Math.min(verifiedCount, totalCount)} of {totalCount} credentials confirmed
-              </span>
-            </div>
-            {/* Progress bar */}
-            <div className='w-full h-2 bg-gray-200 rounded-full mt-3 overflow-hidden'>
-              <div
-                className='h-full rounded-full transition-all duration-500'
-                style={{
-                  width: `${(Math.min(verifiedCount, totalCount) / totalCount) * 100}%`,
-                  background: 'linear-gradient(90deg, #22c55e, #16a34a)',
-                }}
-              />
-            </div>
+          {/* Credentials summary — SCRUM-133: only a fully verified profile
+              reaches this point, so it always reads "All 5 credentials
+              verified"; no partial count or bar. */}
+          <div className='mb-6'>
+            <SharePreviewCredentials
+              verified={verifiedCount}
+              total={totalCount}
+              items={proUser.credentialsSummary?.items}
+            />
           </div>
 
           {/* CTA buttons */}
@@ -153,7 +188,7 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
               "Already have an account? Sign in". Both go to the email + code flow
               (create-or-sign-in); no password path from the share preview. */}
           <div className='flex flex-col gap-3'>
-            <Link href={`/partner/access?shareId=${shareId}&proId=${proUser._id}&s=true`}>
+            <Link href={`/agency/access?shareId=${shareId}&proId=${proUser._id}&s=true`}>
               <Button
                 className='w-full h-12 rounded-xl text-base font-semibold gap-2'
               >
@@ -161,7 +196,7 @@ const SharePreviewPage = async ({ params }: { params: { shareId: string } }) => 
                 <ArrowRight className='w-4 h-4' />
               </Button>
             </Link>
-            <Link href={`/partner/access?shareId=${shareId}&proId=${proUser._id}&s=true&mode=signin`}>
+            <Link href={`/agency/access?shareId=${shareId}&proId=${proUser._id}&s=true&mode=signin`}>
               <Button
                 variant='outline'
                 className='w-full h-12 rounded-xl text-base font-semibold'

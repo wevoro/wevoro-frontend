@@ -556,7 +556,7 @@ const PaymentGateModal: React.FC<PaymentGateModalProps> = ({
           <h2 className='mt-5 text-[22px] font-semibold text-[#1C1C1C]'>Payment successful</h2>
           <p className='mt-3 max-w-[430px] text-[14px] leading-[22px] text-[#6C6C6C]'>
             Your download is starting automatically. {theirs} documents are now
-            unlocked — re-download anytime for free.
+            unlocked — re-download free for the next 30 days.
           </p>
         </div>
 

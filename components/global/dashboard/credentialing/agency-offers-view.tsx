@@ -206,7 +206,7 @@ const AgencyOffersView: React.FC = () => {
               : pill('Not onboarded', 'grey');
 
     const footerText = e.paid
-      ? `Paid ${e.paidAt ? moment(e.paidAt).format('MMM D, YYYY') : ''} · re-downloads are free`
+      ? `Paid ${e.paidAt ? moment(e.paidAt).format('MMM D, YYYY') : ''} · re-downloads free for 30 days`
       : state === 'submitted'
         ? `Signed ${e.onboard?.submittedAt ? moment(e.onboard.submittedAt).format('MMM D, YYYY') : ''} · payment is taken at download`
         : state === 'awaiting' || state === 'signing'

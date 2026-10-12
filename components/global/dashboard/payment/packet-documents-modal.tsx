@@ -300,7 +300,7 @@ const PacketDocumentsModal: React.FC<PacketDocumentsModalProps> = ({
                         : `Awaiting ${firstName(name)}’s signature. You can pay and download once ${firstName(name)} has signed.`
                       : !purchasable
                       ? 'Nothing is available to buy yet. A package needs at least one credential WeVoro has verified.'
-                      : `These files are locked. Pay ${money(manifest?.priceCents)} once to unlock ${firstName(name)}’s package — re-downloads are free after that.`}
+                      : `These files are locked. Pay ${money(manifest?.priceCents)} once to unlock ${firstName(name)}’s package — re-downloads are free for 30 days.`}
                   </p>
                 </div>
               )}
